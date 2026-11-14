@@ -2,26 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --muted: 210 40% 94%;
+    --muted-foreground: 215 16% 40%;
+    --border: 214 32% 88%;
+    --primary: 21 90% 48%;
+    --primary-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --ring: 21 90% 48%;
+  }
+  /* slate-900 page, slate-800 surfaces */
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 96%;
+    --card: 217 33% 15%;
+    --muted: 217 33% 20%;
+    --muted-foreground: 215 20% 68%;
+    --border: 215 25% 25%;
+    --primary: 25 95% 53%;
+    --primary-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --ring: 25 95% 53%;
+  }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
   }
 }

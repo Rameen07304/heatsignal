@@ -71,7 +71,7 @@ export function summarizeDaily(points: HourlyPoint[]): DailySummary[] {
     const date = p.time.slice(0, 10);
     days.set(date, [...(days.get(date) ?? []), p]);
   }
-  return [...days].map(([date, pts]) => {
+  return Array.from(days, ([date, pts]) => {
     const peak = pts.reduce((a, b) => (b.wbgt > a.wbgt ? b : a));
     return {
       date,
@@ -157,11 +157,13 @@ export async function searchCities(query: string): Promise<CityResult[]> {
   const raw = await getJson<GeocodingResponse>(
     `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en`,
   );
-  return (raw.results ?? []).map((r) => ({
+  const cities = (raw.results ?? []).map((r) => ({
     name: r.name,
     country: r.country ?? "",
     region: r.admin1,
     lat: Number(r.latitude.toFixed(2)),
     lon: Number(r.longitude.toFixed(2)),
   }));
+  // The geocoder can return the same place twice; coordinates are our identity.
+  return cities.filter((c, i) => cities.findIndex((o) => o.lat === c.lat && o.lon === c.lon) === i);
 }

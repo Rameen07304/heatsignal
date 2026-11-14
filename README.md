@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HeatSignal
 
-## Getting Started
+Real-time heat-illness early warning. HeatSignal turns free global weather forecasts into a Wet Bulb Globe Temperature (WBGT) risk level for any city and uses Google Gemini to write plain-language alerts in English, Urdu and Arabic.
 
-First, run the development server:
+Team HeatSignal — Kinnaird College for Women, Lahore.
+
+## Run locally
 
 ```bash
+npm install
+cp .env.example .env.local   # then add your GEMINI_API_KEY
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. Everything except "Generate Alert" works without a key.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`npm test` runs the WBGT / risk-threshold self-check.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy to Vercel
 
-## Learn More
+Import the repo in Vercel and add `GEMINI_API_KEY` under Project → Settings → Environment Variables. No database is needed. Never commit a real key — `.env.local` is git-ignored.
 
-To learn more about Next.js, take a look at the following resources:
+## How it works
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **WBGT** (`lib/wbgt.ts`): Australian BoM simplified shade formula, `0.567·T + 0.393·e + 3.94`.
+- **Risk** (`lib/risk.ts`): Low < 27, Moderate 27–30, High 30–33, Extreme ≥ 33 °C.
+- **Weather** (`lib/weather.ts`): Open-Meteo forecast, archive and geocoding APIs, called from the browser.
+- **Alerts** (`app/api/alert/route.ts`): server route that validates input, recomputes WBGT and asks Gemini for a structured, trilingual alert.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Credits
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Weather data by [Open-Meteo](https://open-meteo.com/) (CC BY 4.0). Map tiles © OpenStreetMap contributors. Thresholds informed by WHO and NIOSH heat stress guidance. HeatSignal is a decision-support tool, not medical advice.
