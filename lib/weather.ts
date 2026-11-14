@@ -41,10 +41,28 @@ interface OpenMeteoResponse {
   };
 }
 
-async function getJson<T>(url: string): Promise<T> {
+export async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Open-Meteo request failed (${res.status})`);
   return res.json();
+}
+
+const CACHE_TTL = 15 * 60 * 1000;
+
+/**
+ * getJson with a 15-minute sessionStorage cache, for the many-city requests: each city counts
+ * against the free API quota, so reloading a 100-city dashboard uncached would burn through it.
+ */
+export async function getJsonCached<T>(url: string, key: string): Promise<T> {
+  try {
+    const cached = JSON.parse(sessionStorage.getItem(key) ?? "null");
+    if (cached?.url === url && Date.now() - cached.at < CACHE_TTL) return cached.data;
+  } catch {}
+  const data = await getJson<T>(url);
+  try {
+    sessionStorage.setItem(key, JSON.stringify({ url, at: Date.now(), data }));
+  } catch {} // quota exceeded or storage disabled — just refetch next time
+  return data;
 }
 
 function toPoints({ hourly: h }: OpenMeteoResponse): HourlyPoint[] {
@@ -52,7 +70,8 @@ function toPoints({ hourly: h }: OpenMeteoResponse): HourlyPoint[] {
     const temp = h.temperature_2m[i];
     const rh = h.relative_humidity_2m[i];
     if (temp == null || rh == null) return []; // archive lags a few days
-    const w = wbgt(temp, rh);
+    // Missing radiation (null) falls back to the plain full-sun formula.
+    const w = wbgt(temp, rh, h.shortwave_radiation[i] ?? undefined);
     return [{
       time,
       temp,
@@ -83,10 +102,25 @@ export function summarizeDaily(points: HourlyPoint[]): DailySummary[] {
   });
 }
 
+const forecastUrl = (lat: string | number, lon: string | number) =>
+  `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=${HOURLY}&forecast_days=7&timezone=auto`;
+
 export async function fetchForecast(lat: number, lon: number): Promise<Forecast> {
-  const raw = await getJson<OpenMeteoResponse>(
-    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=${HOURLY}&forecast_days=7&timezone=auto`,
+  return toForecast(await getJson<OpenMeteoResponse>(forecastUrl(lat, lon)));
+}
+
+/** Forecasts for many cities in one request (Open-Meteo accepts comma-separated coordinates). */
+export async function fetchForecasts(cities: Pick<City, "lat" | "lon">[]): Promise<Forecast[]> {
+  const json = await getJsonCached<OpenMeteoResponse | OpenMeteoResponse[]>(
+    forecastUrl(cities.map((c) => c.lat).join(","), cities.map((c) => c.lon).join(",")),
+    "heatsignal-world-v2",
   );
+  const raw = Array.isArray(json) ? json : [json];
+  if (raw.length !== cities.length) throw new Error("Open-Meteo returned an unexpected number of locations");
+  return raw.map(toForecast);
+}
+
+function toForecast(raw: OpenMeteoResponse): Forecast {
   const hourly = toPoints(raw);
   if (!hourly.length) throw new Error("No forecast data for this location");
   // Times are local to the location, so shift "now" by its UTC offset to match.
@@ -146,7 +180,14 @@ export async function fetchSeasonalAverage(
 }
 
 interface GeocodingResponse {
-  results?: { name: string; country?: string; admin1?: string; latitude: number; longitude: number }[];
+  results?: {
+    name: string;
+    country?: string;
+    admin1?: string;
+    latitude: number;
+    longitude: number;
+    population?: number;
+  }[];
 }
 
 export interface CityResult extends City {
@@ -163,6 +204,7 @@ export async function searchCities(query: string): Promise<CityResult[]> {
     region: r.admin1,
     lat: Number(r.latitude.toFixed(2)),
     lon: Number(r.longitude.toFixed(2)),
+    pop: r.population ? r.population / 1e6 : undefined,
   }));
   // The geocoder can return the same place twice; coordinates are our identity.
   return cities.filter((c, i) => cities.findIndex((o) => o.lat === c.lat && o.lon === c.lon) === i);

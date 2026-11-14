@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog } from "@/components/alert-dialog";
+import { AqiBadge } from "@/components/aqi-badge";
+import type { AirNow } from "@/lib/air";
 import { RiskBadge } from "@/components/risk-badge";
 import { cityHref, type City } from "@/lib/cities";
 import { RISK_COLORS } from "@/lib/risk";
@@ -47,11 +49,12 @@ interface Props {
   city: City;
   /** undefined while loading */
   forecast?: Forecast | Error;
+  air?: AirNow | null;
   onRemove: () => void;
   onRetry: () => void;
 }
 
-export function CityCard({ city, forecast, onRemove, onRetry }: Props) {
+export function CityCard({ city, forecast, air, onRemove, onRetry }: Props) {
   const ok = forecast && !(forecast instanceof Error) ? forecast : null;
 
   return (
@@ -97,15 +100,16 @@ export function CityCard({ city, forecast, onRemove, onRetry }: Props) {
               <Stat label="WBGT" value={`${ok.current.wbgt.toFixed(1)}°`} />
             </div>
             <RiskSparkline daily={ok.daily} />
+            {air && <AqiBadge aqi={air.aqi} />}
           </>
         )}
       </CardContent>
 
       <CardFooter className="gap-2">
         <Button asChild size="sm" variant="outline" className="flex-1">
-          <Link href={cityHref(city)}>View Details</Link>
+          <Link href={cityHref(city)}>Details &amp; safe hours</Link>
         </Button>
-        {ok && <AlertDialog city={city} current={ok.current} size="sm" className="flex-1" />}
+        {ok && <AlertDialog city={city} current={ok.current} air={air} size="sm" className="flex-1" />}
       </CardFooter>
     </Card>
   );

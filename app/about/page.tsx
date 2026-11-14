@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ArrowRight, Droplets, Gauge, Thermometer } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AQI_BANDS } from "@/lib/air";
 import { RISK_BANDS } from "@/lib/risk";
 
 export const metadata: Metadata = { title: "About" };
@@ -23,9 +24,10 @@ export default function AboutPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">About HeatSignal</h1>
         <p className="mt-2 leading-relaxed text-muted-foreground">
-          HeatSignal is a real-time heat-illness early warning system. It turns free, global weather forecasts into a
-          heat stress risk level for any city, and uses AI to write plain-language alerts — in English, Urdu and
-          Arabic — for the people who need them.
+          HeatSignal answers one question for anyone who works or lives outdoors: is it safe to be outside right
+          now, and if not, when will it be? It turns free, global weather and air-quality forecasts into an
+          hour-by-hour safety plan for any city — heat stress in summer, smog in winter — and uses AI to write
+          plain-language alerts in English, Urdu and Arabic.
         </p>
       </div>
 
@@ -81,9 +83,59 @@ T = air temperature (°C)   RH = relative humidity (%)   e = vapour pressure (hP
           </div>
 
           <p className="text-muted-foreground">
-            This is the Australian Bureau of Meteorology’s simplified approximation. It assumes moderate sun and light
-            wind, so it can overestimate stress at night or in strong wind and underestimate it in full sun with still
-            air. Wind and solar radiation are shown for context but are not part of the calculation.
+            This is the Australian Bureau of Meteorology’s simplified approximation, which assumes a sunny day with
+            light wind. Used alone it overstates heat stress at night by several degrees in humid cities, so
+            HeatSignal corrects it with measured sunlight: after dark it uses the international standard shade
+            formula (ISO 7243: 0.7 × wet-bulb + 0.3 × air temperature), and it blends between the two as the sun
+            rises. Wind is shown for context but is not part of the calculation.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Safe outdoor hours</CardTitle></CardHeader>
+        <CardContent className="space-y-3 text-sm leading-relaxed">
+          <p>
+            A risk colour tells you there is a problem. The safe-hours planner tells you what to do about it: for
+            light, moderate or heavy activity it marks each hour as safe, needing rest breaks (45/15, 30/30 or 15/45
+            minutes of work and rest), or unsafe — so a site supervisor can move a shift to the early morning, and
+            a parent can pick the hour for the school run.
+          </p>
+          <p className="text-muted-foreground">
+            The heat limits are the ACGIH work/rest screening values published in the OSHA Technical Manual. They
+            assume healthy adults who are used to the heat; people new to the heat, older adults, children and
+            anyone fasting or unwell need more rest than shown.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Smog: the winter half of the problem</CardTitle></CardHeader>
+        <CardContent className="space-y-3 text-sm leading-relaxed">
+          <p>
+            In South Asia the danger outdoors does not end with summer. From October to February, cities such as
+            Lahore and Delhi sit under smog that is unhealthy for everyone — the same workers who face heat stroke
+            in June breathe hazardous air in November.
+          </p>
+          <p>
+            HeatSignal tracks fine-particle pollution (PM2.5) for every monitored city and folds it into the same
+            plan: an hour only counts as safe when both the heat and the air allow it.
+          </p>
+          <div>
+            <div className="flex overflow-hidden rounded-md text-center text-[11px] font-semibold text-white">
+              {AQI_BANDS.map((b) => (
+                <div key={b.label} className="flex-1 px-1 py-2" style={{ backgroundColor: b.color }}>
+                  {b.max === Infinity ? "301+" : `≤ ${b.max}`}
+                </div>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              US AQI for PM2.5: {AQI_BANDS.map((b) => b.label.toLowerCase()).join(", ")}.
+            </p>
+          </div>
+          <p className="text-muted-foreground">
+            Air-quality figures are model estimates (Copernicus CAMS via Open-Meteo), not readings from a monitor
+            on your street, and can differ from local stations.
           </p>
         </CardContent>
       </Card>
@@ -124,6 +176,13 @@ T = air temperature (°C)   RH = relative humidity (%)   e = vapour pressure (hP
               <A href="http://www.bom.gov.au/info/thermal_stress/">Australian Bureau of Meteorology</A>.
             </li>
             <li>Risk thresholds informed by WHO and NIOSH occupational heat stress guidance.</li>
+            <li>Wet-bulb temperature from Stull (2011); shade WBGT weighting from ISO 7243.</li>
+            <li>Work/rest limits: ACGIH screening values as published in the OSHA Technical Manual.</li>
+            <li>
+              Air quality from the Open-Meteo Air Quality API (Copernicus Atmosphere Monitoring Service), using US
+              EPA AQI categories and the WHO 2021 PM2.5 guideline.
+            </li>
+            <li>City populations are rounded metro-area estimates, used only to indicate scale.</li>
             <li>Map tiles © <A href="https://www.openstreetmap.org/copyright">OpenStreetMap</A> contributors.</li>
             <li>Alerts generated with Google Gemini. AI-written text should be reviewed before public use.</li>
           </ul>

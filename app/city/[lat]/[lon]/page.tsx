@@ -5,16 +5,22 @@ import { ArrowLeft, Droplets, Sun, Thermometer, Wind } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog } from "@/components/alert-dialog";
+import { AqiBadge } from "@/components/aqi-badge";
+import { aqiBand, fetchAir } from "@/lib/air";
 import { ErrorState } from "@/components/error-state";
 import { ForecastTable } from "@/components/forecast-table";
 import { RiskBadge } from "@/components/risk-badge";
 import { WbgtChart } from "@/components/wbgt-chart";
+import { WorkPlanner } from "@/components/work-planner";
 import { RISK_COLORS } from "@/lib/risk";
 import { useAsync } from "@/lib/use-async";
 import { fetchForecast, fetchSeasonalAverage, type DailySummary } from "@/lib/weather";
 
+/** WHO 2021 air quality guideline for PM2.5, 24-hour mean (µg/m³). */
+const WHO_PM25_DAILY = 15;
+
 interface Props {
-  params: { lat: string; lon: string };
+  params:{ lat: string; lon: string };
   searchParams: { name?: string; country?: string };
 }
 
@@ -89,6 +95,12 @@ export default function CityPage({ params, searchParams }: Props) {
     [lat, lon],
   );
   const data = forecast.data;
+  // Smog is an extra layer: if this fails the page simply shows heat only.
+  const air = useAsync(
+    () => (valid ? fetchAir(lat, lon) : Promise.reject(new Error("Invalid coordinates"))),
+    [lat, lon],
+  );
+  const airNow = air.data?.now;
 
   return (
     <div className="space-y-6">
@@ -103,7 +115,7 @@ export default function CityPage({ params, searchParams }: Props) {
             {[city.country, valid && `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`].filter(Boolean).join(" · ")}
           </p>
         </div>
-        {data && <AlertDialog city={city} current={data.current} />}
+        {data && <AlertDialog city={city} current={data.current} air={airNow} />}
       </div>
 
       {forecast.loading && (
@@ -146,6 +158,37 @@ export default function CityPage({ params, searchParams }: Props) {
               </div>
             </CardContent>
           </Card>
+
+          {airNow && (
+            <Card>
+              <CardHeader className="flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle>Air quality (smog)</CardTitle>
+                  <CardDescription>Fine-particle pollution right now</CardDescription>
+                </div>
+                <AqiBadge aqi={airNow.aqi} className="px-3 py-1 text-sm" />
+              </CardHeader>
+              <CardContent className="grid gap-6 sm:grid-cols-[auto_1fr] sm:items-center">
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground">US AQI</div>
+                  <div className="text-5xl font-bold tabular-nums" style={{ color: aqiBand(airNow.aqi).color }}>
+                    {Math.round(airNow.aqi)}
+                  </div>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <p>{aqiBand(airNow.aqi).advice}</p>
+                  <p className="text-muted-foreground">
+                    PM2.5 is {airNow.pm25.toFixed(0)} µg/m³
+                    {airNow.pm25 > WHO_PM25_DAILY &&
+                      ` — ${(airNow.pm25 / WHO_PM25_DAILY).toFixed(1)}× the WHO daily guideline of ${WHO_PM25_DAILY} µg/m³`}
+                    .
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <WorkPlanner hourly={data.hourly} now={data.current.time.slice(0, 13)} aqi={air.data?.hourly} />
 
           <Card>
             <CardHeader>

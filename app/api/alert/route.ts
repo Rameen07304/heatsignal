@@ -34,7 +34,8 @@ export async function POST(req: Request) {
   }
 
   // WBGT and risk are recomputed here so the prompt can't disagree with the weather data.
-  const w = wbgt(temperature, humidity);
+  const solar = num(weather.solar, 0, 2000);
+  const w = wbgt(temperature, humidity, solar);
   try {
     const alert = await generateHeatAlert({
       city,
@@ -43,7 +44,9 @@ export async function POST(req: Request) {
       temperature,
       humidity,
       wind: num(weather.wind, 0, 500),
-      solar: num(weather.solar, 0, 2000),
+      solar,
+      aqi: num(weather.aqi, 0, 2000),
+      pm25: num(weather.pm25, 0, 5000),
       wbgt: w,
       risk: classifyRisk(w),
     });

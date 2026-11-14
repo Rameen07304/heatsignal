@@ -6,6 +6,7 @@ import { Button, type ButtonProps } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RiskBadge } from "@/components/risk-badge";
+import type { AirNow } from "@/lib/air";
 import type { City } from "@/lib/cities";
 import type { HourlyPoint } from "@/lib/weather";
 import type { AlertText, HeatAlert } from "@/lib/gemini";
@@ -42,8 +43,9 @@ function AlertBody({ text, headings, dir }: { text: AlertText; headings: readonl
 export function AlertDialog({
   city,
   current,
+  air,
   ...buttonProps
-}: { city: City; current: HourlyPoint } & ButtonProps) {
+}: { city: City; current: HourlyPoint; air?: AirNow | null } & ButtonProps) {
   const [alert, setAlert] = useState<HeatAlert | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -66,6 +68,8 @@ export function AlertDialog({
             wind: current.wind,
             solar: current.solar,
             wbgt: current.wbgt,
+            aqi: air?.aqi,
+            pm25: air?.pm25,
           },
           risk_level: current.risk,
         }),
@@ -90,11 +94,11 @@ export function AlertDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-center gap-2">
-            Heat alert — {city.name} <RiskBadge level={current.risk} />
+            Safety alert — {city.name} <RiskBadge level={current.risk} />
           </DialogTitle>
           <DialogDescription>
             WBGT {current.wbgt.toFixed(1)} °C · {current.temp.toFixed(1)} °C · {current.rh.toFixed(0)}% humidity ·
-            AI-generated, review before sharing.
+            {air ? ` AQI ${Math.round(air.aqi)} ·` : ""} AI-generated, review before sharing.
           </DialogDescription>
         </DialogHeader>
 
