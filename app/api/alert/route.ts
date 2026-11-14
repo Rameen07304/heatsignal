@@ -3,7 +3,10 @@ import { generateHeatAlert, MissingKeyError } from "@/lib/gemini";
 import { wbgt } from "@/lib/wbgt";
 import { classifyRisk } from "@/lib/risk";
 
-const num = (v: unknown, min: number, max: number): number | undefined =>
+// Two model attempts at up to 25 s each; Vercel's default limit is shorter.
+export const maxDuration = 60;
+
+const num =(v: unknown, min: number, max: number): number | undefined =>
   typeof v === "number" && Number.isFinite(v) && v >= min && v <= max ? v : undefined;
 
 // ponytail: no rate limiting — add (e.g. Upstash/Vercel KV) before sharing the URL widely, each call spends Gemini quota.
