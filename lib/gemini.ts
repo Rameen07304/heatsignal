@@ -159,6 +159,46 @@ ${GUIDANCE}`,
   );
 }
 
+export interface EventDetails {
+  type: string;
+  attendance: string;
+  date: string;
+  start: string;
+  end: string;
+  rating: string;
+  /** A cooler start time HeatSignal found for the same duration, if any. */
+  betterStart?: string;
+}
+
+export interface EventReport {
+  summary: string;
+  risks: string[];
+  precautions: string[];
+  schedule: string[];
+  emergency_plan: string[];
+}
+
+/** Event Safety Report: a planner-facing write-up for one outdoor event. */
+export function generateEventReport(i: AlertInput, e: EventDetails) {
+  return generateJson<EventReport>(
+    `Write an event safety report for an event organiser. Conditions below are for the WORST hour of the event window.
+
+${describe(i)}
+
+Event: ${e.type}, expected attendance ${e.attendance}, on ${e.date} from ${e.start} to ${e.end} local time.
+HeatSignal rating: ${e.rating}.${e.betterStart ? ` A cooler start time for the same duration would be ${e.betterStart}.` : ""}
+
+Return:
+- summary: 2–3 sentences, at most 70 words, on how risky the event is and why, citing the numbers.
+- risks: 3–4 specific risks for this type and size of event, each at most 20 words.
+- precautions: 5–7 concrete precautions (medical, water, shade, crowd, masks if AQI > 100), each at most 20 words.
+- schedule: 2–3 schedule changes (timing, breaks, cut-off rules), each at most 20 words.
+- emergency_plan: 3–4 steps for heat or breathing emergencies on site, each at most 20 words.
+${GUIDANCE}`,
+    obj({ summary: { type: SchemaType.STRING }, risks: strings, precautions: strings, schedule: strings, emergency_plan: strings }),
+  );
+}
+
 const LANGUAGE = { ur: "Urdu (in Urdu script)", ar: "Modern Standard Arabic" } as const;
 
 function translateOne(en: AlertText, lang: keyof typeof LANGUAGE) {

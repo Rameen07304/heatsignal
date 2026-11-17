@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import type { AirInput, AlertInput, AlertText, HeatAlert } from "@/lib/alert-types";
-import { composeAlert, generateAlert, MissingKeyError, recommendActions, translateAlert } from "@/lib/gemini";
+import {
+  composeAlert,
+  generateAlert,
+  generateEventReport,
+  MissingKeyError,
+  recommendActions,
+  translateAlert,
+  type EventDetails,
+} from "@/lib/gemini";
 import { classifyRisk, compoundBand, compoundRiskScore } from "@/lib/risk";
 import { ruleAlert } from "@/lib/rule-alert";
 import { wbgt } from "@/lib/wbgt";
@@ -112,6 +120,25 @@ export async function POST(req: Request) {
       { error: "Expected { city, lat, lon, weather: { temperature, humidity, … }, airQuality?: { aqi, pm25, uv, … } }" },
       { status: 400 },
     );
+  }
+
+  if (stage === "event") {
+    const e = (body.event ?? {}) as Body;
+    const details: EventDetails = {
+      type: str(e.type, 60),
+      attendance: str(e.attendance, 30),
+      date: str(e.date, 20),
+      start: str(e.start, 10),
+      end: str(e.end, 10),
+      rating: str(e.rating, 40),
+      betterStart: str(e.betterStart, 10) || undefined,
+    };
+    if (!details.type || !details.date) return NextResponse.json({ error: "Expected event: { type, attendance, date, start, end, rating }" }, { status: 400 });
+    try {
+      return NextResponse.json({ ...(await generateEventReport(input, details)), source: "ai" });
+    } catch (e) {
+      return NextResponse.json({ error: `${aiUnavailable(e)} The checklist on this page still applies.` }, { status: 502 });
+    }
   }
 
   // If the AI fails, every stage falls back to HeatSignal's rule-based guidance, so an alert always goes out.

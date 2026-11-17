@@ -102,7 +102,15 @@ export function assess(p: Profile, e: Env): PersonalRisk {
   if (badAir && !has("respiratory")) advice.push("Air quality is poor: limit hard outdoor exertion and keep windows closed.");
   if ((e.uv ?? 0) >= 6) advice.push("UV is high: wear a hat and sunglasses and use SPF 30+ sunscreen.");
   if (p.sun === "yes" && e.wbgt > 26) advice.push("Shift time in direct sun to the early morning or evening where you can.");
-  if (advice.length < 3) advice.push("Conditions are manageable: keep drinking water and rest in shade if you feel unwell.");
+  // Always give at least five: general protective habits fill the rest.
+  const general = [
+    "Conditions are manageable today: keep drinking water and rest in shade if you feel unwell.",
+    "Wear light-coloured, loose clothing and a hat outdoors.",
+    p.activity === "outdoor" ? "Plan the heaviest tasks for the early morning." : "Plan outdoor errands for the early morning or evening.",
+    "Know the warning signs — dizziness, headache, nausea, confusion — and stop and cool down if they appear.",
+    "Check on older relatives and neighbours who live alone.",
+  ];
+  for (const g of general) if (advice.length < 5) advice.push(g);
 
   return { score, level, parts, litres, advice: advice.slice(0, 7) };
 }

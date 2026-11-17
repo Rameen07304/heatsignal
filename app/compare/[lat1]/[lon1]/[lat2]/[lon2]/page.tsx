@@ -55,7 +55,8 @@ function verdict(a: City, ca: Conditions, b: City, cb: Conditions): string {
       : heatGap >= uvGap
         ? `higher heat stress (WBGT ${ch.now.wbgt.toFixed(1)} °C vs ${cl.now.wbgt.toFixed(1)} °C)`
         : `stronger UV (${(ch.now.air?.uv ?? 0).toFixed(0)} vs ${(cl.now.air?.uv ?? 0).toFixed(0)})`;
-  return `${hi.name} is currently ${Math.abs(sa - sb)} points higher risk than ${lo.name}, primarily due to ${reason}.`;
+  const gap = Math.abs(sa - sb);
+  return `${hi.name} is currently ${gap} point${gap === 1 ? "" : "s"} higher risk than ${lo.name}, primarily due to ${reason}.`;
 }
 
 export default function ComparePage({ params, searchParams }: Props) {

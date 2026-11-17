@@ -12,6 +12,13 @@ Built by Team HeatSignal, Kinnaird College for Women, Lahore, for the Future Hea
 - **Worker safety** — ACGIH work–rest cycles by work type, a shift planner with break schedule, water target and PPE, and a printable site notice.
 - **Agentic alerts** — a visible pipeline: Risk Analyzer (rules) → Alert Composer → Action Recommender → Translator (Gemini) → delivery, with alert history.
 - **Case studies** — Karachi 2015, Sindh 2024 and Delhi 2023 replayed from archive data: when HeatSignal would have warned, and what it would have advised.
+- **48-hour early warning** — a banner on every page when a city is forecast to cross into High or Critical risk it hasn't reached today, plus an "Upcoming risks" section and a global risk leaderboard.
+- **Personal risk assessment** — age, activity, health conditions and access to cooling turn today's conditions into a personal score, advice and a daily water target.
+- **Safety advisor** — school outdoor-activity status for the school day, and event risk checks with precautions, a better start time and an AI event safety report.
+- **Trends** — the hottest season of the last five years for any city: extreme heat days, average peak WBGT and a simple projection.
+- **First aid** — a step-by-step heat-illness decision guide with emergency numbers by country.
+- **Compare and reports** — two cities side by side; printable city and global reports.
+- **Notifications and languages** — opt-in browser alerts when a city turns Critical; interface in English, Urdu, Arabic (right-to-left), with Japanese, Hindi and Spanish navigation.
 - **Always an alert** — if Gemini is unavailable, a rule-based alert is sent instead.
 
 ## Run locally
