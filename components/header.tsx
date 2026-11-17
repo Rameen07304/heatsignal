@@ -53,26 +53,23 @@ const GROUPS: { label: Key; items: { href: string; label: Key; icon: typeof Acti
   },
 ];
 
-/** HeatSignal mark: a rising risk line inside a rounded square. */
+/** HeatSignal device: four signal-strength bars in the risk colours, low to high. */
 export function Logo({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
-      <rect width="32" height="32" rx="8" fill="#2563eb" />
-      <path d="M7 21.5h4.5l2.5-7 4 11 3-8h4" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="25" cy="10" r="2.6" fill="#fbbf24" />
+    <svg viewBox="0 0 20 18" className={className} aria-hidden="true">
+      <rect x="0" y="12" width="3.6" height="6" rx="1" fill="#16a34a" />
+      <rect x="5.4" y="8" width="3.6" height="10" rx="1" fill="#eab308" />
+      <rect x="10.8" y="4" width="3.6" height="14" rx="1" fill="#f97316" />
+      <rect x="16.2" y="0" width="3.6" height="18" rx="1" fill="#dc2626" />
     </svg>
   );
 }
 
 function Brand() {
-  const { t } = useT();
   return (
-    <Link href="/" className="flex items-center gap-2.5">
-      <Logo className="h-8 w-8 shrink-0" />
-      <span className="leading-tight">
-        <span className="block text-[15px] font-semibold tracking-tight">HeatSignal</span>
-        <span className="block text-xs text-muted-foreground">{t("tagline")}</span>
-      </span>
+    <Link href="/" className="flex items-center gap-2" aria-label="HeatSignal home">
+      <Logo className="h-[18px] w-5 shrink-0" />
+      <span className="text-[17px] font-semibold tracking-tight">HeatSignal</span>
     </Link>
   );
 }

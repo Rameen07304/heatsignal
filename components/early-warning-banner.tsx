@@ -63,32 +63,44 @@ export function EarlyWarningBanner() {
           <p className="text-sm font-semibold">
             {list.length} {list.length === 1 ? "city is" : "cities are"} forecast to reach a higher risk level within 48 hours
           </p>
-          <ul className="mt-1.5 space-y-1">
-            {shown.map(({ city, u }) => (
-              <li key={id(city, u)} className="flex items-center gap-2 text-sm">
+          <ul className="mt-1.5 space-y-2 sm:space-y-1">
+            {shown.map(({ city, u }, i) => (
+              // Phones show only the first warning until expanded; each row stacks its actions underneath.
+              <li key={id(city, u)} className={cn("flex-wrap items-center gap-x-2 gap-y-0.5 text-sm sm:flex-nowrap", i > 0 && !expanded ? "hidden sm:flex" : "flex")}>
                 <span className={cn("h-2 w-2 shrink-0 rounded-full", u.severity === "critical" ? "bg-red-600" : "bg-amber-500")} />
                 <span className="min-w-0 flex-1">
                   {u.severity === "critical"
                     ? t("bannerCritical", { city: city.name, hours: u.hoursUntil })
                     : t("bannerHigh", { city: city.name, hours: u.hoursUntil, score: u.peakScore })}
                 </span>
-                <Link href={cityHref(city)} className="shrink-0 font-medium text-primary hover:underline">
-                  {t("viewDetails")}
-                </Link>
-                <button
-                  type="button"
-                  aria-label={`${t("dismiss")} ${city.name}`}
-                  onClick={() => save(new Set(dismissed).add(id(city, u)))}
-                  className="shrink-0 rounded p-1 text-muted-foreground hover:bg-black/5 hover:text-foreground"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
+                <span className="flex w-full items-center gap-2 ps-4 sm:w-auto sm:ps-0">
+                  <Link href={cityHref(city)} className="font-medium text-primary hover:underline">
+                    {t("viewDetails")}
+                  </Link>
+                  <button
+                    type="button"
+                    aria-label={`${t("dismiss")} ${city.name}`}
+                    onClick={() => save(new Set(dismissed).add(id(city, u)))}
+                    className="rounded p-1 text-muted-foreground hover:bg-black/5 hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </span>
               </li>
             ))}
           </ul>
-          {list.length > VISIBLE && (
-            <button type="button" onClick={() => setExpanded(!expanded)} className="mt-1.5 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
-              {expanded ? "Show fewer" : t("moreWarnings", { n: list.length - VISIBLE })}
+          {list.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className={cn("mt-1.5 items-center gap-1 text-sm font-medium text-primary hover:underline", list.length > VISIBLE ? "inline-flex" : "inline-flex sm:hidden")}
+            >
+              {expanded ? "Show fewer" : (
+                <>
+                  <span className="sm:hidden">{t("moreWarnings", { n: list.length - 1 })}</span>
+                  <span className="hidden sm:inline">{t("moreWarnings", { n: list.length - VISIBLE })}</span>
+                </>
+              )}
               <ChevronDown className={cn("h-4 w-4 transition-transform", expanded && "rotate-180")} />
             </button>
           )}

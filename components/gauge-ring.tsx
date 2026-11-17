@@ -41,7 +41,7 @@ export function GaugeRing({ fraction, color, value, unit, label, sub, size = 76 
         </div>
       </div>
       <div className="mt-1.5 text-xs font-medium text-muted-foreground">{label}</div>
-      {sub && <div className="max-w-[7rem] truncate text-xs font-semibold text-foreground">{sub}</div>}
+      {sub && <div className="truncate text-xs font-semibold text-foreground" style={{ maxWidth: size + 36 }}>{sub}</div>}
     </div>
   );
 }

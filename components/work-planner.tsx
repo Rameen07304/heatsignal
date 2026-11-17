@@ -43,9 +43,17 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Prop
   const activity = INTENSITIES.find((i) => i.key === intensity)!;
   const what = `${activity.label.toLowerCase()} activity`;
 
+  // Air between 101 and 150 doesn't stop healthy adults, but the verdict must still say who it affects.
+  const sensitiveAir = (h: (typeof hours)[number]) => (h.aqi ?? 0) > 100 && !badAir(h);
+  const sensitiveRanges = hourRanges(hours, sensitiveAir);
+  const peakAqi = Math.max(0, ...hours.map((h) => h.aqi ?? 0));
+  const airNote = sensitiveRanges.length
+    ? ` Sensitive groups (asthma, heart disease, children, older adults) should limit exertion — AQI up to ${formatAqi(peakAqi)}.`
+    : "";
+
   const headline =
     safeHours === hours.length
-      ? `Safe all day for ${what}.`
+      ? `Safe all day for ${sensitiveRanges.length ? "healthy adults doing " : ""}${what}.${airNote}`
       : safeHours === 0
         ? `No fully safe hours for ${what} — ${
             hours.every(badAir)
@@ -54,7 +62,7 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Prop
                 ? "the heat needs rest breaks all day"
                 : "every hour is limited by either heat or smog"
           }.`
-        : `Best time outdoors: ${list(safe)}.`;
+        : `Best time outdoors: ${list(safe)}.${airNote}`;
 
   const cell = (h: (typeof hours)[number]) => {
     const key = h.time.slice(0, 13);
@@ -147,6 +155,16 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Prop
               color: r.color,
               ranges: hourRanges(hours, (h) => h.regimen === r),
             })),
+            {
+              label: "Air fine (AQI 100 or below)",
+              color: aqiBand(50).color,
+              ranges: hasAir ? hourRanges(hours, (h) => h.aqi != null && h.aqi <= 100) : [],
+            },
+            {
+              label: "Air unhealthy for sensitive groups — they should limit exertion",
+              color: aqiBand(120).color,
+              ranges: sensitiveRanges,
+            },
             {
               label: "Unhealthy air — wear an N95 mask and take it easy",
               color: aqiBand(UNHEALTHY_AQI).color,

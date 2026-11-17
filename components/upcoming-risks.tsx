@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useUpcoming } from "@/components/early-warning-banner";
@@ -34,15 +35,15 @@ export function UpcomingRisks() {
           const peak = compoundBand(u.peakScore);
           const jump = u.peakScore - u.nowScore;
           return (
-            <Card key={cityKey(city)} className={u.severity === "critical" ? "border-red-500/50" : "border-yellow-500/40"}>
+            <Card key={cityKey(city)}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <Link href={cityHref(city)} className="font-semibold hover:underline">{city.name}</Link>
                     <div className="text-xs text-muted-foreground">{city.country}</div>
                   </div>
-                  <span className={`text-2xl font-black ${u.severity === "critical" ? "text-red-500" : "text-yellow-500"}`} aria-label={`rising by ${jump} points`}>
-                    {jump >= 30 ? "↑↑" : jump >= 15 ? "↑" : "↗"}
+                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums">
+                    <TrendingUp className="h-3.5 w-3.5" style={{ color: peak.color }} aria-hidden="true" />+{jump}
                   </span>
                 </div>
                 <div className="mt-3 flex items-baseline gap-2 tabular-nums">

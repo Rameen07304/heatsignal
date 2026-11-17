@@ -40,7 +40,7 @@ export default function AboutPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <section className="rounded-lg border bg-card p-8 sm:p-10">
-        <Logo className="h-12 w-12" />
+        <Logo className="h-9 w-10" />
         <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">HeatSignal</h1>
         <p className="mt-2 text-lg text-muted-foreground">Environmental health intelligence for the hottest, most polluted places on Earth.</p>
         <p className="mt-6 max-w-2xl leading-relaxed">

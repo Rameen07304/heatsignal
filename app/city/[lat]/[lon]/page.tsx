@@ -150,12 +150,13 @@ export default function CityPage({ params, searchParams }: Props) {
             <CardHeader>
               <CardTitle>Compound risk timeline</CardTitle>
               <CardDescription>
-                7 days, hour by hour: heat stress (WBGT), air quality (US AQI) and the combined score. Shaded bands are
-                the compound-risk levels.{!c.hasAir && " Air-quality data is not available here, so only heat is shown."}
+                7 days, hour by hour, in three aligned panels: the combined score, heat stress (WBGT) and air quality (US AQI).
+                Shaded bands are each scale’s risk levels; hover one panel to read the same hour in all three.{!c.hasAir && " Air-quality data is not available here, so only heat is shown."}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <CompoundChart
+                height={480}
                 nowTime={c.now.time}
                 data={c.hours.map((h) => ({ time: h.time, wbgt: h.wbgt, aqi: h.air?.aqi, score: h.score ?? undefined }))}
               />

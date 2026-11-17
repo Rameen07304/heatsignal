@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowDown, ArrowUp, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, MoveRight, Search, TrendingDown, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,7 +12,8 @@ import { AqiBadge, CompoundBadge, RiskBadge } from "@/components/risk-badge";
 import { aqiBand, formatAqi } from "@/lib/air";
 import { cityHref, cityKey, type City } from "@/lib/cities";
 import type { Conditions } from "@/lib/conditions";
-import { CRITICAL_SCORE, TREND_ARROW, isRising, sixHourTrend } from "@/lib/risk-forecast";
+import { CRITICAL_SCORE, isRising, sixHourTrend, type Trend } from "@/lib/risk-forecast";
+import { cn } from "@/lib/utils";
 import { isCompoundEvent, uvBand } from "@/lib/risk";
 
 type Row = { city: City; c: Conditions };
@@ -41,7 +42,9 @@ const COLUMNS = [
 ] as const;
 type SortKey = (typeof COLUMNS)[number]["key"];
 
-const TREND_COLOR = { up: "text-red-500", flat: "text-muted-foreground", down: "text-green-500" };
+const TREND_ICON = { up: TrendingUp, flat: MoveRight, down: TrendingDown };
+const TREND_COLOR = { up: "text-red-600", flat: "text-muted-foreground", down: "text-green-700" };
+const TrendIcon = ({ trend }: { trend: Trend }) => { const I = TREND_ICON[trend]; return <I className={cn("h-4 w-4", TREND_COLOR[trend])} />; };
 
 export function Leaderboard({ rows }: { rows: Row[] }) {
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({ key: "score", desc: true });
@@ -62,8 +65,8 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
   const [all, setAll] = useState(false);
   const page = all || query || filter !== "all" ? shown : shown.slice(0, 15);
 
-  const header = (key: SortKey, label: string, right?: boolean) => (
-    <TableHead className={right ? "text-right" : undefined} aria-sort={sort.key === key ? (sort.desc ? "descending" : "ascending") : "none"}>
+  const header = (key: SortKey, label: string, right?: boolean, hide?: boolean) => (
+    <TableHead className={cn(right && "text-right", hide && "hidden sm:table-cell")} aria-sort={sort.key === key ? (sort.desc ? "descending" : "ascending") : "none"}>
       <button
         type="button"
         className="inline-flex items-center gap-1 hover:text-foreground"
@@ -82,7 +85,7 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
           <TabsList>
             <TabsTrigger value="all">All cities</TabsTrigger>
             <TabsTrigger value="critical">Critical only</TabsTrigger>
-            <TabsTrigger value="rising">Rising only</TabsTrigger>
+            <TabsTrigger value="rising">Worsening</TabsTrigger>
           </TabsList>
         </Tabs>
         <div className="relative w-full sm:w-64">
@@ -99,17 +102,17 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10">#</TableHead>
+                  <TableHead className="hidden w-10 sm:table-cell">#</TableHead>
                   {header("city", "City")}
-                  {header("country", "Country")}
-                  {header("temp", "Temp", true)}
+                  {header("country", "Country", false, true)}
+                  {header("temp", "Temp", true, true)}
                   {header("wbgt", "WBGT", true)}
-                  <TableHead>Heat risk</TableHead>
+                  <TableHead className="hidden sm:table-cell">Heat risk</TableHead>
                   {header("aqi", "AQI", true)}
-                  <TableHead>Air risk</TableHead>
-                  {header("pm25", "PM2.5", true)}
+                  <TableHead className="hidden sm:table-cell">Air risk</TableHead>
+                  {header("pm25", "PM2.5", true, true)}
                   {header("score", "Compound")}
-                  <TableHead title="Compound score now vs. 6 hours ago">Trend</TableHead>
+                  <TableHead className="hidden sm:table-cell" title="Compound score now vs. 6 hours ago">Trend</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -118,17 +121,17 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
                   const trend = sixHourTrend(r.c);
                   return (
                     <TableRow key={cityKey(r.city)}>
-                      <TableCell className="text-muted-foreground">{i + 1}</TableCell>
+                      <TableCell className="hidden text-muted-foreground sm:table-cell">{i + 1}</TableCell>
                       <TableCell><Link href={cityHref(r.city)} className="font-medium hover:underline">{r.city.name}</Link></TableCell>
-                      <TableCell className="text-muted-foreground">{r.city.country}</TableCell>
-                      <TableCell className="text-right">{n.temp.toFixed(1)}°</TableCell>
+                      <TableCell className="hidden text-muted-foreground sm:table-cell">{r.city.country}</TableCell>
+                      <TableCell className="hidden text-right sm:table-cell">{n.temp.toFixed(1)}°</TableCell>
                       <TableCell className="text-right font-medium">{n.wbgt.toFixed(1)}°</TableCell>
-                      <TableCell><RiskBadge level={n.risk} /></TableCell>
+                      <TableCell className="hidden sm:table-cell"><RiskBadge level={n.risk} /></TableCell>
                       <TableCell className="text-right">{n.air ? formatAqi(n.air.aqi) : "–"}</TableCell>
-                      <TableCell>{n.air ? <AqiBadge aqi={n.air.aqi} short /> : "–"}</TableCell>
-                      <TableCell className="text-right">{n.air ? n.air.pm25.toFixed(0) : "–"}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{n.air ? <AqiBadge aqi={n.air.aqi} short /> : "–"}</TableCell>
+                      <TableCell className="hidden text-right sm:table-cell">{n.air ? n.air.pm25.toFixed(0) : "–"}</TableCell>
                       <TableCell>{n.score != null ? <CompoundBadge score={n.score} /> : "–"}</TableCell>
-                      <TableCell className={`text-lg font-bold ${TREND_COLOR[trend]}`} aria-label={trend}>{TREND_ARROW[trend]}</TableCell>
+                      <TableCell className="hidden sm:table-cell" aria-label={`Trend ${trend}`}><TrendIcon trend={trend} /></TableCell>
                     </TableRow>
                   );
                 })}
@@ -142,7 +145,7 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
       )}
       <p className="text-xs text-muted-foreground">
         Values are for the current hour at each city. Trend compares the compound score with 6 hours ago (±5 points);
-        “Rising” means the next 48 hours will peak at least 5 points above today’s peak.
+        “Worsening” means the next 48 hours will peak at least 5 points above today’s peak.
       </p>
     </div>
   );

@@ -24,7 +24,9 @@ import type { Conditions } from "@/lib/conditions";
 import { useT } from "@/lib/i18n";
 import { globalReport } from "@/lib/report";
 import { COMPOUND_BANDS, RISK_BANDS } from "@/lib/risk";
-import { CRITICAL_SCORE, isRising } from "@/lib/risk-forecast";
+import { CRITICAL_SCORE } from "@/lib/risk-forecast";
+import { useUpcoming } from "@/components/early-warning-banner";
+import { hoursOf, worstHour } from "@/lib/use-city-conditions";
 import { ok, useCities } from "@/lib/use-cities";
 
 const WeatherMap = dynamic(() => import("@/components/weather-map"), {
@@ -77,13 +79,17 @@ export default function Dashboard() {
   const pending = loaded.length === 0 && !failed;
 
   const critical = loaded.filter(({ c }) => (c.days[0].maxScore ?? 0) >= CRITICAL_SCORE);
-  const rising = loaded.filter(({ c }) => isRising(c));
+  const upcoming = useUpcoming();
   const hottest = loaded.reduce<{ city: City; c: Conditions } | null>((b, r) => (!b || r.c.days[0].maxWbgt > b.c.days[0].maxWbgt ? r : b), null);
   const worstAir = loaded.reduce<{ city: City; c: Conditions } | null>(
     (b, r) => (r.c.now.air && (!b || r.c.now.air.aqi > b.c.now.air!.aqi) ? r : b),
     null,
   );
-  const top = [...loaded].sort((a, b) => (b.c.days[0].maxScore ?? -1) - (a.c.days[0].maxScore ?? -1)).slice(0, 8);
+  // Show the values at each city’s peak hour, so the numbers explain the score beside them.
+  const top = [...loaded]
+    .sort((a, b) => (b.c.days[0].maxScore ?? -1) - (a.c.days[0].maxScore ?? -1))
+    .slice(0, 8)
+    .map((r) => ({ ...r, peak: worstHour(hoursOf(r.c, r.c.days[0].date)) ?? r.c.now }));
 
   const monitored = useMemo(() => new Set(cities.map(cityKey)), [cities]);
   const q = filter.trim().toLowerCase();
@@ -137,8 +143,8 @@ export default function Dashboard() {
             >
               {worstAir ? formatAqi(worstAir.c.now.air!.aqi) : "–"}
             </Kpi>
-            <Kpi label={t("risingRisks")} sub="Worse in the next 48 h">
-              {pending || airFailed ? "–" : <CountUp value={rising.length} />}
+            <Kpi label={t("risingRisks")} sub="Reaching High or Critical in 48 h">
+              {pending || airFailed ? "–" : <CountUp value={upcoming.length} />}
             </Kpi>
           </section>
 
@@ -177,7 +183,7 @@ export default function Dashboard() {
             <Card className="min-w-0">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Highest risk today</CardTitle>
-                <CardDescription>Each city’s peak compound score today.</CardDescription>
+                <CardDescription>Each city’s peak compound score today, with heat and air at that hour.</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {pending ? (
@@ -193,14 +199,17 @@ export default function Dashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {top.map(({ city, c }) => (
+                      {top.map(({ city, c, peak }) => (
                         <TableRow key={cityKey(city)}>
                           <TableCell className="ps-4">
                             <Link href={cityHref(city)} className="font-medium hover:underline">{city.name}</Link>
-                            <div className="text-xs text-muted-foreground">{city.country}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {city.country} · {peak.time.slice(11, 16)}
+                              {peak.air && peak.air.dust > 100 ? " · dust" : ""}
+                            </div>
                           </TableCell>
-                          <TableCell className="text-right">{c.days[0].maxWbgt.toFixed(1)}°</TableCell>
-                          <TableCell className="text-right">{c.now.air ? formatAqi(c.now.air.aqi) : "–"}</TableCell>
+                          <TableCell className="text-right">{peak.wbgt.toFixed(1)}°</TableCell>
+                          <TableCell className="text-right">{peak.air ? formatAqi(peak.air.aqi) : "–"}</TableCell>
                           <TableCell className="pe-4">{c.days[0].maxScore != null ? <CompoundBadge score={c.days[0].maxScore} /> : "–"}</TableCell>
                         </TableRow>
                       ))}
