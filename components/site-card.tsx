@@ -10,6 +10,7 @@ import type { CombinedHour } from "@/lib/conditions";
 import { formatDay } from "@/lib/utils";
 import { INTENSITIES, REGIMENS, heatFlag, hourRanges, litresPerHour, workRegimen, type Intensity } from "@/lib/work-rest";
 import { listRanges } from "@/components/work-planner";
+import { emergencyLine } from "@/lib/emergency";
 
 /** A one-page notice to print and post at a work site. */
 export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; today: CombinedHour[] }) {
@@ -90,7 +91,7 @@ export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; 
             <p className="mb-2 text-sm">Heavy sweating, dizziness, headache, nausea, cramps, weakness → move to shade, loosen clothes, sip water, cool with wet cloths.</p>
             <p className="text-sm font-semibold text-destructive">Heat stroke — call emergency now</p>
             <p className="text-sm">Confusion, slurred speech, fainting, seizures, very hot skin → call for help, cool the body with water and fanning, do not give drinks if not alert.</p>
-            <p className="mt-2 text-xs font-semibold">Pakistan 1122 · UAE 998 · Saudi Arabia 997 · India 112</p>
+            <p className="mt-2 text-xs font-semibold">Emergency: {emergencyLine(city.country)}</p>
           </section>
         </div>
         <p className="border-t px-5 py-2 text-[11px] text-muted-foreground">

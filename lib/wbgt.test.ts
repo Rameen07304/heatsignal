@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { wbgt, wetBulb } from "./wbgt.ts";
 import { classifyRisk, compoundBand, compoundRiskScore } from "./risk.ts";
 import { hourRanges, workRegimen } from "./work-rest.ts";
+import { assess, hydrationLitres } from "./personal-risk.ts";
 
 // 30°C / 50% RH: e = 0.5 * 6.105 * exp(17.27*30/267.7) ≈ 21.14 hPa → WBGT ≈ 29.26
 assert.ok(Math.abs(wbgt(30, 50) - 29.26) < 0.05, `wbgt(30,50)=${wbgt(30, 50)}`);
@@ -61,4 +62,16 @@ assert.deepEqual(
   ],
 );
 
-console.log("wbgt, risk, compound and work/rest checks passed");
+// Hydration formula: base 2 L, +0.5 above WBGT 28, +1 above 32, +0.5 per 3 h beyond 3 h outdoors, +1 for workers/athletes.
+assert.equal(hydrationLitres(25, 0.5, "indoor"), 2);
+assert.equal(hydrationLitres(30, 0.5, "indoor"), 2.5);
+assert.equal(hydrationLitres(33, 7, "outdoor"), 5.2); // 2 + 0.5 + 1 + 0.67 + 1 = 5.17
+// Personal risk: clamped to 0–100, and a vulnerable person scores higher than a protected one.
+const env = { wbgt: 31, aqi: 160, uv: 9, score: 80 };
+const safe = assess({ age: "18-40", activity: "indoor", outdoors: "0-1", conditions: [], ac: "yes", water: "yes", sun: "no" }, env);
+const risky = assess({ age: "65+", activity: "outdoor", outdoors: "6+", conditions: ["heart", "respiratory"], ac: "no", water: "no", sun: "yes" }, env);
+assert.ok(risky.score > safe.score && risky.score <= 100 && safe.score >= 0);
+assert.equal(risky.level.label, "Critical");
+assert.ok(risky.advice.some((a) => a.includes("N95")), "respiratory + bad air advises a mask");
+
+console.log("wbgt, risk, compound, work/rest and personal-risk checks passed");

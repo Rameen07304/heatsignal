@@ -12,6 +12,7 @@ import { ErrorState } from "@/components/error-state";
 import { ForecastTable } from "@/components/forecast-table";
 import { CompoundBadge, RiskBadge } from "@/components/risk-badge";
 import { VulnerableGroups } from "@/components/vulnerable-groups";
+import { CityActions } from "@/components/city-actions";
 import { WorkPlanner } from "@/components/work-planner";
 import { fetchAir } from "@/lib/air";
 import { buildConditions, type CombinedHour } from "@/lib/conditions";
@@ -109,7 +110,8 @@ export default function CityPage({ params, searchParams }: Props) {
           </p>
         </div>
         {c && (
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-4">
+            <CityActions city={city} c={c} peak={peak} />
             {c.now.score != null ? (
               <div className="text-right">
                 <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Compound risk now</div>

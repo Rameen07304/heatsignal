@@ -55,12 +55,16 @@ const GROUPS: Group[] = [
   },
 ];
 
+/** The groups flagged for these conditions. */
+export function groupsAtRisk(h: CombinedHour) {
+  const v = { wbgt: h.wbgt, aqi: h.air?.aqi ?? 0, pm25: h.air?.pm25 ?? 0, score: h.score ?? 0, uv: h.air?.uv ?? 0 };
+  return GROUPS.filter((g) => g.when(v));
+}
+
 /** Which populations are at risk right now, by fixed rules on the current hour. */
 export function VulnerableGroups({ hour, peak }: { hour: CombinedHour; peak?: CombinedHour }) {
   // Judge on today's peak where known, so the panel doesn't go quiet overnight.
-  const h = peak ?? hour;
-  const v = { wbgt: h.wbgt, aqi: h.air?.aqi ?? 0, pm25: h.air?.pm25 ?? 0, score: h.score ?? 0, uv: h.air?.uv ?? 0 };
-  const atRisk = GROUPS.filter((g) => g.when(v));
+  const atRisk = groupsAtRisk(peak ?? hour);
   return (
     <Card>
       <CardHeader>

@@ -12,7 +12,19 @@ const formatPop = (m?: number) =>
   m == null ? null : m >= 1 ? `${m.toFixed(1)} M people` : `${Math.round(m * 1000).toLocaleString("en")} k people`;
 
 /** "Add City" button that opens a geocoding search. */
-export function AddCityDialog({ onAdd, monitored }: { onAdd: (city: City) => void; monitored: Set<string> }) {
+export function AddCityDialog({
+  onAdd,
+  monitored,
+  label = "Add City",
+  title = "Add a city to monitor",
+  variant,
+}: {
+  onAdd: (city: City) => void;
+  monitored: Set<string>;
+  label?: string;
+  title?: string;
+  variant?: "outline";
+}) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<CityResult[] | null>(null);
@@ -50,14 +62,14 @@ export function AddCityDialog({ onAdd, monitored }: { onAdd: (city: City) => voi
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus /> Add City
+        <Button variant={variant}>
+          <Plus /> {label}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add a city to monitor</DialogTitle>
-          <DialogDescription>Any town or city worldwide. It is saved in this browser.</DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>Any town or city worldwide.</DialogDescription>
         </DialogHeader>
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />

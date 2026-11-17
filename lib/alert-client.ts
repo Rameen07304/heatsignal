@@ -1,4 +1,4 @@
-import type { AlertText, HeatAlert } from "./alert-types";
+import type { AlertInput, AlertText, HeatAlert } from "./alert-types";
 import type { City } from "./cities";
 import type { CombinedHour } from "./conditions";
 import type { CompoundLevel, RiskLevel } from "./risk";
@@ -14,6 +14,24 @@ export function alertBody(city: City, h: CombinedHour, extra: Record<string, unk
       ? { aqi: h.air.aqi, pm25: h.air.pm25, pm10: h.air.pm10, o3: h.air.o3, no2: h.air.no2, dust: h.air.dust, uv: h.air.uv }
       : null,
     ...extra,
+  };
+}
+
+/** The same AlertInput the server builds, for client-side rule-based text (reports). */
+export function hourToInput(city: City, h: CombinedHour): AlertInput {
+  return {
+    city: [city.name, city.country].filter(Boolean).join(", "),
+    lat: city.lat,
+    lon: city.lon,
+    temperature: h.temp,
+    humidity: h.rh,
+    wind: h.wind,
+    solar: h.solar,
+    wbgt: h.wbgt,
+    heatRisk: h.risk,
+    air: h.air ? { aqi: h.air.aqi, pm25: h.air.pm25, pm10: h.air.pm10, o3: h.air.o3, no2: h.air.no2, dust: h.air.dust, uv: h.air.uv } : undefined,
+    score: h.score,
+    level: h.level,
   };
 }
 
