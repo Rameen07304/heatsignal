@@ -25,14 +25,9 @@ const config: Config = {
       keyframes: {
         "page-in": { from: { opacity: "0", transform: "translateY(6px)" }, to: { opacity: "1", transform: "none" } },
         "slide-down": { from: { opacity: "0", transform: "translateY(-8px)" }, to: { opacity: "1", transform: "none" } },
-        "risk-pulse": {
-          "0%, 100%": { boxShadow: "0 0 0 0 var(--glow, transparent)" },
-          "50%": { boxShadow: "0 0 14px 2px var(--glow, transparent)" },
-        },
       },
       animation: {
         "page-in": "page-in 0.35s ease-out both",
-        "risk-pulse": "risk-pulse 2.4s ease-in-out infinite",
         "slide-down": "slide-down 0.35s ease-out both",
       },
     },
