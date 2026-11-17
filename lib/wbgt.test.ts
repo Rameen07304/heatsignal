@@ -1,7 +1,7 @@
 // Self-check: `npm test` (Node 22.18+ runs TypeScript directly).
 import assert from "node:assert/strict";
 import { wbgt, wetBulb } from "./wbgt.ts";
-import { classifyRisk } from "./risk.ts";
+import { classifyRisk, compoundBand, compoundRiskScore } from "./risk.ts";
 import { hourRanges, workRegimen } from "./work-rest.ts";
 
 // 30°C / 50% RH: e = 0.5 * 6.105 * exp(17.27*30/267.7) ≈ 21.14 hPa → WBGT ≈ 29.26
@@ -24,6 +24,20 @@ assert.equal(classifyRisk(32.99), "High");
 assert.equal(classifyRisk(33), "Extreme");
 assert.equal(classifyRisk(-5), "Low");
 
+// Compound score: worked by hand from the formula.
+// WBGT 30, AQI 86, UV 8 → base .3375 + .1147 + .1091 = .5613; AQI too low for the penalty → 56.
+assert.equal(compoundRiskScore(30, 86, 8), 56);
+// WBGT 33, AQI 137, UV 10 → base .3713 + .1827 + .1364 = .6903; penalty 1 + .825 × .4567 × .5 = 1.1884 → 82.
+assert.equal(compoundRiskScore(33, 137, 10), 82);
+assert.equal(compoundRiskScore(0, 0, 0), 0);
+assert.equal(compoundRiskScore(60, 900, 20), 100, "capped at 100");
+assert.ok(compoundRiskScore(32, 200, 5) > compoundRiskScore(32, 0, 5) + compoundRiskScore(0, 200, 0) - 1,
+  "heat + bad air together scores at least the sum of the parts");
+assert.equal(compoundBand(25).level, "Low");
+assert.equal(compoundBand(26).level, "Moderate");
+assert.equal(compoundBand(76).level, "Critical");
+assert.equal(compoundBand(91).level, "Emergency");
+
 // Work/rest limits: boundaries are inclusive, heavier work is restricted sooner.
 assert.equal(workRegimen(26.7, "moderate").workMin, 60);
 assert.equal(workRegimen(26.8, "moderate").workMin, 45);
@@ -36,8 +50,7 @@ assert.equal(workRegimen(40, "light").workMin, 0);
 const day = [5, 6, 7, 12, 13, 23].map((h) => ({ time: `2026-06-01T${String(h).padStart(2, "0")}:00` }));
 assert.deepEqual(
   hourRanges(day, () => true),
-  // Hours 5-7 are consecutive in the list but 7→12 is not checked by clock time: the caller
-  // passes a full 24-hour day, so adjacency in the array is adjacency in time.
+  // Adjacency in the array is taken as adjacency in time: callers pass a full 24-hour day.
   [{ from: "05:00", to: "24:00", hours: 6 }],
 );
 assert.deepEqual(
@@ -48,4 +61,4 @@ assert.deepEqual(
   ],
 );
 
-console.log("wbgt, risk and work/rest checks passed");
+console.log("wbgt, risk, compound and work/rest checks passed");

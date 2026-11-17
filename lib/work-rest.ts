@@ -37,6 +37,20 @@ export function workRegimen(wbgt: number, intensity: Intensity): Regimen {
   return REGIMENS[i === -1 ? REGIMENS.length - 1 : i];
 }
 
+/**
+ * Water to drink per hour (litres). CDC/NIOSH advise about one cup (~250 ml) every 15–20 minutes
+ * in the heat, and no more than about 1.5 L an hour (too much water is dangerous too).
+ */
+export const litresPerHour = (r: Regimen) => (r.workMin === 60 ? 0.5 : r.workMin === 45 ? 0.75 : 1);
+
+/** Worksite flag colours (military/sports heat-flag convention): green, yellow, red, black. */
+export function heatFlag(r: Regimen) {
+  if (r.workMin === 60) return { name: "Green flag", color: "#16a34a", text: "Normal work. Keep water available." };
+  if (r.workMin === 45) return { name: "Yellow flag", color: "#ca8a04", text: "Caution. Scheduled rest breaks every hour." };
+  if (r.workMin > 0) return { name: "Red flag", color: "#dc2626", text: "Danger. Long rest breaks; heavy work only in the cooler hours." };
+  return { name: "Black flag", color: "#0a0a0a", text: "Extreme danger. Stop outdoor work." };
+}
+
 export interface HourRange {
   /** "HH:00" start of the first hour, and end of the last hour ("24:00" for midnight). */
   from: string;

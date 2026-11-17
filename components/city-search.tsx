@@ -1,12 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Plus, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { cityKey, type City } from "@/lib/cities";
 import { searchCities, type CityResult } from "@/lib/weather";
-import type { City } from "@/lib/cities";
 
-export function CitySearch({ onSelect }: { onSelect: (city: City) => void }) {
+const formatPop = (m?: number) =>
+  m == null ? null : m >= 1 ? `${m.toFixed(1)} M people` : `${Math.round(m * 1000).toLocaleString("en")} k people`;
+
+/** "Add City" button that opens a geocoding search. */
+export function AddCityDialog({ onAdd, monitored }: { onAdd: (city: City) => void; monitored: Set<string> }) {
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<CityResult[] | null>(null);
   const [error, setError] = useState(false);
@@ -17,6 +24,7 @@ export function CitySearch({ onSelect }: { onSelect: (city: City) => void }) {
     setError(false);
     if (q.length < 2) {
       setResults(null);
+      setLoading(false);
       return;
     }
     let live = true;
@@ -33,57 +41,68 @@ export function CitySearch({ onSelect }: { onSelect: (city: City) => void }) {
     };
   }, [query]);
 
-  const open = query.trim().length >= 2 && (results !== null || error);
+  const add = (r: CityResult) => {
+    onAdd({ name: r.name, country: r.country, lat: r.lat, lon: r.lon, pop: r.pop });
+    setQuery("");
+    setOpen(false);
+  };
 
   return (
-    <div className="relative z-30 w-full max-w-md">
-      <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-      <Input
-        type="search"
-        role="combobox"
-        aria-expanded={open}
-        aria-controls="city-results"
-        aria-label="Search for a city to monitor"
-        placeholder="Add any city worldwide…"
-        className="pl-9"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") setQuery("");
-          if (e.key === "Enter" && results?.[0]) {
-            onSelect(results[0]);
-            setQuery("");
-          }
-        }}
-      />
-      {loading && <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" />}
-      {open && (
-        <ul
-          id="city-results"
-          role="listbox"
-          className="absolute mt-1 w-full overflow-hidden rounded-md border bg-card shadow-lg"
-        >
-          {error && <li className="px-3 py-2 text-sm text-destructive">Search failed. Check your connection.</li>}
-          {results?.length === 0 && <li className="px-3 py-2 text-sm text-muted-foreground">No cities found.</li>}
-          {results?.map((r) => (
-            <li key={`${r.lat},${r.lon}`} role="option" aria-selected={false}>
-              <button
-                type="button"
-                className="flex w-full items-baseline justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-muted focus:bg-muted focus:outline-none"
-                onClick={() => {
-                  onSelect({ name: r.name, country: r.country, lat: r.lat, lon: r.lon });
-                  setQuery("");
-                }}
-              >
-                <span className="font-medium">{r.name}</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {[r.region, r.country].filter(Boolean).join(", ")}
-                </span>
-              </button>
-            </li>
-          ))}
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>
+          <Plus /> Add City
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add a city to monitor</DialogTitle>
+          <DialogDescription>Any town or city worldwide. It is saved in this browser.</DialogDescription>
+        </DialogHeader>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            autoFocus
+            type="search"
+            aria-label="City name"
+            placeholder="e.g. Multan, Al Ain, Hyderabad…"
+            className="pl-9"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && results?.[0]) add(results[0]);
+            }}
+          />
+          {loading && <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" />}
+        </div>
+        <ul className="max-h-80 overflow-y-auto" aria-live="polite">
+          {error && <li className="px-1 py-2 text-sm text-destructive">Search failed. Check your connection.</li>}
+          {results?.length === 0 && <li className="px-1 py-2 text-sm text-muted-foreground">No places found.</li>}
+          {results?.map((r) => {
+            const already = monitored.has(cityKey(r));
+            return (
+              <li key={cityKey(r)}>
+                <button
+                  type="button"
+                  disabled={already}
+                  onClick={() => add(r)}
+                  className="flex w-full items-center justify-between gap-3 rounded-md px-2 py-2 text-left text-sm hover:bg-muted focus:bg-muted focus:outline-none disabled:opacity-50"
+                >
+                  <span className="min-w-0">
+                    <span className="block font-medium">{r.name}</span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {[r.region, r.country].filter(Boolean).join(", ")}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right text-xs text-muted-foreground">
+                    {already ? "Already monitored" : formatPop(r.pop) ?? ""}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
-      )}
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

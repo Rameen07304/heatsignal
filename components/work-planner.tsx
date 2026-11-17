@@ -4,32 +4,33 @@ import { useState } from "react";
 import { Droplets } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UNHEALTHY_AQI, aqiBand } from "@/lib/air";
+import { UNHEALTHY_AQI, aqiBand, formatAqi } from "@/lib/air";
 import { formatDay } from "@/lib/utils";
 import { INTENSITIES, REGIMENS, hourRanges, workRegimen, type HourRange, type Intensity } from "@/lib/work-rest";
-import type { HourlyPoint } from "@/lib/weather";
+import type { CombinedHour } from "@/lib/conditions";
 
-const list = (ranges: HourRange[]) => ranges.map((r) => `${r.from}–${r.to}`).join(", ");
+export const listRanges = (ranges: HourRange[]) => ranges.map((r) => `${r.from}–${r.to}`).join(", ");
+const list = listRanges;
 
 /** AQI above this is "Very unhealthy": outdoor exertion should be avoided, not just reduced. */
-const VERY_UNHEALTHY_AQI = 201;
+export const VERY_UNHEALTHY_AQI = 201;
 
 interface Props {
-  hourly: HourlyPoint[];
+  hourly: CombinedHour[];
   /** Local "YYYY-MM-DDTHH" of the current hour, to mark "now" and dim the past. */
   now: string;
-  /** US AQI by local hour ("YYYY-MM-DDTHH:00"), when air-quality data exists for the location. */
-  aqi?: Map<string, number>;
+  /** Activity level to start on. */
+  initialIntensity?: Intensity;
 }
 
-export function WorkPlanner({ hourly, now, aqi }: Props) {
-  const [intensity, setIntensity] = useState<Intensity>("moderate");
+export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Props) {
+  const [intensity, setIntensity] = useState<Intensity>(initialIntensity);
   const days = Array.from(new Set(hourly.map((p) => p.time.slice(0, 10)))).slice(0, 3);
   const [day, setDay] = useState(days[0]);
 
   const hours = hourly
     .filter((p) => p.time.startsWith(day))
-    .map((p) => ({ ...p, regimen: workRegimen(p.wbgt, intensity), aqi: aqi?.get(p.time) }));
+    .map((p) => ({ ...p, regimen: workRegimen(p.wbgt, intensity), aqi: p.air?.aqi }));
   const hasAir = hours.some((h) => h.aqi != null);
   const badAir = (h: (typeof hours)[number]) => (h.aqi ?? 0) >= UNHEALTHY_AQI;
   const worstAir = (h: (typeof hours)[number]) => (h.aqi ?? 0) >= VERY_UNHEALTHY_AQI;
@@ -124,7 +125,7 @@ export function WorkPlanner({ hourly, now, aqi }: Props) {
                     title={
                       h.aqi == null
                         ? `${h.time.slice(11, 16)} · no air-quality data`
-                        : `${h.time.slice(11, 16)} · AQI ${Math.round(h.aqi)} · ${aqiBand(h.aqi).label}`
+                        : `${h.time.slice(11, 16)} · AQI ${formatAqi(h.aqi)} · ${aqiBand(h.aqi).label}`
                     }
                     className={`h-5 ${cell(h)}`}
                     style={{ backgroundColor: h.aqi == null ? "hsl(var(--muted))" : aqiBand(h.aqi).color }}

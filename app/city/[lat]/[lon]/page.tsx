@@ -1,39 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Droplets, Sun, Thermometer, Wind } from "lucide-react";
+import { ArrowLeft, HardHat } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertDialog } from "@/components/alert-dialog";
-import { AqiBadge } from "@/components/aqi-badge";
-import { aqiBand, fetchAir } from "@/lib/air";
+import { AlertSection } from "@/components/alert";
+import { CompoundChart } from "@/components/compound-chart";
+import { ConditionsPanel } from "@/components/conditions-panel";
 import { ErrorState } from "@/components/error-state";
 import { ForecastTable } from "@/components/forecast-table";
-import { RiskBadge } from "@/components/risk-badge";
-import { WbgtChart } from "@/components/wbgt-chart";
+import { CompoundBadge, RiskBadge } from "@/components/risk-badge";
+import { VulnerableGroups } from "@/components/vulnerable-groups";
 import { WorkPlanner } from "@/components/work-planner";
-import { RISK_COLORS } from "@/lib/risk";
+import { fetchAir } from "@/lib/air";
+import { buildConditions, type CombinedHour } from "@/lib/conditions";
+import { compoundBand } from "@/lib/risk";
 import { useAsync } from "@/lib/use-async";
+import { formatDay } from "@/lib/utils";
 import { fetchForecast, fetchSeasonalAverage, type DailySummary } from "@/lib/weather";
 
-/** WHO 2021 air quality guideline for PM2.5, 24-hour mean (µg/m³). */
-const WHO_PM25_DAILY = 15;
-
 interface Props {
-  params:{ lat: string; lon: string };
+  params: { lat: string; lon: string };
   searchParams: { name?: string; country?: string };
-}
-
-function Metric({ icon: Icon, label, value }: { icon: typeof Sun; label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-3">
-      <Icon className="h-5 w-5 text-muted-foreground" />
-      <div>
-        <div className="text-xs text-muted-foreground">{label}</div>
-        <div className="font-semibold tabular-nums">{value}</div>
-      </div>
-    </div>
-  );
 }
 
 function Delta({ label, today, average }: { label: string; today: number; average: number }) {
@@ -58,10 +47,8 @@ function HistoricalComparison({ lat, lon, today }: { lat: number; lon: number; t
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Historical comparison</CardTitle>
-        <CardDescription>
-          Today’s forecast peak vs. the same two-week window over the previous 5 years.
-        </CardDescription>
+        <CardTitle>Compared with a normal year</CardTitle>
+        <CardDescription>Today’s forecast peak vs. the same two-week window over the previous 5 years.</CardDescription>
       </CardHeader>
       <CardContent>
         {history.loading && <Skeleton className="h-20 w-full" />}
@@ -90,17 +77,21 @@ export default function CityPage({ params, searchParams }: Props) {
     lon,
   };
 
-  const forecast = useAsync(
-    () => (valid ? fetchForecast(lat, lon) : Promise.reject(new Error("Invalid coordinates"))),
-    [lat, lon],
+  const result = useAsync(async () => {
+    if (!valid) throw new Error("Invalid coordinates");
+    // Air quality is an extra layer: if it fails the page shows heat only.
+    const [forecast, air] = await Promise.all([fetchForecast(lat, lon), fetchAir(lat, lon).catch(() => undefined)]);
+    return buildConditions(forecast, air);
+  }, [lat, lon]);
+  const c = result.data;
+
+  const today = c?.days[0];
+  const todayHours = c?.hours.filter((h) => h.time.startsWith(today!.date)) ?? [];
+  const peak = todayHours.reduce<CombinedHour | undefined>(
+    (p, h) => (!p || (h.score ?? h.wbgt) > (p.score ?? p.wbgt) ? h : p),
+    undefined,
   );
-  const data = forecast.data;
-  // Smog is an extra layer: if this fails the page simply shows heat only.
-  const air = useAsync(
-    () => (valid ? fetchAir(lat, lon) : Promise.reject(new Error("Invalid coordinates"))),
-    [lat, lon],
-  );
-  const airNow = air.data?.now;
+  const minTemp = todayHours.length ? Math.min(...todayHours.map((h) => h.temp)) : 0;
 
   return (
     <div className="space-y-6">
@@ -108,108 +99,91 @@ export default function CityPage({ params, searchParams }: Props) {
         <ArrowLeft className="h-4 w-4" /> Dashboard
       </Link>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{valid ? city.name : "Unknown location"}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{valid ? city.name : "Unknown location"}</h1>
           <p className="text-sm text-muted-foreground">
-            {[city.country, valid && `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`].filter(Boolean).join(" · ")}
+            {[city.country, valid && `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`, c && `Local time ${formatDay(c.now.time)}, ${c.now.time.slice(11, 16)}`]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
         </div>
-        {data && <AlertDialog city={city} current={data.current} air={airNow} />}
+        {c && (
+          <div className="flex flex-wrap items-center gap-3">
+            {c.now.score != null ? (
+              <div className="text-right">
+                <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Compound risk now</div>
+                <CompoundBadge score={c.now.score} className="mt-1 px-3 py-1.5 text-base" />
+                <div className="mt-1 text-xs text-muted-foreground">{compoundBand(c.now.score).description}</div>
+              </div>
+            ) : (
+              <RiskBadge level={c.now.risk} className="px-3 py-1.5 text-base" />
+            )}
+          </div>
+        )}
       </div>
 
-      {forecast.loading && (
+      {result.loading && (
         <div className="space-y-6">
-          <Skeleton className="h-36 w-full" />
-          <Skeleton className="h-80 w-full" />
-          <Skeleton className="h-72 w-full" />
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-60 w-full rounded-xl" />)}
+          </div>
+          <Skeleton className="h-80 w-full rounded-xl" />
+          <Skeleton className="h-72 w-full rounded-xl" />
         </div>
       )}
 
-      {forecast.error && (
+      {result.error && (
         <ErrorState
           message={valid ? "Couldn’t load the forecast for this location." : "These coordinates aren’t valid."}
-          onRetry={forecast.retry}
+          onRetry={result.retry}
         />
       )}
 
-      {data && (
+      {c && today && (
         <>
-          <Card>
-            <CardHeader className="flex-row items-center justify-between space-y-0">
-              <div>
-                <CardTitle>Current conditions</CardTitle>
-                <CardDescription>Local time {data.current.time.slice(11, 16)}</CardDescription>
-              </div>
-              <RiskBadge level={data.current.risk} className="px-3 py-1 text-sm" />
-            </CardHeader>
-            <CardContent className="grid gap-6 sm:grid-cols-[auto_1fr] sm:items-center">
-              <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">WBGT</div>
-                <div className="text-5xl font-bold tabular-nums" style={{ color: RISK_COLORS[data.current.risk] }}>
-                  {data.current.wbgt.toFixed(1)}°
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <Metric icon={Thermometer} label="Temperature" value={`${data.current.temp.toFixed(1)} °C`} />
-                <Metric icon={Droplets} label="Humidity" value={`${data.current.rh.toFixed(0)} %`} />
-                <Metric icon={Wind} label="Wind" value={`${data.current.wind.toFixed(0)} km/h`} />
-                <Metric icon={Sun} label="Solar radiation" value={`${data.current.solar.toFixed(0)} W/m²`} />
-              </div>
-            </CardContent>
-          </Card>
-
-          {airNow && (
-            <Card>
-              <CardHeader className="flex-row items-center justify-between space-y-0">
-                <div>
-                  <CardTitle>Air quality (smog)</CardTitle>
-                  <CardDescription>Fine-particle pollution right now</CardDescription>
-                </div>
-                <AqiBadge aqi={airNow.aqi} className="px-3 py-1 text-sm" />
-              </CardHeader>
-              <CardContent className="grid gap-6 sm:grid-cols-[auto_1fr] sm:items-center">
-                <div>
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground">US AQI</div>
-                  <div className="text-5xl font-bold tabular-nums" style={{ color: aqiBand(airNow.aqi).color }}>
-                    {Math.round(airNow.aqi)}
-                  </div>
-                </div>
-                <div className="space-y-1 text-sm">
-                  <p>{aqiBand(airNow.aqi).advice}</p>
-                  <p className="text-muted-foreground">
-                    PM2.5 is {airNow.pm25.toFixed(0)} µg/m³
-                    {airNow.pm25 > WHO_PM25_DAILY &&
-                      ` — ${(airNow.pm25 / WHO_PM25_DAILY).toFixed(1)}× the WHO daily guideline of ${WHO_PM25_DAILY} µg/m³`}
-                    .
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <WorkPlanner hourly={data.hourly} now={data.current.time.slice(0, 13)} aqi={air.data?.hourly} />
+          <ConditionsPanel now={c.now} today={today} minTemp={minTemp} />
 
           <Card>
             <CardHeader>
-              <CardTitle>7-day hourly WBGT</CardTitle>
-              <CardDescription>Shaded bands show Low, Moderate, High and Extreme risk zones.</CardDescription>
+              <CardTitle>Compound risk timeline</CardTitle>
+              <CardDescription>
+                7 days, hour by hour: heat stress (WBGT), air quality (US AQI) and the combined score. Shaded bands are
+                the compound-risk levels.{!c.hasAir && " Air-quality data is not available here, so only heat is shown."}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <WbgtChart data={data.hourly.map(({ time, wbgt }) => ({ time, wbgt }))} />
+              <CompoundChart
+                nowTime={c.now.time}
+                data={c.hours.map((h) => ({ time: h.time, wbgt: h.wbgt, aqi: h.air?.aqi, score: h.score ?? undefined }))}
+              />
             </CardContent>
           </Card>
+
+          <VulnerableGroups hour={c.now} peak={peak} />
+
+          <WorkPlanner hourly={c.hours} now={c.now.time.slice(0, 13)} />
+          <div className="-mt-3 flex justify-end">
+            <Button asChild variant="ghost" size="sm">
+              <Link href={`/worker-safety?lat=${lat}&lon=${lon}&name=${encodeURIComponent(city.name)}&country=${encodeURIComponent(city.country)}`}>
+                <HardHat /> Plan a work shift and print a site notice
+              </Link>
+            </Button>
+          </div>
 
           <Card>
             <CardHeader>
               <CardTitle>Daily forecast</CardTitle>
+              <CardDescription>Air-quality forecasts reach about 5 days ahead; later days show heat only.</CardDescription>
             </CardHeader>
             <CardContent>
-              <ForecastTable daily={data.daily} />
+              <ForecastTable daily={c.days} />
             </CardContent>
           </Card>
 
-          <HistoricalComparison lat={lat} lon={lon} today={data.daily[0]} />
+          <AlertSection city={city} hour={c.now} />
+
+          <HistoricalComparison lat={lat} lon={lon} today={today} />
         </>
       )}
     </div>

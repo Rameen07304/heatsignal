@@ -1,34 +1,31 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Header } from "@/components/header";
 import "./globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "HeatSignal — Heat-illness early warning", template: "%s · HeatSignal" },
+  title: { default: "HeatSignal — Environmental Health Intelligence", template: "%s · HeatSignal" },
   description:
-    "Real-time WBGT heat stress monitoring and AI-powered heat-health alerts for any city worldwide.",
+    "Compound climate-health early warning: heat stress, air quality and UV for any city, with AI alerts in English, Urdu and Arabic.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} min-h-screen font-[family-name:var(--font-geist-sans)] antialiased`}>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
+      <body className="min-h-screen font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <Header />
           <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
-          <footer className="mx-auto max-w-7xl px-4 py-6 text-xs text-muted-foreground">
-            Weather data by{" "}
+          <footer className="no-print mx-auto max-w-7xl border-t px-4 py-6 text-xs text-muted-foreground">
+            Weather and air-quality data by{" "}
             <a className="underline" href="https://open-meteo.com/" target="_blank" rel="noreferrer">
               Open-Meteo
             </a>{" "}
-            (CC BY 4.0). HeatSignal is a decision-support tool, not medical advice.
+            (CC BY 4.0). HeatSignal is a decision-support tool, not medical advice. Team HeatSignal — Kinnaird College
+            for Women, Lahore.
           </footer>
         </ThemeProvider>
       </body>

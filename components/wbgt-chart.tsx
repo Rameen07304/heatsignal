@@ -11,6 +11,8 @@ export interface ChartPoint {
   time: string;
   wbgt: number;
   temp?: number;
+  /** The usual WBGT for this date (average of previous years). */
+  normal?: number;
 }
 
 interface Props {
@@ -24,7 +26,7 @@ const AXIS = "hsl(var(--muted-foreground))";
 
 export function WbgtChart({ data, markers = [], height = 320 }: Props) {
   const hourly = data[0]?.time.length > 10;
-  const values = data.flatMap((d) => (d.temp == null ? [d.wbgt] : [d.wbgt, d.temp]));
+  const values = data.flatMap((d) => [d.wbgt, d.temp, d.normal].filter((v): v is number => v != null));
   // Always show at least 20–35 °C so every risk band is visible for context.
   const yMin = Math.min(20, Math.floor(Math.min(...values)) - 1);
   const yMax = Math.max(35, Math.ceil(Math.max(...values)) + 1);
@@ -65,9 +67,9 @@ export function WbgtChart({ data, markers = [], height = 320 }: Props) {
             labelFormatter={(t) => label(String(t))}
             formatter={(v, name) => {
               const n = Number(v);
-              return name === "wbgt"
-                ? [`${n.toFixed(1)} °C (${classifyRisk(n)})`, "WBGT"]
-                : [`${n.toFixed(1)} °C`, "Air temp"];
+              if (name === "wbgt") return [`${n.toFixed(1)} °C (${classifyRisk(n)})`, "WBGT"];
+              if (name === "normal") return [`${n.toFixed(1)} °C`, "Normal WBGT (5-yr avg)"];
+              return [`${n.toFixed(1)} °C`, "Air temp"];
             }}
           />
           {markers.map((m) => (
@@ -81,6 +83,9 @@ export function WbgtChart({ data, markers = [], height = 320 }: Props) {
           ))}
           {data[0]?.temp != null && (
             <Line dataKey="temp" stroke={AXIS} strokeWidth={1.5} strokeDasharray="4 4" dot={false} isAnimationActive={false} />
+          )}
+          {data.some((d) => d.normal != null) && (
+            <Line dataKey="normal" stroke="#38bdf8" strokeWidth={2} strokeDasharray="1 4" strokeLinecap="round" dot={false} isAnimationActive={false} />
           )}
           <Line
             dataKey="wbgt"
