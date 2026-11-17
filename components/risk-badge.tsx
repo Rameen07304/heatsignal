@@ -1,5 +1,8 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { aqiBand, formatAqi } from "@/lib/air";
+import { levelKey, useT } from "@/lib/i18n";
 import { compoundBand, RISK_COLORS, type RiskLevel } from "@/lib/risk";
 import { cn } from "@/lib/utils";
 
@@ -16,16 +19,17 @@ function ColorBadge({ color, pulse, className, children, title }: {
       className={cn(pulse && "animate-risk-pulse", className)}
       style={{ color, borderColor: `${color}80`, backgroundColor: `${color}1f`, ["--glow" as string]: `${color}66` }}
     >
-      <span className="mr-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+      <span className="me-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
       {children}
     </Badge>
   );
 }
 
 export function RiskBadge({ level, className }: { level: RiskLevel; className?: string }) {
+  const { t } = useT();
   return (
     <ColorBadge color={RISK_COLORS[level]} pulse={level === "High" || level === "Extreme"} className={className}>
-      {level}
+      {t(levelKey(level))}
     </ColorBadge>
   );
 }
@@ -42,10 +46,11 @@ export function AqiBadge({ aqi, short, className }: { aqi: number; short?: boole
 }
 
 export function CompoundBadge({ score, className }: { score: number; className?: string }) {
+  const { t } = useT();
   const band = compoundBand(score);
   return (
     <ColorBadge color={band.color} pulse={score > 50} className={className} title={band.description}>
-      {band.level} · {score}/100
+      {t(levelKey(band.level))} · {score}/100
     </ColorBadge>
   );
 }

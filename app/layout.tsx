@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { EarlyWarningBanner } from "@/components/early-warning-banner";
 import { Header } from "@/components/header";
+import { LanguageProvider } from "@/lib/i18n";
+import { CitiesProvider } from "@/lib/use-cities";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -17,8 +20,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body className="min-h-screen font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <Header />
-          <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
+          <LanguageProvider>
+            <CitiesProvider>
+              <Header />
+              <EarlyWarningBanner />
+              <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
           <footer className="no-print mx-auto max-w-7xl border-t px-4 py-6 text-xs text-muted-foreground">
             Weather and air-quality data by{" "}
             <a className="underline" href="https://open-meteo.com/" target="_blank" rel="noreferrer">
@@ -27,6 +33,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             (CC BY 4.0). HeatSignal is a decision-support tool, not medical advice. Team HeatSignal — Kinnaird College
             for Women, Lahore.
           </footer>
+            </CitiesProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

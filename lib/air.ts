@@ -90,12 +90,12 @@ function toAir(raw: AirResponse): AirForecast {
   return { hourly, byTime, current: hourly.find((p) => p.time.startsWith(now)) ?? null };
 }
 
-/** Today and tomorrow for many cities (enough for "now" and a 24-hour outlook). */
+/** Three days for many cities: enough for "now" and the 48-hour early warning. */
 export async function fetchAirMany(cities: Pick<City, "lat" | "lon">[]): Promise<AirForecast[]> {
   const raw = await fetchMany<AirResponse>(
-    (lats, lons) => `${BASE}?latitude=${lats}&longitude=${lons}&hourly=${VARS}&forecast_days=2&timezone=auto`,
+    (lats, lons) => `${BASE}?latitude=${lats}&longitude=${lons}&hourly=${VARS}&forecast_days=3&timezone=auto`,
     cities,
-    "heatsignal-air-v3",
+    "heatsignal-air-v4",
   );
   return raw.map(toAir);
 }

@@ -13,7 +13,7 @@ import { WORLD_CITIES, cityKey, type City } from "@/lib/cities";
 import { buildConditions, type CombinedHour } from "@/lib/conditions";
 import { aqiBand } from "@/lib/air";
 import { compoundBand, isCompoundEvent, uvBand } from "@/lib/risk";
-import { useMonitoredCities } from "@/lib/use-cities";
+import { useCities } from "@/lib/use-cities";
 import { fetchForecast } from "@/lib/weather";
 import { workRegimen } from "@/lib/work-rest";
 
@@ -65,7 +65,7 @@ function Output({ value }: { value: unknown }) {
 }
 
 export function LiveGenerator() {
-  const { cities } = useMonitoredCities();
+  const { cities } = useCities();
   const options = [...cities].sort((a, b) => a.name.localeCompare(b.name));
   const [key, setKey] = useState(cityKey(WORLD_CITIES.find((c) => c.name === "Lahore")!));
   const [steps, setSteps] = useState<Partial<Record<StageId, StepState>>>({});

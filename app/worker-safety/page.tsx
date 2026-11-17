@@ -14,7 +14,7 @@ import { WORLD_CITIES, cityKey, type City } from "@/lib/cities";
 import { buildConditions } from "@/lib/conditions";
 import { RISK_COLORS } from "@/lib/risk";
 import { useAsync } from "@/lib/use-async";
-import { useMonitoredCities } from "@/lib/use-cities";
+import { useCities } from "@/lib/use-cities";
 import { fetchForecast } from "@/lib/weather";
 import { INTENSITIES, heatFlag, workRegimen } from "@/lib/work-rest";
 
@@ -32,7 +32,7 @@ function cityFromUrl(p: Props["searchParams"]): City | null {
 }
 
 export default function WorkerSafetyPage({ searchParams }: Props) {
-  const { cities } = useMonitoredCities();
+  const { cities } = useCities();
   const fromUrl = cityFromUrl(searchParams);
   const [selected, setSelected] = useState<City>(fromUrl ?? DEFAULT);
   const options = [...cities].sort((a, b) => a.name.localeCompare(b.name));

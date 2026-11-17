@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { Search } from "lucide-react";
+import { FileDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,12 +12,17 @@ import { CityCard } from "@/components/city-card";
 import { AddCityDialog } from "@/components/city-search";
 import { CountUp } from "@/components/count-up";
 import { ErrorState } from "@/components/error-state";
+import { Leaderboard } from "@/components/leaderboard";
+import { UpcomingRisks } from "@/components/upcoming-risks";
 import type { MapMode } from "@/components/weather-map";
-import { AQI_BANDS, UNHEALTHY_AQI, aqiBand, formatAqi } from "@/lib/air";
+import { AQI_BANDS, aqiBand, formatAqi } from "@/lib/air";
 import { WORLD_CITIES, cityKey, type City } from "@/lib/cities";
 import type { Conditions } from "@/lib/conditions";
-import { COMPOUND_BANDS, RISK_BANDS, RISK_COLORS, compoundBand, isCompoundEvent, isElevated } from "@/lib/risk";
-import { ok, useConditions, useMonitoredCities } from "@/lib/use-cities";
+import { useT } from "@/lib/i18n";
+import { globalReport } from "@/lib/report";
+import { COMPOUND_BANDS, RISK_BANDS, RISK_COLORS, classifyRisk, compoundBand } from "@/lib/risk";
+import { CRITICAL_SCORE, isRising } from "@/lib/risk-forecast";
+import { ok, useCities } from "@/lib/use-cities";
 
 const WeatherMap = dynamic(() => import("@/components/weather-map"), {
   ssr: false,
@@ -33,11 +38,13 @@ const SORTS = {
 };
 type Sort = keyof typeof SORTS;
 
-function StatTile({ label, children, sub, color }: { label: string; children: React.ReactNode; sub?: string; color?: string }) {
+function StatTile({ icon, label, children, sub, color }: { icon: string; label: string; children: React.ReactNode; sub?: string; color?: string }) {
   return (
     <Card className="min-w-[200px] shrink-0 snap-start sm:min-w-0">
       <CardContent className="p-4">
-        <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
+        <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          <span aria-hidden="true">{icon}</span> {label}
+        </div>
         <div className="mt-1 text-3xl font-bold tracking-tight tabular-nums" style={{ color }}>{children}</div>
         {sub && <div className="mt-0.5 truncate text-xs text-muted-foreground">{sub}</div>}
       </CardContent>
@@ -48,8 +55,9 @@ function StatTile({ label, children, sub, color }: { label: string; children: Re
 const people = (list: { city: City }[]) => Math.round(list.reduce((s, { city }) => s + (city.pop ?? 0), 0));
 
 export default function Dashboard() {
-  const { cities, add, remove, reset } = useMonitoredCities();
-  const { data, airFailed, retry } = useConditions(cities);
+  const { t } = useT();
+  const { cities, add, remove, reset, data, airFailed, retry, updatedAt } = useCities();
+  const [view, setView] = useState<"map" | "rankings">("map");
   const [mapMode, setMapMode] = useState<MapMode>("compound");
   const [sort, setSort] = useState<Sort>("compound");
   const [filter, setFilter] = useState("");
@@ -62,15 +70,13 @@ export default function Dashboard() {
   const failed = cities.length > 0 && cities.every((city) => data[cityKey(city)] instanceof Error);
   const pending = loaded.length === 0 && !failed;
 
-  const hot = loaded.filter(({ c }) => isElevated(c.days[0].risk));
-  const smoggy = loaded.filter(({ c }) => (c.now.air?.aqi ?? 0) >= UNHEALTHY_AQI);
-  const compoundToday = loaded.filter(({ c }) =>
-    c.hours.some((h) => h.time.startsWith(c.days[0].date) && h.air && isCompoundEvent(h.wbgt, h.air.aqi)),
+  const critical = loaded.filter(({ c }) => (c.days[0].maxScore ?? 0) >= CRITICAL_SCORE);
+  const rising = loaded.filter(({ c }) => isRising(c));
+  const hottest = loaded.reduce<{ city: City; c: Conditions } | null>((b, r) => (!b || r.c.days[0].maxWbgt > b.c.days[0].maxWbgt ? r : b), null);
+  const worstAir = loaded.reduce<{ city: City; c: Conditions } | null>(
+    (b, r) => (r.c.now.air && (!b || r.c.now.air.aqi > b.c.now.air!.aqi) ? r : b),
+    null,
   );
-  const worst = loaded.reduce<{ city: City; score: number } | null>((best, { city, c }) => {
-    const s = c.days[0].maxScore;
-    return s != null && (!best || s > best.score) ? { city, score: s } : best;
-  }, null);
 
   const monitored = useMemo(() => new Set(cities.map(cityKey)), [cities]);
   const q = filter.trim().toLowerCase();
@@ -91,98 +97,124 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Is it safe to be outside?</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("isItSafe")}</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             Live heat stress, air quality and UV for {cities.length} cities, combined into one compound health risk
             score. Heat and polluted air together are more dangerous than either alone — HeatSignal watches for both.
           </p>
         </div>
-        <AddCityDialog onAdd={add} monitored={monitored} />
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" disabled={!loaded.length} onClick={() => globalReport(loaded)}>
+            <FileDown /> {t("downloadReport")}
+          </Button>
+          <AddCityDialog onAdd={add} monitored={monitored} />
+        </div>
       </div>
 
       {/* Stats: a swipeable strip on phones, a grid on larger screens. */}
       <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-5">
-        <StatTile label="Cities monitored" sub={pending ? "Loading…" : `${loaded.length} with live data`}>
+        <StatTile icon="🌍" label={t("citiesMonitored")} sub={updatedAt ? `Updated ${updatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Loading…"}>
           <CountUp value={cities.length} />
         </StatTile>
         <StatTile
-          label="High+ heat today"
-          color={hot.length ? RISK_COLORS.High : undefined}
-          sub={pending ? "Loading…" : `≈ ${people(hot).toLocaleString("en")} M people`}
+          icon="🔴"
+          label={t("atCritical")}
+          color={critical.length ? COMPOUND_BANDS[3].color : undefined}
+          sub={pending ? "Loading…" : `today’s peak ≥ ${CRITICAL_SCORE} · ≈ ${people(critical).toLocaleString("en")} M people`}
         >
-          {pending ? "–" : <CountUp value={hot.length} />}
+          {pending || airFailed ? "–" : <CountUp value={critical.length} />}
         </StatTile>
         <StatTile
-          label="Unhealthy+ air now"
-          color={smoggy.length ? aqiBand(UNHEALTHY_AQI).color : undefined}
-          sub={airFailed ? "Air-quality feed unavailable" : pending ? "Loading…" : `≈ ${people(smoggy).toLocaleString("en")} M people`}
+          icon="🌡️"
+          label={t("highestWbgt")}
+          color={hottest ? RISK_COLORS[classifyRisk(hottest.c.days[0].maxWbgt)] : undefined}
+          sub={hottest ? `${hottest.city.name}, ${hottest.city.country}` : "Loading…"}
         >
-          {pending || airFailed ? "–" : <CountUp value={smoggy.length} />}
+          {hottest ? <><CountUp value={hottest.c.days[0].maxWbgt} decimals={1} /><span className="text-base">°C</span></> : "–"}
         </StatTile>
         <StatTile
-          label="Heat + bad air together"
-          color={compoundToday.length ? COMPOUND_BANDS[3].color : undefined}
-          sub={pending ? "Loading…" : "cities with a compound event today"}
+          icon="💨"
+          label={t("worstAqi")}
+          color={worstAir ? aqiBand(worstAir.c.now.air!.aqi).color : undefined}
+          sub={worstAir ? `${worstAir.city.name} · ${aqiBand(worstAir.c.now.air!.aqi).label}` : airFailed ? "Air-quality feed unavailable" : "Loading…"}
         >
-          {pending || airFailed ? "–" : <CountUp value={compoundToday.length} />}
+          {worstAir ? (worstAir.c.now.air!.aqi > 500 ? "500+" : <CountUp value={Math.round(worstAir.c.now.air!.aqi)} />) : "–"}
         </StatTile>
         <StatTile
-          label="Highest compound risk today"
-          color={worst ? compoundBand(worst.score).color : undefined}
-          sub={worst ? `${worst.city.name} · ${compoundBand(worst.score).level}` : pending ? "Loading…" : undefined}
+          icon="⚠️"
+          label={t("risingRisks")}
+          color={rising.length ? COMPOUND_BANDS[2].color : undefined}
+          sub={pending ? "Loading…" : "next 48 h peak above today’s"}
         >
-          {worst ? <><CountUp value={worst.score} /><span className="text-base text-muted-foreground">/100</span></> : "–"}
+          {pending || airFailed ? "–" : <CountUp value={rising.length} />}
         </StatTile>
       </div>
 
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Tabs value={mapMode} onValueChange={(v) => setMapMode(v as MapMode)}>
-            <TabsList aria-label="Map layer">
-              <TabsTrigger value="compound">Compound risk</TabsTrigger>
-              <TabsTrigger value="heat">Heat</TabsTrigger>
-              <TabsTrigger value="air">Air quality</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            {mapMode === "compound" &&
-              COMPOUND_BANDS.map((b) => (
-                <span key={b.level} className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: b.color }} />
-                  {b.level}
-                </span>
-              ))}
-            {mapMode === "heat" &&
-              RISK_BANDS.map((b, i) => (
-                <span key={b.level} className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: b.color }} />
-                  {b.level} {i === 0 ? "< 27" : i === RISK_BANDS.length - 1 ? `≥ ${b.min}` : `${b.min}–${RISK_BANDS[i + 1].min}`} °C
-                </span>
-              ))}
-            {mapMode === "air" &&
-              AQI_BANDS.map((b) => (
-                <span key={b.label} className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: b.color }} />
-                  {b.label}
-                </span>
-              ))}
-          </div>
-        </div>
-        <WeatherMap cities={cities} data={data} mode={mapMode} />
-        <p className="text-xs text-muted-foreground">
-          {mapMode === "compound"
-            ? "Colour and size: today’s peak compound score (heat + air quality + UV)."
-            : mapMode === "heat"
-              ? "Colour: today’s peak heat stress (WBGT)."
-              : "Colour: US Air Quality Index right now."}{" "}
-          Click a city for details.
-        </p>
+        <Tabs value={view} onValueChange={(v) => setView(v as typeof view)}>
+          <TabsList>
+            <TabsTrigger value="map">{t("map")}</TabsTrigger>
+            <TabsTrigger value="rankings">{t("globalRankings")}</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {view === "map" ? (
+          <>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <Tabs value={mapMode} onValueChange={(v) => setMapMode(v as MapMode)}>
+                <TabsList aria-label="Map layer">
+                  <TabsTrigger value="compound">Compound risk</TabsTrigger>
+                  <TabsTrigger value="heat">Heat</TabsTrigger>
+                  <TabsTrigger value="air">Air quality</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                {mapMode === "compound" &&
+                  COMPOUND_BANDS.map((b) => (
+                    <span key={b.level} className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: b.color }} />
+                      {b.level}
+                    </span>
+                  ))}
+                {mapMode === "heat" &&
+                  RISK_BANDS.map((b, i) => (
+                    <span key={b.level} className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: b.color }} />
+                      {b.level} {i === 0 ? "< 27" : i === RISK_BANDS.length - 1 ? `≥ ${b.min}` : `${b.min}–${RISK_BANDS[i + 1].min}`} °C
+                    </span>
+                  ))}
+                {mapMode === "air" &&
+                  AQI_BANDS.map((b) => (
+                    <span key={b.label} className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: b.color }} />
+                      {b.label}
+                    </span>
+                  ))}
+              </div>
+            </div>
+            <WeatherMap cities={cities} data={data} mode={mapMode} />
+            <p className="text-xs text-muted-foreground">
+              {mapMode === "compound"
+                ? "Colour and size: today’s peak compound score (heat + air quality + UV)."
+                : mapMode === "heat"
+                  ? "Colour: today’s peak heat stress (WBGT)."
+                  : "Colour: US Air Quality Index right now."}{" "}
+              Click a city for details.
+            </p>
+          </>
+        ) : pending ? (
+          <Skeleton className="h-96 w-full rounded-xl" />
+        ) : (
+          <Leaderboard rows={loaded} />
+        )}
       </div>
+
+      <UpcomingRisks />
 
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-lg font-semibold tracking-tight">Monitored cities</h2>
+            <h2 className="text-lg font-semibold tracking-tight">{t("monitoredCities")}</h2>
             <Tabs value={sort} onValueChange={(v) => setSort(v as Sort)}>
               <TabsList aria-label="Sort cities by">
                 {Object.entries(SORTS).map(([k, s]) => <TabsTrigger key={k} value={k}>{s.label}</TabsTrigger>)}
@@ -190,15 +222,8 @@ export default function Dashboard() {
             </Tabs>
           </div>
           <div className="relative w-full sm:w-64">
-            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              aria-label="Filter monitored cities"
-              placeholder="Filter cities…"
-              className="pl-9"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            />
+            <Search className="pointer-events-none absolute start-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input type="search" aria-label="Filter monitored cities" placeholder="Filter cities…" className="ps-9" value={filter} onChange={(e) => setFilter(e.target.value)} />
           </div>
         </div>
 
@@ -213,19 +238,12 @@ export default function Dashboard() {
           </div>
         ) : visible.length === 0 ? (
           <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No monitored city matches “{filter}”. Use Add City to search the whole world.
+            No monitored city matches “{filter}”. Use {t("addCity")} to search the whole world.
           </p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {visible.map((city, i) => (
-              <CityCard
-                key={cityKey(city)}
-                index={i}
-                city={city}
-                state={data[cityKey(city)]}
-                onRetry={retry}
-                onRemove={() => remove(city)}
-              />
+              <CityCard key={cityKey(city)} index={i} city={city} state={data[cityKey(city)]} onRetry={retry} onRemove={() => remove(city)} />
             ))}
           </div>
         )}
@@ -241,10 +259,14 @@ export default function Dashboard() {
               Reset to the {WORLD_CITIES.length} default cities
             </Button>
           )}
-          {!pending && !airFailed && smoggy.length > 0 && (
+          {worstAir && (
             <span className="text-xs text-muted-foreground">
-              Worst air now: {smoggy.sort((a, b) => b.c.now.air!.aqi - a.c.now.air!.aqi)[0].city.name}, AQI{" "}
-              {formatAqi(smoggy[0].c.now.air!.aqi)}
+              Highest compound score today:{" "}
+              {(() => {
+                const top = [...loaded].sort((a, b) => (b.c.days[0].maxScore ?? -1) - (a.c.days[0].maxScore ?? -1))[0];
+                return top?.c.days[0].maxScore != null ? `${top.city.name}, ${top.c.days[0].maxScore}/100 (${compoundBand(top.c.days[0].maxScore).level})` : "–";
+              })()}
+              {" · "}worst air now: {worstAir.city.name}, AQI {formatAqi(worstAir.c.now.air!.aqi)}
             </span>
           )}
         </div>
