@@ -51,6 +51,11 @@
   a {
     text-underline-offset: 3px;
   }
+  /* Grid items default to their content's minimum width, so a wide table or long word pushes the
+     whole page past a phone screen. Let every grid cell shrink to its track instead. */
+  .grid > * {
+    min-width: 0;
+  }
 }
 
 @layer components {

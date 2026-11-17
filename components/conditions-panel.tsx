@@ -68,7 +68,7 @@ export function ConditionsPanel({ now, today, minTemp }: { now: CombinedHour; to
         <CardContent className="flex flex-col items-center gap-2">
           {air ? (
             <>
-              <GaugeRing label="US AQI" fraction={air.aqi / 300} color={aqiBand(air.aqi).color} value={formatAqi(air.aqi)} size={120} sub={aqiBand(air.aqi).label} />
+              <GaugeRing label="US AQI" fraction={air.aqi / 300} color={aqiBand(air.aqi).color} value={formatAqi(air.aqi)} size={120} sub={aqiBand(air.aqi).label.replace(" for sensitive groups", " (sensitive)")} />
               <div className="flex flex-wrap justify-center gap-1">
                 <Pill label="PM2.5" value={air.pm25} />
                 <Pill label="PM10" value={air.pm10} />

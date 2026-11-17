@@ -23,7 +23,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <LanguageProvider>
             <CitiesProvider>
               <Header />
-              <div className="min-w-0 overflow-x-clip lg:ms-60">
+              <div className="min-w-0 lg:ms-60">
                 <main className="mx-auto max-w-[1400px] px-4 py-6 lg:px-8">
                   <EarlyWarningBanner />
                   {children}

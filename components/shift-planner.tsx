@@ -105,17 +105,17 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
 
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-lg border p-3">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">Productive time</div>
+                <div className="text-xs text-muted-foreground">Productive time</div>
                 <div className="text-2xl font-bold tabular-nums">{(workMinutes / 60).toFixed(1)} h</div>
                 <div className="text-xs text-muted-foreground">of {length} h on site{stops ? ` · ${stops} h with no outdoor work` : ""}</div>
               </div>
               <div className="rounded-lg border p-3">
-                <div className="flex items-center gap-1 text-xs uppercase tracking-wide text-muted-foreground"><Droplets className="h-3 w-3" /> Water per worker</div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground"><Droplets className="h-3 w-3" /> Water per worker</div>
                 <div className="text-2xl font-bold tabular-nums">{water.toFixed(1)} L</div>
                 <div className="text-xs text-muted-foreground">{hot ? "1 cup (250 ml) every 15–20 min in the hot hours" : "about 2 cups an hour"}</div>
               </div>
               <div className="rounded-lg border p-3">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">Air during shift</div>
+                <div className="text-xs text-muted-foreground">Air during shift</div>
                 <div className="text-2xl font-bold tabular-nums">{maxAqi ? `AQI ${formatAqi(maxAqi)}` : "–"}</div>
                 <div className="text-xs text-muted-foreground">{maxAqi >= UNHEALTHY_AQI ? "Masks required" : maxAqi ? "Peak during the shift" : "No air-quality data"}</div>
               </div>

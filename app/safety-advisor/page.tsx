@@ -100,7 +100,7 @@ function SchoolSafety() {
           </div>
           <div className="site-card overflow-hidden rounded-lg border-2 bg-card" style={{ borderColor: STATUS_COLOR[status] }}>
             <div className="p-5 text-white" style={{ backgroundColor: STATUS_COLOR[status] }}>
-              <div className="text-xs font-semibold uppercase tracking-widest opacity-90">School outdoor activity status</div>
+              <div className="text-sm font-medium opacity-95">School outdoor activity status</div>
               <div className="text-4xl font-black">{s.name}</div>
               <div className="mt-1">{s.text}</div>
               <div className="mt-2 text-sm opacity-95">
@@ -276,7 +276,7 @@ function EventSafety() {
       {c && date && slot.length > 0 && (
         <>
           <div className="rounded-lg p-5 text-white" style={{ backgroundColor: STATUS_COLOR[status] }}>
-            <div className="text-xs font-semibold uppercase tracking-widest opacity-90">Event risk rating</div>
+            <div className="text-sm font-medium opacity-95">Event risk rating</div>
             <div className="text-4xl font-black">{EVENT[status]}</div>
             <div className="mt-1 text-sm opacity-95">
               Worst hour {worst?.time.slice(11, 16)}: {worst && hourReason(worst)}

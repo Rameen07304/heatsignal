@@ -121,7 +121,7 @@ export default function Dashboard() {
         <ErrorState message="Couldn’t load weather data. Check your connection and try again." onRetry={retry} />
       ) : (
         <>
-          <section aria-label="Summary" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+          <section aria-label="Summary" className="grid grid-cols-2 [&>*]:min-w-0 gap-3 md:grid-cols-3 xl:grid-cols-5">
             <Kpi label={t("citiesMonitored")} sub={pending ? "Loading…" : `${loaded.length} with live data`}>
               <CountUp value={cities.length} />
             </Kpi>
@@ -142,8 +142,8 @@ export default function Dashboard() {
             </Kpi>
           </section>
 
-          <section className="grid gap-4 xl:grid-cols-3">
-            <Card className="flex flex-col xl:col-span-2">
+          <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+            <Card className="flex min-w-0 flex-col xl:col-span-2">
               <CardHeader className="flex-row flex-wrap items-center justify-between gap-3 space-y-0 pb-3">
                 <div>
                   <CardTitle className="text-base">Risk map</CardTitle>
@@ -174,7 +174,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="min-w-0">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Highest risk today</CardTitle>
                 <CardDescription>Each city’s peak compound score today.</CardDescription>

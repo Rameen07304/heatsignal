@@ -106,7 +106,7 @@ export default function WorkerSafetyPage({ searchParams }: Props) {
                   const flag = heatFlag(r);
                   return (
                     <div key={i.key} className="rounded-lg border p-3" style={{ borderColor: `${r.color}80`, backgroundColor: `${r.color}14` }}>
-                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{i.label} work</div>
+                      <div className="text-xs font-medium text-muted-foreground">{i.label} work</div>
                       <div className="mt-1 flex items-center gap-2 font-semibold"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: r.color }} />{r.label}</div>
                       <div className="text-xs text-muted-foreground">{flag.name} · e.g. {i.examples}</div>
                     </div>

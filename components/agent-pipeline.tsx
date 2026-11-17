@@ -31,7 +31,7 @@ function Node({ stage, status }: { stage: (typeof STAGES)[number]; status: Stage
         </span>
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold">{stage.name}</div>
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">{stage.ai ? "Gemini agent" : "Deterministic"}</div>
+          <div className="text-xs text-muted-foreground">{stage.ai ? "Gemini agent" : "Deterministic"}</div>
         </div>
       </div>
       <p className="mt-2 text-xs text-muted-foreground">{stage.role}</p>

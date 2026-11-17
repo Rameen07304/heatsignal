@@ -42,7 +42,7 @@ export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; 
       <div className="site-card overflow-hidden rounded-lg border-2 bg-card" style={{ borderColor: flag.color }}>
         <div className="flex flex-wrap items-center justify-between gap-3 p-5 text-white" style={{ backgroundColor: flag.color }}>
           <div>
-            <div className="text-xs font-semibold uppercase tracking-widest opacity-90">Heat safety notice · today</div>
+            <div className="text-sm font-medium opacity-95">Heat safety notice · today</div>
             <div className="text-3xl font-black uppercase tracking-tight">{flag.name}</div>
             <div className="text-sm opacity-95">
               {flag.text}
