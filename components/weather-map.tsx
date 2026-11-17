@@ -34,7 +34,7 @@ export default function WeatherMap({ cities, data, mode }: Props) {
 
   return (
     // z-0 keeps Leaflet's internal z-indexes (up to 1000) below dialogs.
-    <div className="relative z-0 h-[300px] overflow-hidden rounded-lg border sm:h-[440px]">
+    <div className="relative z-0 h-full min-h-[300px] overflow-hidden rounded-lg border sm:min-h-[420px]">
       <MapContainer
         bounds={bounds}
         center={bounds ? undefined : [20, 40]}

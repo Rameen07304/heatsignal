@@ -88,7 +88,7 @@ export default function Dashboard() {
   // Show the values at each city’s peak hour, so the numbers explain the score beside them.
   const top = [...loaded]
     .sort((a, b) => (b.c.days[0].maxScore ?? -1) - (a.c.days[0].maxScore ?? -1))
-    .slice(0, 8)
+    .slice(0, 6)
     .map((r) => ({ ...r, peak: worstHour(hoursOf(r.c, r.c.days[0].date)) ?? r.c.now }));
 
   const monitored = useMemo(() => new Set(cities.map(cityKey)), [cities]);
@@ -143,7 +143,7 @@ export default function Dashboard() {
             >
               {worstAir ? formatAqi(worstAir.c.now.air!.aqi) : "–"}
             </Kpi>
-            <Kpi label={t("risingRisks")} sub="Reaching High or Critical in 48 h">
+            <Kpi label={t("risingRisks")} sub="High or worse in 48 h">
               {pending || airFailed ? "–" : <CountUp value={upcoming.length} />}
             </Kpi>
           </section>
@@ -187,15 +187,13 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="p-0">
                 {pending ? (
-                  <div className="space-y-2 p-4">{Array.from({ length: 8 }, (_, i) => <Skeleton key={i} className="h-8 w-full" />)}</div>
+                  <div className="space-y-2 p-4">{Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="h-8 w-full" />)}</div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="ps-4">City</TableHead>
-                        <TableHead className="text-right">WBGT</TableHead>
-                        <TableHead className="text-right">AQI</TableHead>
-                        <TableHead className="pe-4">Score</TableHead>
+                        <TableHead className="ps-4">City · at peak hour</TableHead>
+                        <TableHead className="pe-4 text-right">Score</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -203,14 +201,14 @@ export default function Dashboard() {
                         <TableRow key={cityKey(city)}>
                           <TableCell className="ps-4">
                             <Link href={cityHref(city)} className="font-medium hover:underline">{city.name}</Link>
-                            <div className="text-xs text-muted-foreground">
-                              {city.country} · {peak.time.slice(11, 16)}
-                              {peak.air && peak.air.dust > 100 ? " · dust" : ""}
+                            <div className="text-xs text-muted-foreground">{city.country} · peak {peak.time.slice(11, 16)}</div>
+                            <div className="flex flex-wrap gap-x-2 text-xs text-muted-foreground">
+                              <span className="whitespace-nowrap">WBGT {peak.wbgt.toFixed(1)}°</span>
+                              {peak.air && <span className="whitespace-nowrap">AQI {formatAqi(peak.air.aqi)}</span>}
+                              {peak.air && peak.air.dust > 100 && <span className="whitespace-nowrap">dust</span>}
                             </div>
                           </TableCell>
-                          <TableCell className="text-right">{peak.wbgt.toFixed(1)}°</TableCell>
-                          <TableCell className="text-right">{peak.air ? formatAqi(peak.air.aqi) : "–"}</TableCell>
-                          <TableCell className="pe-4">{c.days[0].maxScore != null ? <CompoundBadge score={c.days[0].maxScore} /> : "–"}</TableCell>
+                          <TableCell className="pe-4 text-right">{c.days[0].maxScore != null ? <CompoundBadge score={c.days[0].maxScore} /> : "–"}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
