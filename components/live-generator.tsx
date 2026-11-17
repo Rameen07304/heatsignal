@@ -60,7 +60,7 @@ function Output({ value }: { value: unknown }) {
   if (value == null) return null;
   if (typeof value === "string") return <p className="text-sm">{value}</p>;
   return (
-    <pre className="max-h-56 overflow-auto rounded-md bg-muted/60 p-2 text-[11px] leading-relaxed">{JSON.stringify(value, null, 2)}</pre>
+    <pre className="max-h-56 overflow-auto rounded-md bg-muted/60 p-2 text-xs leading-relaxed">{JSON.stringify(value, null, 2)}</pre>
   );
 }
 
@@ -192,14 +192,14 @@ export function LiveGenerator() {
                 const st = steps[s.id];
                 if (!st) return null;
                 return (
-                  <li key={s.id} className="animate-page-in rounded-lg border p-3">
+                  <li key={s.id} className="rounded-lg border p-3">
                     <div className="flex flex-wrap items-center gap-2">
                       {ICON[st.status]}
                       <span className="text-sm font-semibold">{i + 1}. {s.name}</span>
                       <span className="text-xs text-muted-foreground">
                         {st.status === "running" ? RUNNING_TEXT[s.id](selected?.name ?? "") : st.ms != null ? `${st.ms} ms` : ""}
                       </span>
-                      {s.ai && st.status === "done" && <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary">Gemini</span>}
+                      {s.ai && st.status === "done" && <span className="rounded bg-primary/15 px-1.5 py-0.5 text-xs font-semibold text-primary">Gemini</span>}
                     </div>
                     {st.note && <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">{st.note}</p>}
                     {st.output != null && <div className="mt-2"><Output value={st.output} /></div>}
@@ -212,7 +212,7 @@ export function LiveGenerator() {
       </Card>
 
       {result && (
-        <Card className="animate-page-in">
+        <Card >
           <CardHeader>
             <CardTitle>Final alert — {result.city.name}</CardTitle>
             <CardDescription>Combined output of all agents.</CardDescription>

@@ -78,7 +78,7 @@ export default function ComparePage({ params, searchParams }: Props) {
         <span style={{ color: COLORS[1] }}>{b?.name ?? "?"}</span>
       </h1>
 
-      {result.loading && <Skeleton className="h-96 w-full rounded-xl" />}
+      {result.loading && <Skeleton className="h-96 w-full rounded-lg" />}
       {result.error && <ErrorState message="Couldn’t load both cities." onRetry={result.retry} />}
 
       {pair && a && b && (() => {

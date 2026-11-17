@@ -95,7 +95,7 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Prop
           <p className="text-lg font-semibold">{headline}</p>
           {avoid.length > 0 && (
             <p className="mt-1 text-sm">
-              <span className="font-semibold" style={{ color: REGIMENS[3].color }}>Avoid: {list(avoid)}.</span>{" "}
+              <span className="font-semibold" style={{ color: "#b91c1c" }}>Avoid: {list(avoid)}.</span>{" "}
               Move this activity to the safe hours or indoors.
             </p>
           )}
@@ -103,7 +103,7 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Prop
 
         <div role="img" aria-label={`Hour-by-hour plan for ${formatDay(day)}: ${headline}`}>
           <div className="flex items-center gap-2">
-            <span className="w-10 shrink-0 text-[11px] text-muted-foreground">Heat</span>
+            <span className="w-10 shrink-0 text-xs text-muted-foreground">Heat</span>
             <div className="flex flex-1 gap-px">
               {hours.map((h) => (
                 <div
@@ -117,7 +117,7 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Prop
           </div>
           {hasAir && (
             <div className="mt-1.5 flex items-center gap-2">
-              <span className="w-10 shrink-0 text-[11px] text-muted-foreground">Air</span>
+              <span className="w-10 shrink-0 text-xs text-muted-foreground">Air</span>
               <div className="flex flex-1 gap-px">
                 {hours.map((h) => (
                   <div
@@ -134,7 +134,7 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Prop
               </div>
             </div>
           )}
-          <div className="ml-12 mt-1 flex justify-between text-[11px] tabular-nums text-muted-foreground">
+          <div className="ml-12 mt-1 flex justify-between text-xs tabular-nums text-muted-foreground">
             {["00:00", "06:00", "12:00", "18:00", "24:00"].map((t) => <span key={t}>{t}</span>)}
           </div>
         </div>

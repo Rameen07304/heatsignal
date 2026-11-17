@@ -39,7 +39,7 @@ export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; 
         </Button>
       </div>
 
-      <div className="site-card overflow-hidden rounded-xl border-2 bg-card" style={{ borderColor: flag.color }}>
+      <div className="site-card overflow-hidden rounded-lg border-2 bg-card" style={{ borderColor: flag.color }}>
         <div className="flex flex-wrap items-center justify-between gap-3 p-5 text-white" style={{ backgroundColor: flag.color }}>
           <div>
             <div className="text-xs font-semibold uppercase tracking-widest opacity-90">Heat safety notice · today</div>
@@ -94,7 +94,7 @@ export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; 
             <p className="mt-2 text-xs font-semibold">Emergency: {emergencyLine(city.country)}</p>
           </section>
         </div>
-        <p className="border-t px-5 py-2 text-[11px] text-muted-foreground">
+        <p className="border-t px-5 py-2 text-xs text-muted-foreground">
           HeatSignal · ACGIH work–rest limits (OSHA Technical Manual) for healthy, heat-acclimatised workers. Unacclimatised,
           older or unwell workers need more rest. Not a substitute for a site safety officer.
         </p>

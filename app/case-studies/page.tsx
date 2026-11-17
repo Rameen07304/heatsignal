@@ -208,13 +208,13 @@ function CaseStudyCard({ c }: { c: CaseStudy }) {
           </CardDescription>
           <p className="mt-3 text-sm leading-relaxed">{c.summary}</p>
         </div>
-        <div className="rounded-xl border p-4 text-right" style={{ borderColor: `${accent}66`, backgroundColor: `${accent}14` }}>
+        <div className="rounded-lg border p-4 text-right" style={{ borderColor: `${accent}66`, backgroundColor: `${accent}14` }}>
           <div className="text-4xl font-black tracking-tight tabular-nums" style={{ color: accent }}>{c.hero.value}</div>
           <div className="text-xs text-muted-foreground">{c.hero.label}</div>
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
-        {archive.loading && <Skeleton className="h-80 w-full rounded-xl" />}
+        {archive.loading && <Skeleton className="h-80 w-full rounded-lg" />}
         {archive.error && <ErrorState message="Couldn’t load archive data." onRetry={archive.retry} />}
         {data && !f && <p className="text-sm text-muted-foreground">No archive data returned for this period.</p>}
 

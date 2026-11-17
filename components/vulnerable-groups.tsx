@@ -1,8 +1,9 @@
+import { Baby, HardHat, HeartPulse, PersonStanding, Users, Wind, type LucideIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CombinedHour } from "@/lib/conditions";
 
 interface Group {
-  icon: string;
+  icon: LucideIcon;
   name: string;
   /** Whether this group is at risk under these conditions. */
   when: (h: { wbgt: number; aqi: number; pm25: number; score: number; uv: number }) => boolean;
@@ -12,42 +13,42 @@ interface Group {
 
 const GROUPS: Group[] = [
   {
-    icon: "👷",
+    icon: HardHat,
     name: "Outdoor workers",
     when: (h) => h.wbgt >= 28 || h.aqi >= 100,
     why: "WBGT ≥ 28 °C or AQI ≥ 100",
     advice: "Follow the work-rest schedule, drink about 1 litre an hour, and wear an N95 if AQI is over 150.",
   },
   {
-    icon: "👴",
+    icon: PersonStanding,
     name: "Elderly (65+)",
     when: (h) => h.score >= 40,
     why: "compound score ≥ 40",
     advice: "Stay in the coolest room during the afternoon; family should check in twice a day.",
   },
   {
-    icon: "🧒",
+    icon: Baby,
     name: "Children",
     when: (h) => h.score >= 50 || h.uv >= 8,
     why: "compound score ≥ 50 or UV ≥ 8",
     advice: "Move play and sport indoors at midday; hats, water and shade on the way to school.",
   },
   {
-    icon: "🫁",
+    icon: Wind,
     name: "Respiratory conditions",
     when: (h) => h.aqi >= 100 || h.pm25 >= 35,
     why: "AQI ≥ 100 or PM2.5 ≥ 35 µg/m³",
     advice: "Keep inhalers at hand, keep windows closed, and avoid exertion outdoors.",
   },
   {
-    icon: "❤️",
+    icon: HeartPulse,
     name: "Cardiovascular patients",
     when: (h) => h.wbgt >= 30 && h.aqi >= 75,
     why: "WBGT ≥ 30 °C and AQI ≥ 75",
     advice: "Heat and polluted air together strain the heart: rest indoors and seek care for chest pain.",
   },
   {
-    icon: "🤰",
+    icon: Users,
     name: "Pregnant women",
     when: (h) => h.score >= 50,
     why: "compound score ≥ 50",
@@ -81,17 +82,17 @@ export function VulnerableGroups({ hour, peak }: { hour: CombinedHour; peak?: Co
             return (
               <div
                 key={g.name}
-                className={`rounded-lg border p-3 transition-opacity ${on ? "border-orange-500/50 bg-orange-500/10" : "opacity-50"}`}
+                className={`rounded-lg border p-3 ${on ? "border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40" : "bg-card"}`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-xl" aria-hidden="true">{g.icon}</span>
+                  <g.icon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
                   <span className="font-semibold">{g.name}</span>
-                  <span className={`ml-auto text-[10px] font-semibold uppercase ${on ? "text-orange-500" : "text-muted-foreground"}`}>
+                  <span className={`ms-auto rounded-full px-2 py-0.5 text-xs font-medium ${on ? "bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-100" : "bg-muted text-muted-foreground"}`}>
                     {on ? "At risk" : "OK"}
                   </span>
                 </div>
-                <p className="mt-1.5 text-sm">{on ? g.advice : "No special precautions needed today."}</p>
-                <p className="mt-1 text-[11px] text-muted-foreground">Flagged when {g.why}.</p>
+                <p className={`mt-1.5 text-sm ${on ? "" : "text-muted-foreground"}`}>{on ? g.advice : "No special precautions needed today."}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Flagged when {g.why}.</p>
               </div>
             );
           })}

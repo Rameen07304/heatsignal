@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { X } from "lucide-react";
+import { ChevronDown, TriangleAlert, X } from "lucide-react";
 import { cityHref, cityKey, type City } from "@/lib/cities";
 import { useT } from "@/lib/i18n";
 import { upcomingRisk, type Upcoming } from "@/lib/risk-forecast";
@@ -22,7 +22,7 @@ export function useUpcoming(): { city: City; u: Upcoming }[] {
     .sort((a, b) => (a.u.severity === b.u.severity ? a.u.hoursUntil - b.u.hoursUntil : a.u.severity === "critical" ? -1 : 1));
 }
 
-/** Sticky 48-hour early-warning banners, shown on every page under the header. */
+/** One compact 48-hour early-warning alert at the top of every page. */
 export function EarlyWarningBanner() {
   const { t } = useT();
   const upcoming = useUpcoming();
@@ -37,8 +37,7 @@ export function EarlyWarningBanner() {
   }, []);
 
   const id = (city: City, u: Upcoming) => `${cityKey(city)}|${u.severity}`;
-  const dismiss = (key: string) => {
-    const next = new Set(dismissed).add(key);
+  const save = (next: Set<string>) => {
     setDismissed(next);
     try {
       sessionStorage.setItem(DISMISSED_KEY, JSON.stringify(Array.from(next)));
@@ -47,44 +46,54 @@ export function EarlyWarningBanner() {
 
   const list = upcoming.filter(({ city, u }) => !dismissed.has(id(city, u)));
   if (!list.length) return null;
+  const critical = list.some(({ u }) => u.severity === "critical");
   const shown = expanded ? list : list.slice(0, VISIBLE);
 
   return (
-    <div className="no-print sticky top-14 z-30 border-b bg-background/90 backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl space-y-1 px-4 py-2">
-        {shown.map(({ city, u }, i) => {
-          const critical = u.severity === "critical";
-          return (
-            <div
-              key={id(city, u)}
-              role="alert"
-              className={cn(
-                "flex animate-slide-down items-center gap-3 rounded-lg border px-3 py-1.5 text-sm",
-                critical ? "animate-risk-pulse border-red-500/60 bg-red-500/15" : "border-yellow-500/60 bg-yellow-500/10",
-              )}
-              style={{ animationDelay: `${i * 60}ms`, ["--glow" as string]: "rgba(239,68,68,.45)" }}
-            >
-              <span aria-hidden="true">{critical ? "🚨" : "⚠️"}</span>
-              <span className="min-w-0 flex-1">
-                {critical
-                  ? t("bannerCritical", { city: city.name, hours: u.hoursUntil })
-                  : t("bannerHigh", { city: city.name, hours: u.hoursUntil, score: u.peakScore })}
-              </span>
-              <Link href={cityHref(city)} className="shrink-0 font-medium underline-offset-2 hover:underline">
-                {t("viewDetails")} →
-              </Link>
-              <button type="button" aria-label={t("dismiss")} onClick={() => dismiss(id(city, u))} className="shrink-0 rounded p-1 hover:bg-muted">
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          );
-        })}
-        {list.length > VISIBLE && (
-          <button type="button" onClick={() => setExpanded(!expanded)} className="px-1 text-xs text-muted-foreground hover:text-foreground">
-            {expanded ? "Show fewer" : t("moreWarnings", { n: list.length - VISIBLE })}
-          </button>
-        )}
+    <section
+      role="alert"
+      className={cn(
+        "no-print mb-6 rounded-lg border",
+        critical ? "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/40" : "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40",
+      )}
+    >
+      <div className="flex items-start gap-3 px-4 py-3">
+        <TriangleAlert className={cn("mt-0.5 h-5 w-5 shrink-0", critical ? "text-red-600" : "text-amber-600")} />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold">
+            {list.length} {list.length === 1 ? "city is" : "cities are"} forecast to reach a higher risk level within 48 hours
+          </p>
+          <ul className="mt-1.5 space-y-1">
+            {shown.map(({ city, u }) => (
+              <li key={id(city, u)} className="flex items-center gap-2 text-sm">
+                <span className={cn("h-2 w-2 shrink-0 rounded-full", u.severity === "critical" ? "bg-red-600" : "bg-amber-500")} />
+                <span className="min-w-0 flex-1">
+                  {u.severity === "critical"
+                    ? t("bannerCritical", { city: city.name, hours: u.hoursUntil })
+                    : t("bannerHigh", { city: city.name, hours: u.hoursUntil, score: u.peakScore })}
+                </span>
+                <Link href={cityHref(city)} className="shrink-0 font-medium text-primary hover:underline">
+                  {t("viewDetails")}
+                </Link>
+                <button
+                  type="button"
+                  aria-label={`${t("dismiss")} ${city.name}`}
+                  onClick={() => save(new Set(dismissed).add(id(city, u)))}
+                  className="shrink-0 rounded p-1 text-muted-foreground hover:bg-black/5 hover:text-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+          {list.length > VISIBLE && (
+            <button type="button" onClick={() => setExpanded(!expanded)} className="mt-1.5 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+              {expanded ? "Show fewer" : t("moreWarnings", { n: list.length - VISIBLE })}
+              <ChevronDown className={cn("h-4 w-4 transition-transform", expanded && "rotate-180")} />
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

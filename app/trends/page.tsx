@@ -72,7 +72,7 @@ export default function TrendsPage() {
       {result.loading && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">Loading {TREND_YEARS.length} summers of hourly data — the first time takes a few seconds; after that it’s instant.</p>
-          <Skeleton className="h-72 w-full rounded-xl" />
+          <Skeleton className="h-72 w-full rounded-lg" />
         </div>
       )}
       {result.error && <ErrorState message="Couldn’t load the archive (the free service may be busy — try again in a minute)." onRetry={result.retry} />}
@@ -146,7 +146,7 @@ export default function TrendsPage() {
                       <TableCell className="text-right">{x.avgMaxTemp.toFixed(1)} °C</TableCell>
                       <TableCell className="text-right">{x.avgMaxWbgt.toFixed(1)} °C</TableCell>
                       <TableCell className="text-right">{x.highDays} / {x.days}</TableCell>
-                      <TableCell className="text-right font-semibold" style={{ color: x.extremeDays ? RISK_COLORS.Extreme : undefined }}>{x.extremeDays}</TableCell>
+                      <TableCell className="text-right font-semibold" style={{ color: x.extremeDays ? "#b91c1c" : undefined }}>{x.extremeDays}</TableCell>
                       <TableCell>{formatDay(x.hottest.date)} {x.hottest.date.slice(0, 4)} · {x.hottest.wbgt.toFixed(1)} °C</TableCell>
                     </TableRow>
                   ))}

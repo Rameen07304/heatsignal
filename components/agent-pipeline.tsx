@@ -15,7 +15,7 @@ export const STAGES: { id: StageId; name: string; role: string; icon: typeof Bra
 
 const RING: Record<StageStatus, string> = {
   idle: "border-border",
-  running: "border-primary shadow-[0_0_18px_hsl(var(--primary)/0.45)]",
+  running: "border-primary bg-primary/5",
   done: "border-green-500/70",
   fallback: "border-yellow-500/70",
   error: "border-red-500/70",
@@ -24,14 +24,14 @@ const RING: Record<StageStatus, string> = {
 function Node({ stage, status }: { stage: (typeof STAGES)[number]; status: StageStatus }) {
   const Icon = stage.icon;
   return (
-    <div className={cn("glass relative rounded-xl border-2 p-3 transition-all duration-300", RING[status])}>
+    <div className={cn("glass relative rounded-lg border-2 p-3 transition-all duration-300", RING[status])}>
       <div className="flex items-center gap-2">
         <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted", status === "running" && "animate-pulse bg-primary/20")}>
           <Icon className="h-4 w-4" />
         </span>
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold">{stage.name}</div>
-          <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{stage.ai ? "Gemini agent" : "Deterministic"}</div>
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">{stage.ai ? "Gemini agent" : "Deterministic"}</div>
         </div>
       </div>
       <p className="mt-2 text-xs text-muted-foreground">{stage.role}</p>

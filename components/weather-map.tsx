@@ -23,7 +23,8 @@ const NO_DATA = "#64748b";
 // Load with next/dynamic({ ssr: false }) — Leaflet needs `window`.
 export default function WeatherMap({ cities, data, mode }: Props) {
   const { resolvedTheme } = useTheme();
-  const tiles = resolvedTheme === "light" ? "light_all" : "dark_all";
+  // Esri grey canvas: free with attribution, no API key (CARTO now requires one).
+  const tiles = resolvedTheme === "dark" ? "World_Dark_Gray_Base" : "World_Light_Gray_Base";
   const bounds: LatLngBoundsExpression | undefined = cities.length
     ? [
         [Math.min(...cities.map((c) => c.lat)) - 3, Math.min(...cities.map((c) => c.lon)) - 3],
@@ -33,7 +34,7 @@ export default function WeatherMap({ cities, data, mode }: Props) {
 
   return (
     // z-0 keeps Leaflet's internal z-indexes (up to 1000) below dialogs.
-    <div className="relative z-0 h-[300px] overflow-hidden rounded-xl border sm:h-[440px]">
+    <div className="relative z-0 h-[300px] overflow-hidden rounded-lg border sm:h-[440px]">
       <MapContainer
         bounds={bounds}
         center={bounds ? undefined : [20, 40]}
@@ -45,8 +46,9 @@ export default function WeatherMap({ cities, data, mode }: Props) {
       >
         <TileLayer
           key={tiles}
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url={`https://{s}.basemaps.cartocdn.com/${tiles}/{z}/{x}/{y}{r}.png`}
+          attribution="Tiles &copy; Esri — Esri, HERE, Garmin, OpenStreetMap contributors"
+          url={`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${tiles}/MapServer/tile/{z}/{y}/{x}`}
+          maxZoom={16}
         />
         {cities.map((city) => {
           const s = data[cityKey(city)];

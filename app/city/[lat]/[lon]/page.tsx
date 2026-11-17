@@ -114,7 +114,7 @@ export default function CityPage({ params, searchParams }: Props) {
             <CityActions city={city} c={c} peak={peak} />
             {c.now.score != null ? (
               <div className="text-right">
-                <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Compound risk now</div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Compound risk now</div>
                 <CompoundBadge score={c.now.score} className="mt-1 px-3 py-1.5 text-base" />
                 <div className="mt-1 text-xs text-muted-foreground">{compoundBand(c.now.score).description}</div>
               </div>
@@ -128,10 +128,10 @@ export default function CityPage({ params, searchParams }: Props) {
       {result.loading && (
         <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-60 w-full rounded-xl" />)}
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-60 w-full rounded-lg" />)}
           </div>
-          <Skeleton className="h-80 w-full rounded-xl" />
-          <Skeleton className="h-72 w-full rounded-xl" />
+          <Skeleton className="h-80 w-full rounded-lg" />
+          <Skeleton className="h-72 w-full rounded-lg" />
         </div>
       )}
 

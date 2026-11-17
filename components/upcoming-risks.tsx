@@ -23,7 +23,7 @@ export function UpcomingRisks() {
   return (
     <section className="space-y-3">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight">⚡ {t("upcomingRisks")}</h2>
+        <h2 className="text-lg font-semibold tracking-tight">{t("upcomingRisks")}</h2>
         <p className="text-sm text-muted-foreground">
           {list.length} {list.length === 1 ? "city is" : "cities are"} forecast to cross into High or Critical compound risk within 48 hours.
         </p>
@@ -46,10 +46,10 @@ export function UpcomingRisks() {
                   </span>
                 </div>
                 <div className="mt-3 flex items-baseline gap-2 tabular-nums">
-                  <span className="text-xl font-bold" style={{ color: now.color }}>{u.nowScore}</span>
+                  <span className="inline-flex items-center gap-1.5 text-xl font-semibold"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: now.color }} />{u.nowScore}</span>
                   <span className="text-muted-foreground">→</span>
-                  <span className="text-3xl font-black" style={{ color: peak.color }}>{u.peakScore}</span>
-                  <span className="text-xs font-semibold" style={{ color: peak.color }}>{t(peak.level.toLowerCase() as "low")}</span>
+                  <span className="inline-flex items-center gap-1.5 text-3xl font-semibold"><span className="h-3 w-3 rounded-full" style={{ backgroundColor: peak.color }} />{u.peakScore}</span>
+                  <span className="text-sm font-medium text-muted-foreground">{t(peak.level.toLowerCase() as "low")}</span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Crosses {u.severity === "critical" ? "Critical" : "High"} in <b className="text-foreground">{u.hoursUntil} h</b> · peaks{" "}

@@ -90,7 +90,7 @@ function SchoolSafety() {
         {c && date && <DayPicker c={c} value={date} onChange={setDay} max={3} />}
       </div>
 
-      {result.loading && <Skeleton className="h-80 w-full rounded-xl" />}
+      {result.loading && <Skeleton className="h-80 w-full rounded-lg" />}
       {result.error && <ErrorState message="Couldn’t load conditions." onRetry={result.retry} />}
 
       {c && date && hours.length > 0 && (
@@ -98,10 +98,10 @@ function SchoolSafety() {
           <div className="no-print flex justify-end">
             <Button onClick={() => window.print()}><Printer /> Print school notice</Button>
           </div>
-          <div className="site-card overflow-hidden rounded-xl border-2 bg-card" style={{ borderColor: STATUS_COLOR[status] }}>
+          <div className="site-card overflow-hidden rounded-lg border-2 bg-card" style={{ borderColor: STATUS_COLOR[status] }}>
             <div className="p-5 text-white" style={{ backgroundColor: STATUS_COLOR[status] }}>
               <div className="text-xs font-semibold uppercase tracking-widest opacity-90">School outdoor activity status</div>
-              <div className="text-4xl font-black">{s.icon} {s.name}</div>
+              <div className="text-4xl font-black">{s.name}</div>
               <div className="mt-1">{s.text}</div>
               <div className="mt-2 text-sm opacity-95">
                 {city.name}{city.country ? `, ${city.country}` : ""} · {formatDay(date)} · school day 07:00–15:00 · {SCHOOL_TYPES[type].label}
@@ -132,7 +132,7 @@ function SchoolSafety() {
                 <p className="mt-2 text-xs font-semibold">Emergency: {emergencyLine(city.country)}</p>
               </div>
             </div>
-            <p className="border-t px-5 py-2 text-[11px] text-muted-foreground">
+            <p className="border-t px-5 py-2 text-xs text-muted-foreground">
               HeatSignal · Cancelled if compound ≥ 70, WBGT ≥ 32 °C or AQI ≥ 200; restricted at 50 / 30 °C / 150; modified at 35 / 28 °C / 100.
             </p>
           </div>
@@ -270,12 +270,12 @@ function EventSafety() {
         </Field>
       </div>
 
-      {result.loading && <Skeleton className="h-80 w-full rounded-xl" />}
+      {result.loading && <Skeleton className="h-80 w-full rounded-lg" />}
       {result.error && <ErrorState message="Couldn’t load conditions." onRetry={result.retry} />}
 
       {c && date && slot.length > 0 && (
         <>
-          <div className="rounded-xl p-5 text-white" style={{ backgroundColor: STATUS_COLOR[status] }}>
+          <div className="rounded-lg p-5 text-white" style={{ backgroundColor: STATUS_COLOR[status] }}>
             <div className="text-xs font-semibold uppercase tracking-widest opacity-90">Event risk rating</div>
             <div className="text-4xl font-black">{EVENT[status]}</div>
             <div className="mt-1 text-sm opacity-95">

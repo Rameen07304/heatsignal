@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Droplets } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -168,16 +168,16 @@ export default function RiskAssessmentPage() {
         </div>
 
         <div className="lg:sticky lg:top-32 lg:self-start">
-          {result.loading && <Skeleton className="h-[520px] w-full rounded-xl" />}
+          {result.loading && <Skeleton className="h-[520px] w-full rounded-lg" />}
           {result.error && <ErrorState message="Couldn’t load conditions for this place." onRetry={result.retry} />}
           {r && peak && (
-            <Card className="animate-page-in" style={{ borderColor: `${r.level.color}80` }}>
+            <Card  style={{ borderColor: `${r.level.color}80` }}>
               <CardHeader>
                 <CardDescription>Your risk today in {city.name}</CardDescription>
                 <div className="flex items-center gap-4">
                   <GaugeRing label="Your score" fraction={r.score / 100} color={r.level.color} value={String(r.score)} unit="/ 100" size={110} />
                   <div>
-                    <div className="text-4xl font-black tracking-tight" style={{ color: r.level.color }}>{r.level.label}</div>
+                    <div className="flex items-center gap-2 text-3xl font-semibold tracking-tight"><span className="h-4 w-4 rounded-full" style={{ backgroundColor: r.level.color }} />{r.level.label}</div>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Today’s peak at {peak.time.slice(11, 16)}: WBGT {peak.wbgt.toFixed(1)} °C
                       {peak.air ? ` · AQI ${formatAqi(peak.air.aqi)}` : ""}
@@ -207,7 +207,7 @@ export default function RiskAssessmentPage() {
                 </div>
 
                 <p className="rounded-lg border border-sky-500/40 bg-sky-500/10 p-3 text-base font-semibold">
-                  💧 Drink at least {r.litres} litres of water today
+                  <Droplets className="me-2 inline h-5 w-5 align-[-3px] text-sky-600" />Drink at least {r.litres} litres of water today
                 </p>
 
                 <div>
@@ -220,7 +220,7 @@ export default function RiskAssessmentPage() {
                 <Button className="w-full" onClick={share}>
                   {copied ? <Check /> : <Copy />} {copied ? "Copied to clipboard" : "Share my risk"}
                 </Button>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   A screening heuristic for awareness, not a medical diagnosis. If you feel unwell, see the First Aid page or call for help.
                 </p>
               </CardContent>

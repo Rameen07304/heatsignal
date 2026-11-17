@@ -1,47 +1,38 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { aqiBand, formatAqi } from "@/lib/air";
 import { levelKey, useT } from "@/lib/i18n";
 import { compoundBand, RISK_COLORS, type RiskLevel } from "@/lib/risk";
 import { cn } from "@/lib/utils";
 
-function ColorBadge({ color, pulse, className, children, title }: {
-  color: string;
-  pulse?: boolean;
-  className?: string;
-  children: React.ReactNode;
-  title?: string;
-}) {
+/** Neutral pill with a coloured dot: the word always carries the meaning, colour only reinforces it. */
+function Pill({ color, className, children, title }: { color: string; className?: string; children: React.ReactNode; title?: string }) {
   return (
-    <Badge
+    <span
       title={title}
-      className={cn(pulse && "animate-risk-pulse", className)}
-      style={{ color, borderColor: `${color}80`, backgroundColor: `${color}1f`, ["--glow" as string]: `${color}66` }}
+      className={cn(
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border bg-card px-2 py-0.5 text-xs font-medium text-foreground",
+        className,
+      )}
     >
-      <span className="me-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+      <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
       {children}
-    </Badge>
+    </span>
   );
 }
 
 export function RiskBadge({ level, className }: { level: RiskLevel; className?: string }) {
   const { t } = useT();
-  return (
-    <ColorBadge color={RISK_COLORS[level]} pulse={level === "High" || level === "Extreme"} className={className}>
-      {t(levelKey(level))}
-    </ColorBadge>
-  );
+  return <Pill color={RISK_COLORS[level]} className={className}>{t(levelKey(level))}</Pill>;
 }
 
 /** `short` shows just the number; the full form adds the EPA category name. */
 export function AqiBadge({ aqi, short, className }: { aqi: number; short?: boolean; className?: string }) {
   const band = aqiBand(aqi);
   return (
-    <ColorBadge color={band.color} pulse={aqi > 150} className={className} title={`US AQI ${formatAqi(aqi)} — ${band.label}`}>
-      AQI {formatAqi(aqi)}
-      {!short && ` · ${band.label}`}
-    </ColorBadge>
+    <Pill color={band.color} className={className} title={`US AQI ${formatAqi(aqi)} — ${band.label}`}>
+      {short ? band.label.replace(" for sensitive groups", " (sensitive)") : `AQI ${formatAqi(aqi)} · ${band.label}`}
+    </Pill>
   );
 }
 
@@ -49,8 +40,8 @@ export function CompoundBadge({ score, className }: { score: number; className?:
   const { t } = useT();
   const band = compoundBand(score);
   return (
-    <ColorBadge color={band.color} pulse={score > 50} className={className} title={band.description}>
-      {t(levelKey(band.level))} · {score}/100
-    </ColorBadge>
+    <Pill color={band.color} className={className} title={band.description}>
+      <span className="font-semibold tabular-nums">{score}</span> {t(levelKey(band.level))}
+    </Pill>
   );
 }

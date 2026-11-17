@@ -16,7 +16,7 @@ function Row({ label, value }: { label: string; value: string }) {
 
 function Pill({ label, value }: { label: string; value: number }) {
   return (
-    <span className="rounded-full border px-2 py-0.5 text-[11px] tabular-nums">
+    <span className="rounded-full border px-2 py-0.5 text-xs tabular-nums">
       {label} <span className="font-semibold">{value.toFixed(0)}</span>
     </span>
   );
@@ -51,7 +51,7 @@ export function ConditionsPanel({ now, today, minTemp }: { now: CombinedHour; to
         <CardContent className="flex flex-col items-center gap-2">
           <GaugeRing label="WBGT" fraction={now.wbgt / 40} color={RISK_COLORS[now.risk]} value={now.wbgt.toFixed(1)} unit="°C" size={120} />
           <p className="text-center text-sm">
-            <span className="font-semibold tabular-nums" style={{ color: gap >= 0 ? RISK_COLORS.Extreme : undefined }}>
+            <span className="font-semibold tabular-nums" style={{ color: gap >= 0 ? "#b91c1c" : undefined }}>
               {Math.abs(gap).toFixed(1)} °C {gap >= 0 ? "above" : "below"}
             </span>{" "}
             the High-risk threshold ({HIGH_WBGT} °C)
@@ -77,7 +77,7 @@ export function ConditionsPanel({ now, today, minTemp }: { now: CombinedHour; to
                 <Pill label="SO₂" value={air.so2} />
                 <Pill label="CO" value={air.co} />
               </div>
-              <p className="text-center text-[11px] text-muted-foreground">
+              <p className="text-center text-xs text-muted-foreground">
                 µg/m³.{" "}
                 {air.pm25 > WHO_PM25_DAILY && `PM2.5 is ${(air.pm25 / WHO_PM25_DAILY).toFixed(1)}× the WHO daily guideline.`}
               </p>
@@ -94,10 +94,10 @@ export function ConditionsPanel({ now, today, minTemp }: { now: CombinedHour; to
           {air ? (
             <>
               <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-bold tracking-tight tabular-nums" style={{ color: uvBand(air.uv).color }}>
+                <span className="text-5xl font-semibold tracking-tight tabular-nums">
                   {air.uv.toFixed(0)}
                 </span>
-                <span className="text-sm font-semibold" style={{ color: uvBand(air.uv).color }}>UV {uvBand(air.uv).label}</span>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: uvBand(air.uv).color }} />UV {uvBand(air.uv).label}</span>
               </div>
               <div className="space-y-1">
                 <Row label="Desert dust" value={`${air.dust.toFixed(0)} µg/m³`} />

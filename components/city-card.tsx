@@ -32,7 +32,7 @@ function Sparkline24h({ c }: { c: Conditions }) {
           );
         })}
       </div>
-      <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+      <div className="mt-1 flex justify-between text-xs text-muted-foreground">
         <span>Now</span>
         <span>Compound risk, next 24 h</span>
         <span>+24 h</span>
@@ -44,7 +44,7 @@ function Sparkline24h({ c }: { c: Conditions }) {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-xs text-muted-foreground">{label}</div>
       <div className="truncate text-sm font-semibold tabular-nums">{value}</div>
     </div>
   );
@@ -55,19 +55,17 @@ interface Props {
   state: CityState;
   onRemove: () => void;
   onRetry: () => void;
-  /** Position in the grid, for the staggered fade-in. */
-  index?: number;
 }
 
-export function CityCard({ city, state, onRemove, onRetry, index = 0 }: Props) {
+export function CityCard({ city, state, onRemove, onRetry }: Props) {
   const c = state && !(state instanceof Error) ? state : null;
   const now = c?.now;
   const air = now?.air;
 
   return (
     <Card
-      className="flex animate-page-in flex-col transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-      style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
+      className="flex flex-col"
+     
     >
       <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
         <div className="min-w-0">
@@ -147,7 +145,7 @@ export function CityCard({ city, state, onRemove, onRetry, index = 0 }: Props) {
             </div>
 
             {air && (
-              <div className="flex flex-wrap gap-1.5 text-[11px]">
+              <div className="flex flex-wrap gap-1.5 text-xs">
                 <span className="rounded-full border px-2 py-0.5 tabular-nums">PM2.5 {air.pm25.toFixed(0)} µg/m³</span>
                 <span className="rounded-full border px-2 py-0.5 tabular-nums">O₃ {air.o3.toFixed(0)} µg/m³</span>
                 {air.dust > 50 && <span className="rounded-full border px-2 py-0.5 tabular-nums">Dust {air.dust.toFixed(0)} µg/m³</span>}

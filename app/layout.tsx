@@ -19,20 +19,24 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body className="min-h-screen font-sans antialiased">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <LanguageProvider>
             <CitiesProvider>
               <Header />
-              <EarlyWarningBanner />
-              <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
-          <footer className="no-print mx-auto max-w-7xl border-t px-4 py-6 text-xs text-muted-foreground">
-            Weather and air-quality data by{" "}
-            <a className="underline" href="https://open-meteo.com/" target="_blank" rel="noreferrer">
-              Open-Meteo
-            </a>{" "}
-            (CC BY 4.0). HeatSignal is a decision-support tool, not medical advice. Team HeatSignal — Kinnaird College
-            for Women, Lahore.
-          </footer>
+              <div className="min-w-0 overflow-x-clip lg:ms-60">
+                <main className="mx-auto max-w-[1400px] px-4 py-6 lg:px-8">
+                  <EarlyWarningBanner />
+                  {children}
+                </main>
+                <footer className="no-print mx-auto max-w-[1400px] border-t px-4 py-6 text-xs text-muted-foreground lg:px-8">
+                  Weather and air-quality data by{" "}
+                  <a className="underline" href="https://open-meteo.com/" target="_blank" rel="noreferrer">
+                    Open-Meteo
+                  </a>{" "}
+                  (CC BY 4.0). HeatSignal is a decision-support tool, not medical advice. Team HeatSignal — Kinnaird College
+                  for Women, Lahore.
+                </footer>
+              </div>
             </CitiesProvider>
           </LanguageProvider>
         </ThemeProvider>

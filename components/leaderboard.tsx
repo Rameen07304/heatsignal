@@ -7,13 +7,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GaugeRing } from "@/components/gauge-ring";
+import { Button } from "@/components/ui/button";
 import { AqiBadge, CompoundBadge, RiskBadge } from "@/components/risk-badge";
 import { aqiBand, formatAqi } from "@/lib/air";
 import { cityHref, cityKey, type City } from "@/lib/cities";
 import type { Conditions } from "@/lib/conditions";
 import { CRITICAL_SCORE, TREND_ARROW, isRising, sixHourTrend } from "@/lib/risk-forecast";
-import { compoundBand, isCompoundEvent, uvBand } from "@/lib/risk";
+import { isCompoundEvent, uvBand } from "@/lib/risk";
 
 type Row = { city: City; c: Conditions };
 
@@ -59,7 +59,8 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
       const d = typeof x === "string" ? x.localeCompare(y as string) : x - (y as number);
       return sort.desc ? -d : d;
     });
-  const top3 = [...rows].sort((a, b) => (b.c.now.score ?? -1) - (a.c.now.score ?? -1)).slice(0, 3);
+  const [all, setAll] = useState(false);
+  const page = all || query || filter !== "all" ? shown : shown.slice(0, 15);
 
   const header = (key: SortKey, label: string, right?: boolean) => (
     <TableHead className={right ? "text-right" : undefined} aria-sort={sort.key === key ? (sort.desc ? "descending" : "ascending") : "none"}>
@@ -76,27 +77,6 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Most at risk right now</h3>
-        <div className="grid gap-3 md:grid-cols-3">
-          {top3.map((r, i) => (
-            <Card key={cityKey(r.city)} className="animate-page-in" style={{ animationDelay: `${i * 70}ms` }}>
-              <CardContent className="flex items-center gap-4 p-4">
-                {r.c.now.score != null && (
-                  <GaugeRing label={`#${i + 1}`} fraction={r.c.now.score / 100} color={compoundBand(r.c.now.score).color} value={String(r.c.now.score)} unit="/ 100" size={96} />
-                )}
-                <div className="min-w-0">
-                  <Link href={cityHref(r.city)} className="text-lg font-bold hover:underline">{r.city.name}</Link>
-                  <div className="text-xs text-muted-foreground">{r.city.country}</div>
-                  {r.c.now.score != null && <CompoundBadge score={r.c.now.score} className="mt-1" />}
-                  <p className="mt-2 text-sm">{whyDangerous(r)}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
           <TabsList>
@@ -112,7 +92,7 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
       </div>
 
       {shown.length === 0 ? (
-        <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">No cities match.</p>
+        <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">No cities match.</p>
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -133,7 +113,7 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {shown.map((r, i) => {
+                {page.map((r, i) => {
                   const n = r.c.now;
                   const trend = sixHourTrend(r.c);
                   return (
@@ -156,6 +136,9 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
             </Table>
           </CardContent>
         </Card>
+      )}
+      {shown.length > 15 && !query && filter === "all" && (
+        <Button variant="outline" size="sm" onClick={() => setAll(!all)}>{all ? "Show top 15" : `Show all ${shown.length} cities`}</Button>
       )}
       <p className="text-xs text-muted-foreground">
         Values are for the current hour at each city. Trend compares the compound score with 6 hours ago (±5 points);

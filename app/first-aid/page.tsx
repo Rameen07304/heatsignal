@@ -128,7 +128,7 @@ export default function FirstAidPage() {
       </div>
 
       {!r ? (
-        <Card key={current} className="animate-page-in">
+        <Card key={current} >
           <CardContent className="space-y-6 p-6 sm:p-8">
             <p className="text-sm text-muted-foreground">Question {path.length}</p>
             <h2 className="text-2xl font-bold leading-snug">{STEPS[current].q}</h2>
@@ -139,9 +139,9 @@ export default function FirstAidPage() {
           </CardContent>
         </Card>
       ) : (
-        <div key={result} className="animate-page-in space-y-4">
-          <div className="rounded-xl p-6 text-white" style={{ backgroundColor: r.color }} role="alert">
-            <p className="text-3xl font-black leading-tight">{r.icon} {r.title}</p>
+        <div key={result} className="space-y-4">
+          <div className="rounded-lg p-6 text-white" style={{ backgroundColor: r.color }} role="alert">
+            <p className="text-3xl font-black leading-tight">{r.title}</p>
             <ol className="mt-4 list-decimal space-y-1.5 ps-6 text-lg">
               {r.steps.map((s) => <li key={s}>{s}</li>)}
             </ol>
@@ -170,7 +170,7 @@ export default function FirstAidPage() {
         <h2 className="mb-3 text-xl font-semibold tracking-tight">Preventing heat illness</h2>
         <div className="space-y-2">
           {TIPS.map((g) => (
-            <details key={g.title} className="glass group rounded-xl px-4 py-3">
+            <details key={g.title} className="glass group rounded-lg px-4 py-3">
               <summary className="cursor-pointer font-medium">{g.title}</summary>
               <ul className="mt-2 list-disc space-y-1 ps-5 text-sm">
                 {g.tips.map((tip) => <li key={tip}>{tip}</li>)}

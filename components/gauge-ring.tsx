@@ -37,11 +37,11 @@ export function GaugeRing({ fraction, color, value, unit, label, sub, size = 76 
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
           <span className="font-bold tabular-nums" style={{ fontSize: size / 4.2 }}>{value}</span>
-          {unit && <span className="mt-0.5 text-[10px] text-muted-foreground">{unit}</span>}
+          {unit && <span className="mt-0.5 text-xs text-muted-foreground">{unit}</span>}
         </div>
       </div>
-      <div className="mt-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
-      {sub && <div className="max-w-[7rem] truncate text-xs font-semibold" style={{ color }}>{sub}</div>}
+      <div className="mt-1.5 text-xs font-medium text-muted-foreground">{label}</div>
+      {sub && <div className="max-w-[7rem] truncate text-xs font-semibold text-foreground">{sub}</div>}
     </div>
   );
 }

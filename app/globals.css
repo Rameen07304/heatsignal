@@ -3,69 +3,68 @@
 @tailwind utilities;
 
 @layer base {
+  /* Slate neutrals, one blue accent. Light is the default: people check this on phones in bright sun. */
   :root {
-    --background: 228 33% 98%; /* #f8f9fc */
-    --foreground: 240 24% 10%;
+    --background: 210 40% 98%; /* slate-50 */
+    --foreground: 222 47% 11%; /* slate-900 */
     --card: 0 0% 100%;
-    --elevated: 230 20% 95%; /* #f0f1f5 */
-    --muted: 230 20% 94%;
-    --muted-foreground: 240 8% 42%;
-    --border: 232 18% 88%;
-    --primary: 239 84% 60%; /* indigo */
+    --elevated: 210 40% 96%; /* slate-100 */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 19% 35%; /* slate-600 */
+    --border: 214 32% 91%; /* slate-200 */
+    --primary: 221 83% 53%; /* blue-600 */
     --primary-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
-    --ring: 239 84% 60%;
+    --ring: 221 83% 53%;
   }
   .dark {
-    --background: 240 20% 4%; /* #0a0a0f */
-    --foreground: 240 23% 95%; /* #f0f0f5 */
-    --card: 240 18% 9%; /* #12121a */
-    --elevated: 240 28% 14%; /* #1a1a2e */
-    --muted: 240 22% 15%;
-    --muted-foreground: 240 10% 58%; /* #8888a0 */
-    --border: 240 19% 20%; /* #2a2a3e */
-    --primary: 239 84% 67%; /* #6366f1 */
-    --primary-foreground: 0 0% 100%;
+    --background: 222 47% 7%;
+    --foreground: 210 40% 96%;
+    --card: 222 40% 10%;
+    --elevated: 217 33% 15%;
+    --muted: 217 33% 15%;
+    --muted-foreground: 215 20% 70%;
+    --border: 217 28% 20%;
+    --primary: 217 91% 64%;
+    --primary-foreground: 222 47% 11%;
     --destructive: 0 84% 60%;
-    --ring: 239 84% 67%;
+    --ring: 217 91% 64%;
   }
   * {
     @apply border-border;
   }
+  html {
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
   body {
     @apply bg-background text-foreground;
     font-variant-numeric: tabular-nums;
-    /* A faint indigo glow behind the header; the page stays flat below it. */
-    background-image: radial-gradient(ellipse 80% 40% at 50% -10%, hsl(var(--primary) / 0.12), transparent 70%);
-    background-repeat: no-repeat;
+    caret-color: hsl(var(--primary));
+  }
+  ::selection {
+    background: hsl(var(--primary) / 0.18);
+  }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  a {
+    text-underline-offset: 3px;
   }
 }
 
 @layer components {
-  /* Glass surface for cards. */
+  /* Plain card surface (kept under the old class name used across components). */
   .glass {
-    @apply border bg-card/80 backdrop-blur-xl;
+    @apply border bg-card;
   }
-  .dark .glass {
-    @apply border-white/10 bg-card/70;
-  }
-  /* Shimmering skeleton. */
   .shimmer {
-    background: linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--elevated)) 50%, hsl(var(--muted)) 100%);
-    background-size: 200% 100%;
-    animation: shimmer 1.4s ease-in-out infinite;
+    background: hsl(var(--muted));
+    animation: pulse 1.6s ease-in-out infinite;
   }
 }
-
-/* About hero: a slow-moving heat-to-indigo wash. */
-.about-hero {
-  background: linear-gradient(120deg, hsl(var(--primary) / 0.18), rgba(249, 115, 22, 0.14), rgba(239, 68, 68, 0.1), hsl(var(--primary) / 0.18));
-  background-size: 300% 300%;
-  animation: hero-drift 14s ease-in-out infinite;
-}
-@keyframes hero-drift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+@keyframes pulse {
+  50% { opacity: 0.55; }
 }
 
 @keyframes pipeline-flow {
@@ -85,11 +84,6 @@
 @keyframes pipeline-flow-x {
   from { background-position: 0 0; }
   to { background-position: 24px 0; }
-}
-
-@keyframes shimmer {
-  from { background-position: 200% 0; }
-  to { background-position: -200% 0; }
 }
 
 /* Map markers: lift on hover. */

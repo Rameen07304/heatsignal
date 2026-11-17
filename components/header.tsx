@@ -4,58 +4,88 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { ChevronDown, Globe, Menu, Moon, Sun, X } from "lucide-react";
+import {
+  Activity,
+  BellRing,
+  BookOpen,
+  ClipboardCheck,
+  HardHat,
+  HeartPulse,
+  Info,
+  LayoutDashboard,
+  Menu,
+  Moon,
+  Sun,
+  TrendingUp,
+  UserRound,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotifyButton } from "@/components/notify-button";
 import { LANGUAGES, useT, type Key, type Lang } from "@/lib/i18n";
+import { useCities } from "@/lib/use-cities";
 import { cn } from "@/lib/utils";
 
-const GROUPS: { label: Key; items: { href: string; label: Key }[] }[] = [
-  { label: "monitor", items: [{ href: "/", label: "dashboard" }, { href: "/trends", label: "trends" }] },
+const GROUPS: { label: Key; items: { href: string; label: Key; icon: typeof Activity }[] }[] = [
+  {
+    label: "monitor",
+    items: [
+      { href: "/", label: "dashboard", icon: LayoutDashboard },
+      { href: "/trends", label: "trends", icon: TrendingUp },
+    ],
+  },
   {
     label: "protect",
     items: [
-      { href: "/risk-assessment", label: "riskAssessment" },
-      { href: "/safety-advisor", label: "safetyAdvisor" },
-      { href: "/worker-safety", label: "workerSafety" },
-      { href: "/first-aid", label: "firstAid" },
+      { href: "/risk-assessment", label: "riskAssessment", icon: UserRound },
+      { href: "/safety-advisor", label: "safetyAdvisor", icon: ClipboardCheck },
+      { href: "/worker-safety", label: "workerSafety", icon: HardHat },
+      { href: "/first-aid", label: "firstAid", icon: HeartPulse },
     ],
   },
   {
     label: "intelligence",
-    items: [{ href: "/case-studies", label: "caseStudies" }, { href: "/alerts", label: "alerts" }, { href: "/about", label: "about" }],
+    items: [
+      { href: "/case-studies", label: "caseStudies", icon: BookOpen },
+      { href: "/alerts", label: "alerts", icon: BellRing },
+      { href: "/about", label: "about", icon: Info },
+    ],
   },
 ];
 
-/** Flame with signal waves: heat, broadcast as a warning. */
+/** HeatSignal mark: a rising risk line inside a rounded square. */
 export function Logo({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden="true" fill="none">
-      <defs>
-        <linearGradient id="hs-flame" x1="0" y1="1" x2="0" y2="0">
-          <stop offset="0" stopColor="#ef4444" />
-          <stop offset="1" stopColor="#f97316" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M13 28c-4.4 0-7-3-7-6.8 0-3.6 2.4-5.7 3.9-8.2.9-1.5 1.1-3.3.8-5 3.4 1.6 5.3 4.6 5.1 8 1-.7 1.7-1.9 1.9-3.2 2.1 1.9 3.3 4.6 3.3 7.6C21 24.9 18 28 13 28Z"
-        fill="url(#hs-flame)"
-      />
-      <path d="M22.5 9.5a7 7 0 0 1 0 9.9M25.6 6.4a11.4 11.4 0 0 1 0 16.1" stroke="#6366f1" strokeWidth="2.2" strokeLinecap="round" />
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <rect width="32" height="32" rx="8" fill="#2563eb" />
+      <path d="M7 21.5h4.5l2.5-7 4 11 3-8h4" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="25" cy="10" r="2.6" fill="#fbbf24" />
     </svg>
   );
 }
 
-function LanguageSelect({ className }: { className?: string }) {
+function Brand() {
+  const { t } = useT();
+  return (
+    <Link href="/" className="flex items-center gap-2.5">
+      <Logo className="h-8 w-8 shrink-0" />
+      <span className="leading-tight">
+        <span className="block text-[15px] font-semibold tracking-tight">HeatSignal</span>
+        <span className="block text-xs text-muted-foreground">{t("tagline")}</span>
+      </span>
+    </Link>
+  );
+}
+
+function LanguageSelect() {
   const { lang, setLang, t } = useT();
   return (
-    <label className={cn("relative flex items-center", className)}>
-      <Globe className="pointer-events-none absolute start-2 h-4 w-4 text-muted-foreground" />
-      <span className="sr-only">{t("language")}</span>
+    <label className="block">
+      <span className="mb-1 block text-xs font-medium text-muted-foreground">{t("language")}</span>
       <select
         value={lang}
         onChange={(e) => setLang(e.target.value as Lang)}
-        className="h-9 appearance-none rounded-md border bg-transparent pe-2 ps-7 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="h-9 w-full rounded-md border bg-card px-2 text-sm"
       >
         {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
       </select>
@@ -63,97 +93,88 @@ function LanguageSelect({ className }: { className?: string }) {
   );
 }
 
+function NavLinks() {
+  const pathname = usePathname();
+  const { t } = useT();
+  const active = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  return (
+    <nav className="space-y-5">
+      {GROUPS.map((g) => (
+        <div key={g.label}>
+          <div className="mb-1 px-2 text-xs font-medium text-muted-foreground">{t(g.label)}</div>
+          <ul className="space-y-0.5">
+            {g.items.map(({ href, label, icon: Icon }) => (
+              <li key={href}>
+                <Link
+                  href={href}
+                  aria-current={active(href) ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-foreground/80 transition-colors hover:bg-muted hover:text-foreground",
+                    active(href) && "bg-primary/10 font-medium text-primary hover:bg-primary/10 hover:text-primary",
+                  )}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {t(label)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+/** Desktop sidebar + top bar, and a drawer on small screens. */
 export function Header() {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
   const { t } = useT();
+  const { updatedAt } = useCities();
   const [open, setOpen] = useState(false);
-  const active = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   useEffect(() => setOpen(false), [pathname]);
 
   return (
-    <header className="no-print sticky top-0 z-40 border-b bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          <Logo className="h-7 w-7" />
-          <span className="leading-tight">
-            <span className="block text-sm font-bold tracking-tight">HeatSignal</span>
-            <span className="hidden text-[10px] text-muted-foreground sm:block">{t("tagline")}</span>
-          </span>
-        </Link>
+    <>
+      <aside className="no-print fixed inset-y-0 start-0 z-40 hidden w-60 flex-col border-e bg-card lg:flex">
+        <div className="flex h-16 items-center px-4"><Brand /></div>
+        <div className="flex-1 overflow-y-auto px-3 py-2"><NavLinks /></div>
+        <div className="border-t p-3"><LanguageSelect /></div>
+      </aside>
 
-        {/* Desktop: three groups with hover/focus dropdowns. */}
-        <nav className="ms-4 hidden flex-1 items-center gap-1 text-sm lg:flex">
-          {GROUPS.map((g) => (
-            <div key={g.label} className="group relative">
-              <button
-                type="button"
-                className={cn(
-                  "flex items-center gap-1 rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:text-foreground group-focus-within:text-foreground",
-                  g.items.some((i) => active(i.href)) && "bg-muted text-foreground",
-                )}
-              >
-                {t(g.label)} <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-              </button>
-              <div className="invisible absolute start-0 top-full z-50 pt-1 opacity-0 transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
-                <div className="glass min-w-48 rounded-lg p-1 shadow-lg">
-                  {g.items.map((i) => (
-                    <Link
-                      key={i.href}
-                      href={i.href}
-                      aria-current={active(i.href) ? "page" : undefined}
-                      className={cn("block rounded-md px-3 py-2 hover:bg-muted", active(i.href) && "bg-muted font-medium")}
-                    >
-                      {t(i.label)}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        <div className="ms-auto flex items-center gap-1">
-          <LanguageSelect className="hidden lg:flex" />
-          <NotifyButton />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0"
-            aria-label="Toggle light/dark theme"
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          >
-            <Sun className="hidden dark:block" />
-            <Moon className="dark:hidden" />
+      <header className="no-print sticky top-0 z-30 border-b bg-card/95 backdrop-blur lg:ms-60">
+        <div className="flex h-14 items-center gap-2 px-4 lg:px-8">
+          <Button variant="ghost" size="icon" className="lg:hidden" aria-label={t("menu")} aria-expanded={open} onClick={() => setOpen(true)}>
+            <Menu />
           </Button>
-          <Button variant="ghost" size="icon" className="lg:hidden" aria-label={t("menu")} aria-expanded={open} onClick={() => setOpen(!open)}>
-            {open ? <X /> : <Menu />}
-          </Button>
+          <div className="lg:hidden"><Brand /></div>
+          <p className="ms-auto hidden text-xs text-muted-foreground sm:block">
+            {updatedAt ? `Data updated ${updatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · Open-Meteo` : "Loading live data…"}
+          </p>
+          <div className="ms-auto flex items-center gap-1 sm:ms-3">
+            <NotifyButton />
+            <Button variant="ghost" size="icon" aria-label="Toggle light/dark theme" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
+              <Moon className="dark:hidden" />
+              <Sun className="hidden dark:block" />
+            </Button>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile menu. */}
       {open && (
-        <div className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t bg-background px-4 pb-4 lg:hidden">
-          {GROUPS.map((g) => (
-            <div key={g.label} className="pt-3">
-              <div className="px-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t(g.label)}</div>
-              {g.items.map((i) => (
-                <Link
-                  key={i.href}
-                  href={i.href}
-                  aria-current={active(i.href) ? "page" : undefined}
-                  className={cn("block rounded-md px-2 py-2 text-sm hover:bg-muted", active(i.href) && "bg-muted font-medium")}
-                >
-                  {t(i.label)}
-                </Link>
-              ))}
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={t("menu")}>
+          <button type="button" aria-label="Close menu" className="absolute inset-0 bg-slate-900/40" onClick={() => setOpen(false)} />
+          <div className="absolute inset-y-0 start-0 flex w-72 max-w-[85vw] flex-col bg-card shadow-xl">
+            <div className="flex h-14 items-center justify-between px-4">
+              <Brand />
+              <Button variant="ghost" size="icon" aria-label="Close menu" onClick={() => setOpen(false)}><X /></Button>
             </div>
-          ))}
-          <LanguageSelect className="mt-4" />
+            <div className="flex-1 overflow-y-auto px-3 py-2"><NavLinks /></div>
+            <div className="border-t p-3"><LanguageSelect /></div>
+          </div>
         </div>
       )}
-    </header>
+    </>
   );
 }

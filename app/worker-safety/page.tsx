@@ -12,7 +12,6 @@ import { WorkPlanner } from "@/components/work-planner";
 import { UNHEALTHY_AQI, fetchAir, formatAqi } from "@/lib/air";
 import { WORLD_CITIES, cityKey, type City } from "@/lib/cities";
 import { buildConditions } from "@/lib/conditions";
-import { RISK_COLORS } from "@/lib/risk";
 import { useAsync } from "@/lib/use-async";
 import { useCities } from "@/lib/use-cities";
 import { fetchForecast } from "@/lib/weather";
@@ -78,8 +77,8 @@ export default function WorkerSafetyPage({ searchParams }: Props) {
 
       {result.loading && (
         <div className="space-y-6">
-          <Skeleton className="h-40 w-full rounded-xl" />
-          <Skeleton className="h-72 w-full rounded-xl" />
+          <Skeleton className="h-40 w-full rounded-lg" />
+          <Skeleton className="h-72 w-full rounded-lg" />
         </div>
       )}
       {result.error && <ErrorState message="Couldn’t load the forecast for this site." onRetry={result.retry} />}
@@ -107,8 +106,8 @@ export default function WorkerSafetyPage({ searchParams }: Props) {
                   const flag = heatFlag(r);
                   return (
                     <div key={i.key} className="rounded-lg border p-3" style={{ borderColor: `${r.color}80`, backgroundColor: `${r.color}14` }}>
-                      <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{i.label} work</div>
-                      <div className="mt-1 font-semibold" style={{ color: r.color }}>{r.label}</div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{i.label} work</div>
+                      <div className="mt-1 flex items-center gap-2 font-semibold"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: r.color }} />{r.label}</div>
                       <div className="text-xs text-muted-foreground">{flag.name} · e.g. {i.examples}</div>
                     </div>
                   );
@@ -122,7 +121,7 @@ export default function WorkerSafetyPage({ searchParams }: Props) {
               )}
               <p className="text-xs text-muted-foreground">
                 Heat limits: ACGIH work–rest values (OSHA Technical Manual). WBGT up to{" "}
-                <span style={{ color: RISK_COLORS.Low }}>26.7 °C</span> allows continuous moderate work; above 31.1 °C
+                26.7 °C allows continuous moderate work; above 31.1 °C
                 moderate work must stop.
               </p>
             </CardContent>
