@@ -4,10 +4,12 @@ import {
   composeAlert,
   generateAlert,
   generateEventReport,
+  generateHealthReport,
   MissingKeyError,
   recommendActions,
   translateAlert,
   type EventDetails,
+  type HealthDetails,
 } from "@/lib/gemini";
 import { classifyRisk, compoundBand, compoundRiskScore } from "@/lib/risk";
 import { ruleAlert } from "@/lib/rule-alert";
@@ -90,7 +92,7 @@ const aiUnavailable = (e: unknown) => {
     : "The AI service is busy or unavailable.";
 };
 
-const STAGES = ["full", "compose", "recommend", "translate", "event"];
+const STAGES = ["full", "compose", "recommend", "translate", "event", "health"];
 
 // shortcut: in-memory, so each serverless instance counts separately and a cold start resets it.
 // Move to Upstash/Vercel KV if the URL is shared widely and quota abuse shows up in the logs.
@@ -156,6 +158,25 @@ export async function POST(req: Request) {
       { error: "Expected { city, lat, lon, weather: { temperature, humidity, … }, airQuality?: { aqi, pm25, uv, … } }" },
       { status: 400 },
     );
+  }
+
+  if (stage === "health") {
+    const h = (body.health ?? {}) as Body;
+    const details: HealthDetails = {
+      date: str(h.date, 30),
+      avgUv: num(h.avgUv, 0, 20),
+      uvHours: num(h.uvHours, 0, 24),
+      vitD: h.vitD === true,
+      nightMin: num(h.nightMin, -90, 70),
+      waterL: num(h.waterL, 0, 20),
+      recs: strList(h.recs),
+    };
+    if (!details.date || !details.recs.length) return NextResponse.json({ error: "Expected health: { date, recs }" }, { status: 400 });
+    try {
+      return NextResponse.json({ ...(await generateHealthReport(input, details)), source: "ai" });
+    } catch (e) {
+      return NextResponse.json({ error: `${aiUnavailable(e)} The recommendations on this page still apply.` }, { status: 502 });
+    }
   }
 
   if (stage === "event") {

@@ -61,6 +61,7 @@ const LEGENDS: Record<MapMode, { label: string; color: string }[]> = {
   compound: COMPOUND_BANDS.map((b) => ({ label: b.level, color: b.color })),
   heat: RISK_BANDS.map((b) => ({ label: b.level, color: b.color })),
   air: AQI_BANDS.map((b) => ({ label: b.label.replace(" for sensitive groups", " (sensitive)"), color: b.color })),
+  vitd: [], // Health Advisor only
 };
 
 export default function Dashboard() {

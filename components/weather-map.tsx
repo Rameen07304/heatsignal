@@ -7,10 +7,11 @@ import type { LatLngBoundsExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { aqiBand, formatAqi } from "@/lib/air";
 import { cityHref, cityKey, type City } from "@/lib/cities";
+import { analyzeSunlight, LEVEL_LABEL, VITD_COLORS } from "@/lib/health-advisor";
 import { compoundBand, RISK_COLORS } from "@/lib/risk";
 import { ok, type CityState } from "@/lib/use-cities";
 
-export type MapMode = "compound" | "heat" | "air";
+export type MapMode = "compound" | "heat" | "air" | "vitd";
 
 interface Props {
   cities: City[];
@@ -55,6 +56,7 @@ export default function WeatherMap({ cities, data, mode }: Props) {
           const c = ok(s) ? s : null;
           const today = c?.days[0];
           const air = c?.now.air;
+          const sun = mode === "vitd" && c && today ? analyzeSunlight(c.hours.filter((h) => h.time.startsWith(today.date)), city.lat) : null;
           // Heat and compound use today's peak, not this instant: on a world map half the cities are in night.
           let color = NO_DATA;
           let radius = 7;
@@ -65,6 +67,8 @@ export default function WeatherMap({ cities, data, mode }: Props) {
             color = RISK_COLORS[today.risk];
           } else if (mode === "air" && air) {
             color = aqiBand(air.aqi).color;
+          } else if (sun) {
+            color = VITD_COLORS[sun.risk];
           }
           return (
             <CircleMarker
@@ -76,7 +80,13 @@ export default function WeatherMap({ cities, data, mode }: Props) {
               <Popup>
                 <strong>{city.name}</strong>, {city.country}
                 <br />
-                {c && today ? (
+                {sun ? (
+                  <>
+                    Vitamin D need: <strong>{LEVEL_LABEL[sun.risk]}</strong>
+                    <br />
+                    Daytime UV average {sun.avgUv.toFixed(1)}, {sun.uvHours} h at UV 3+
+                  </>
+                ) : c && today ? (
                   <>
                     {today.maxScore != null && (
                       <>

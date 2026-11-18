@@ -7,7 +7,8 @@ import { assess, hydrationLitres } from "./personal-risk.ts";
 import { ruleAlert } from "./rule-alert.ts";
 import { upcomingRisk } from "./risk-forecast.ts";
 import { trendYears } from "./trends.ts";
-import type { Conditions } from "./conditions.ts";
+import type { CombinedHour, Conditions } from "./conditions.ts";
+import { dayProfile, healthScores, recommendations } from "./health-advisor.ts";
 
 // 30°C / 50% RH: e = 0.5 * 6.105 * exp(17.27*30/267.7) ≈ 21.14 hPa → WBGT ≈ 29.26
 assert.ok(Math.abs(wbgt(30, 50) - 29.26) < 0.05, `wbgt(30,50)=${wbgt(30, 50)}`);
@@ -104,4 +105,29 @@ assert.deepEqual(trendYears(north, new Date("2026-07-01")), [2021, 2022, 2023, 2
 assert.deepEqual(trendYears(south, new Date("2026-02-15")), [2021, 2022, 2023, 2024, 2025]);
 assert.deepEqual(trendYears(south, new Date("2026-04-01")), [2022, 2023, 2024, 2025, 2026]);
 
-console.log("wbgt, risk, compound, work/rest, personal-risk, rule-alert, early-warning and trend-year checks passed");
+// Health advisor: a dim, smoggy winter day needs vitamin D and lung protection; a hot sunny one needs salts and SPF.
+const mk = (date: string, f: (h: number) => { temp: number; uv: number; aqi: number; pm25: number }) =>
+  Array.from({ length: 24 }, (_, h) => {
+    const x = f(h);
+    return {
+      time: `${date}T${String(h).padStart(2, "0")}:00`, temp: x.temp, rh: 50, wind: 0, solar: 0, wbgt: wbgt(x.temp, 50), risk: "Low",
+      air: { time: "", aqi: x.aqi, pm25: x.pm25, pm10: 0, o3: 0, no2: 0, so2: 0, co: 0, dust: 0, uv: x.uv },
+      score: null, level: null,
+    };
+  }) as unknown as CombinedHour[];
+const smog = dayProfile(mk("2026-12-01", () => ({ temp: 12, uv: 1, aqi: 220, pm25: 150 })), "2026-12-01", 31.5);
+assert.equal(smog.sun?.risk, "very_high");
+assert.equal(smog.sun?.uvHours, 0);
+const smogRecs = recommendations(smog, "Lahore");
+assert.deepEqual(smogRecs.filter((r) => r.priority === "essential").map((r) => r.id).sort(), ["respiratory", "vit-d"]);
+assert.ok(!smogRecs.some((r) => r.id === "sunscreen" || r.id === "electrolytes"));
+const hot = dayProfile(mk("2026-06-01", (h) => ({ temp: h >= 10 && h <= 16 ? 42 : 30, uv: h >= 10 && h <= 15 ? 11 : 2, aqi: 60, pm25: 10 })), "2026-06-01", 25);
+assert.equal(hot.skin?.spf, 50);
+assert.equal(hot.sun?.uvHours, 6); // 10:00–15:00 inside the 08–17 window
+const hotRecs = recommendations(hot, "Dubai");
+assert.equal(hotRecs[0].priority, "essential");
+assert.ok(hotRecs.some((r) => r.id === "electrolytes") && hotRecs.some((r) => r.id === "sunscreen"));
+assert.ok(!hotRecs.some((r) => r.id === "vit-d" || r.id === "respiratory"));
+assert.equal(healthScores(hot).skin, 0);
+
+console.log("wbgt, risk, compound, work/rest, personal-risk, rule-alert, early-warning, trend-year and health-advisor checks passed");
