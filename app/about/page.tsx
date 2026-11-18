@@ -14,11 +14,10 @@ const A = ({ href, children }: { href: string; children: React.ReactNode }) => (
   </a>
 );
 
-// Edit these to add your names and roles.
 const TEAM = [
-  { name: "Team member 1", role: "Role" },
-  { name: "Team member 2", role: "Role" },
-  { name: "Team member 3", role: "Role" },
+  { name: "Rameen Fatima", role: "Lead Developer & System Design" },
+  { name: "Halima Fahim", role: "Testing & Quality Assurance" },
+  { name: "Dania Imran", role: "Project Management, Documentation & Pitch Video" },
 ];
 
 const STEPS = [

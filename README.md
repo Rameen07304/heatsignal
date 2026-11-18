@@ -131,8 +131,8 @@ Built for the **Future Health Digital Innovation Challenge 2026** (Abu Dhabi Dep
 | Name | Role |
 |------|------|
 | Rameen Fatima | Lead Developer & System Design |
-| [Teammate 2] | [Role] |
-| [Teammate 3] | [Role] |
+| Halima Fahim | Testing & Quality Assurance |
+| Dania Imran | Project Management, Documentation & Pitch Video |
 
 HeatSignal is a decision-support tool, not medical advice.
 
