@@ -71,6 +71,8 @@ export function LiveGenerator() {
   const [steps, setSteps] = useState<Partial<Record<StageId, StepState>>>({});
   const [result, setResult] = useState<{ alert: HeatAlert; city: City; hour: CombinedHour } | null>(null);
   const [running, setRunning] = useState(false);
+  // Lahore may have been removed from the list: fall back to the first city shown.
+  const selected = options.find((c) => cityKey(c) === key) ?? options[0];
 
   const set = (id: StageId, s: StepState) => setSteps((prev) => ({ ...prev, [id]: s }));
 
@@ -99,7 +101,8 @@ export function LiveGenerator() {
   }
 
   async function run() {
-    const city = options.find((c) => cityKey(c) === key) ?? WORLD_CITIES[0];
+    if (!selected) return;
+    const city = selected;
     setRunning(true);
     setSteps({});
     setResult(null);
@@ -158,7 +161,6 @@ export function LiveGenerator() {
   }
 
   const statuses = Object.fromEntries(Object.entries(steps).map(([k, v]) => [k, v!.status])) as Partial<Record<StageId, StageStatus>>;
-  const selected = options.find((c) => cityKey(c) === key);
 
   return (
     <div className="space-y-4">
@@ -174,7 +176,7 @@ export function LiveGenerator() {
             <select
               aria-label="City"
               className="h-9 w-56 rounded-md border bg-card px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              value={key}
+              value={selected ? cityKey(selected) : ""}
               onChange={(e) => setKey(e.target.value)}
               disabled={running}
             >

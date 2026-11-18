@@ -47,15 +47,18 @@ function flashTitle() {
 
 function notify(list: { city: City; c: Conditions }[]) {
   if (!list.length || typeof Notification === "undefined" || Notification.permission !== "granted") return;
-  for (const { city, c } of list.slice(0, 3)) {
-    new Notification("🚨 HeatSignal Alert", {
-      body:
-        `${city.name} has reached ${c.now.level?.toUpperCase()} environmental risk\n` +
-        `Compound Score: ${c.now.score}/100 | WBGT: ${c.now.wbgt.toFixed(1)} °C` +
-        (c.now.air ? ` | AQI: ${formatAqi(c.now.air.aqi)}` : ""),
-      tag: `heatsignal-${cityKey(city)}`,
-    });
-  }
+  try {
+    for (const { city, c } of list.slice(0, 3)) {
+      new Notification("🚨 HeatSignal Alert", {
+        body:
+          `${city.name} has reached ${c.now.level?.toUpperCase()} environmental risk\n` +
+          `Compound Score: ${c.now.score}/100 | WBGT: ${c.now.wbgt.toFixed(1)} °C` +
+          (c.now.air ? ` | AQI: ${formatAqi(c.now.air.aqi)}` : ""),
+        tag: `heatsignal-${cityKey(city)}`,
+      });
+    }
+  } catch {} // Android Chrome forbids `new Notification` (service workers only); the chime and title still alert
+
   chime();
   flashTitle();
 }

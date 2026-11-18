@@ -1,9 +1,13 @@
-// Self-check: `npm test` (Node 22.18+ runs TypeScript directly).
+// Self-check: `npm test` (Node 22.15+; scripts/ts-resolve.mjs lets plain Node load lib/ files).
 import assert from "node:assert/strict";
 import { wbgt, wetBulb } from "./wbgt.ts";
 import { classifyRisk, compoundBand, compoundRiskScore } from "./risk.ts";
 import { hourRanges, workRegimen } from "./work-rest.ts";
 import { assess, hydrationLitres } from "./personal-risk.ts";
+import { ruleAlert } from "./rule-alert.ts";
+import { upcomingRisk } from "./risk-forecast.ts";
+import { trendYears } from "./trends.ts";
+import type { Conditions } from "./conditions.ts";
 
 // 30°C / 50% RH: e = 0.5 * 6.105 * exp(17.27*30/267.7) ≈ 21.14 hPa → WBGT ≈ 29.26
 assert.ok(Math.abs(wbgt(30, 50) - 29.26) < 0.05, `wbgt(30,50)=${wbgt(30, 50)}`);
@@ -74,4 +78,30 @@ assert.ok(risky.score > safe.score && risky.score <= 100 && safe.score >= 0);
 assert.equal(risky.level.label, "Critical");
 assert.ok(risky.advice.some((a) => a.includes("N95")), "respiratory + bad air advises a mask");
 
-console.log("wbgt, risk, compound, work/rest and personal-risk checks passed");
+// Rule-based alert: in the worst conditions (most actions) "seek urgent care" must survive the trim.
+const worst = ruleAlert({
+  city: "Jacobabad", lat: 28.3, lon: 68.4, temperature: 46, humidity: 35, wbgt: 34, heatRisk: "Extreme",
+  air: { aqi: 220, pm25: 120, uv: 10 }, score: 92, level: "Emergency",
+});
+assert.ok(worst.actions.length <= 6, `${worst.actions.length} actions`);
+assert.ok(worst.actions.at(-1)!.startsWith("Seek urgent care"), "urgent-care advice is never dropped");
+
+// 48-hour early warning: a city that peaks at 40 today and reaches 80 in ten hours is flagged Critical.
+const hours = Array.from({ length: 49 }, (_, i) => ({ time: `h${i}`, score: i === 10 ? 80 : 30, level: i === 10 ? "Critical" : "Moderate" }));
+const conds = { hours, now: hours[0], days: [{ maxScore: 40 }] } as unknown as Conditions;
+assert.deepEqual(
+  { severity: upcomingRisk(conds)?.severity, hoursUntil: upcomingRisk(conds)?.hoursUntil },
+  { severity: "critical", hoursUntil: 10 },
+);
+// Already Critical earlier today: no "new" warning.
+assert.equal(upcomingRisk({ ...conds, days: [{ maxScore: 85 }] } as unknown as Conditions), null);
+
+// Trend years: the last five finished summers, by hemisphere.
+const north = { name: "", country: "", lat: 25, lon: 0 };
+const south = { ...north, lat: -25 };
+assert.deepEqual(trendYears(north, new Date("2026-11-18")), [2022, 2023, 2024, 2025, 2026]);
+assert.deepEqual(trendYears(north, new Date("2026-07-01")), [2021, 2022, 2023, 2024, 2025]);
+assert.deepEqual(trendYears(south, new Date("2026-02-15")), [2021, 2022, 2023, 2024, 2025]);
+assert.deepEqual(trendYears(south, new Date("2026-04-01")), [2022, 2023, 2024, 2025, 2026]);
+
+console.log("wbgt, risk, compound, work/rest, personal-risk, rule-alert, early-warning and trend-year checks passed");

@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { CartesianGrid, Legend, Line, LineChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -17,8 +18,8 @@ import { useAsync } from "@/lib/use-async";
 import { fetchForecast } from "@/lib/weather";
 
 interface Props {
-  params: { lat1: string; lon1: string; lat2: string; lon2: string };
-  searchParams: { n1?: string; c1?: string; n2?: string; c2?: string };
+  params: Promise<{ lat1: string; lon1: string; lat2: string; lon2: string }>;
+  searchParams: Promise<{ n1?: string; c1?: string; n2?: string; c2?: string }>;
 }
 
 const COLORS = ["#6366f1", "#f97316"];
@@ -59,7 +60,9 @@ function verdict(a: City, ca: Conditions, b: City, cb: Conditions): string {
   return `${hi.name} is currently ${gap} point${gap === 1 ? "" : "s"} higher risk than ${lo.name}, primarily due to ${reason}.`;
 }
 
-export default function ComparePage({ params, searchParams }: Props) {
+export default function ComparePage(props: Props) {
+  const params = use(props.params);
+  const searchParams = use(props.searchParams);
   const a = parse(params.lat1, params.lon1, searchParams.n1, searchParams.c1);
   const b = parse(params.lat2, params.lon2, searchParams.n2, searchParams.c2);
   const result = useAsync(async () => {

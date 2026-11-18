@@ -189,6 +189,12 @@ export async function fetchSeasonalAverage(
   lon: number,
   date: string,
 ): Promise<SeasonalAverage> {
+  // Five archive requests per visit for numbers that don't change: keep the result for the session.
+  const key = `heatsignal-normal-v1-${lat},${lon},${date}`;
+  try {
+    const cached = sessionStorage.getItem(key);
+    if (cached) return JSON.parse(cached);
+  } catch {}
   const [y, m, d] = date.split("-").map(Number);
   const years = [1, 2, 3, 4, 5].map((n) => y - n);
   const perYear = await Promise.all(
@@ -204,11 +210,15 @@ export async function fetchSeasonalAverage(
   const days = perYear.flatMap(summarizeDaily);
   if (!days.length) throw new Error("No historical data for this location");
   const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-  return {
+  const result = {
     avgMaxTemp: mean(days.map((x) => x.maxTemp)),
     avgMaxWbgt: mean(days.map((x) => x.maxWbgt)),
     years: years.length,
   };
+  try {
+    sessionStorage.setItem(key, JSON.stringify(result));
+  } catch {}
+  return result;
 }
 
 interface GeocodingResponse {

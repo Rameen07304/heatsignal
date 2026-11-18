@@ -90,8 +90,41 @@ const aiUnavailable = (e: unknown) => {
     : "The AI service is busy or unavailable.";
 };
 
-// ponytail: no rate limiting — add (e.g. Upstash/Vercel KV) before sharing the URL widely, each call spends Gemini quota.
+const STAGES = ["full", "compose", "recommend", "translate", "event"];
+
+// shortcut: in-memory, so each serverless instance counts separately and a cold start resets it.
+// Move to Upstash/Vercel KV if the URL is shared widely and quota abuse shows up in the logs.
+const WINDOW_MS = 10 * 60 * 1000;
+const MAX_CALLS = 30; // one pipeline run is 3 calls
+const calls = new Map<string, number[]>();
+
+function rateLimited(ip: string): boolean {
+  const now = Date.now();
+  const recent = (calls.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
+  recent.push(now);
+  calls.set(ip, recent);
+  if (calls.size > 5000) calls.clear(); // bound memory
+  return recent.length > MAX_CALLS;
+}
+
+/** Only our own pages may call this: each call spends Gemini quota. */
+function sameOrigin(req: Request): boolean {
+  const origin = req.headers.get("origin");
+  if (!origin) return false;
+  try {
+    return new URL(origin).host === (req.headers.get("x-forwarded-host") ?? req.headers.get("host"));
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
+  if (!sameOrigin(req)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+  if (rateLimited(ip)) {
+    return NextResponse.json({ error: "Too many alerts requested. Please wait a few minutes." }, { status: 429 });
+  }
+
   let body: Body;
   try {
     body = await req.json();
@@ -100,6 +133,9 @@ export async function POST(req: Request) {
   }
 
   const stage = body.stage ?? "full";
+  if (typeof stage !== "string" || !STAGES.includes(stage)) {
+    return NextResponse.json({ error: `stage must be one of ${STAGES.join(", ")}` }, { status: 400 });
+  }
 
   // Translator stage works on finished text, not on measurements.
   if (stage === "translate") {

@@ -1,7 +1,15 @@
 import type { City } from "./cities";
 import { fetchArchive, summarizeDaily } from "./weather";
 
-export const TREND_YEARS = [2021, 2022, 2023, 2024, 2025];
+export const TREND_COUNT = 5;
+
+/** The last TREND_COUNT summers that have ended (the archive lags about a week behind). */
+export function trendYears(city: City, today = new Date()): number[] {
+  const y = today.getUTCFullYear();
+  const done = new Date(Date.UTC(y, city.lat >= 0 ? 8 : 2, 8)) <= today; // 8 Sep / 8 Mar
+  const last = done ? y : y - 1;
+  return Array.from({ length: TREND_COUNT }, (_, i) => last - TREND_COUNT + 1 + i);
+}
 
 export interface SeasonStats {
   year: number;
@@ -20,10 +28,10 @@ export interface SeasonStats {
 function season(city: City, year: number) {
   return city.lat >= 0
     ? { start: `${year}-06-01`, end: `${year}-08-31`, label: `Jun–Aug ${year}` }
-    : { start: `${year - 1}-12-01`, end: `${year}-02-28`, label: `Dec ${year - 1}–Feb ${year}` };
+    : { start: `${year - 1}-12-01`, end: new Date(Date.UTC(year, 2, 0)).toISOString().slice(0, 10), label: `Dec ${year - 1}–Feb ${year}` };
 }
 
-const key = (c: City, y: number) => `heatsignal-trend-v1-${c.lat},${c.lon}-${y}`;
+const key = (c: City, y: number) => `heatsignal-trend-v2-${c.lat},${c.lon}-${y}`;
 
 /** One summer's statistics. History never changes, so results are kept in this browser for good. */
 export async function seasonStats(city: City, year: number): Promise<SeasonStats> {
@@ -55,7 +63,7 @@ export async function seasonStats(city: City, year: number): Promise<SeasonStats
 /** Seasons one after another (gentler on the free API than all at once). */
 export async function allSeasons(city: City): Promise<SeasonStats[]> {
   const out: SeasonStats[] = [];
-  for (const y of TREND_YEARS) out.push(await seasonStats(city, y));
+  for (const y of trendYears(city)) out.push(await seasonStats(city, y));
   return out;
 }
 

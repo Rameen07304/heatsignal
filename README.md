@@ -48,4 +48,4 @@ Import the repo in Vercel and add `GEMINI_API_KEY` under Project → Settings �
 
 ## Credits
 
-Weather and air-quality data by [Open-Meteo](https://open-meteo.com/) (CC BY 4.0; air quality from Copernicus CAMS). Map tiles © OpenStreetMap contributors and CARTO. Thresholds from WHO, NIOSH, ACGIH/OSHA and US EPA. HeatSignal is a decision-support tool, not medical advice.
+Weather and air-quality data by [Open-Meteo](https://open-meteo.com/) (CC BY 4.0; air quality from Copernicus CAMS). Map tiles © Esri (World Light/Dark Gray Canvas; sources Esri, HERE, Garmin, OpenStreetMap contributors). Thresholds from WHO, NIOSH, ACGIH/OSHA and US EPA. HeatSignal is a decision-support tool, not medical advice.

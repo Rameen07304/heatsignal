@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Activity,
   BellRing,
@@ -159,19 +160,26 @@ export function Header() {
         </div>
       </header>
 
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={t("menu")}>
-          <button type="button" aria-label="Close menu" className="absolute inset-0 bg-slate-900/40" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 start-0 flex w-72 max-w-[85vw] flex-col bg-card shadow-xl">
+      {/* Radix gives the drawer Escape-to-close, a focus trap and focus return. */}
+      <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-slate-900/40 lg:hidden" />
+          <DialogPrimitive.Content
+            aria-describedby={undefined}
+            className="fixed inset-y-0 start-0 z-50 flex w-72 max-w-[85vw] flex-col bg-card shadow-xl focus:outline-none lg:hidden"
+          >
+            <DialogPrimitive.Title className="sr-only">{t("menu")}</DialogPrimitive.Title>
             <div className="flex h-14 items-center justify-between px-4">
               <Brand />
-              <Button variant="ghost" size="icon" aria-label="Close menu" onClick={() => setOpen(false)}><X /></Button>
+              <DialogPrimitive.Close asChild>
+                <Button variant="ghost" size="icon" aria-label="Close menu"><X /></Button>
+              </DialogPrimitive.Close>
             </div>
             <div className="flex-1 overflow-y-auto px-3 py-2"><NavLinks /></div>
             <div className="border-t p-3"><LanguageSelect /></div>
-          </div>
-        </div>
-      )}
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
     </>
   );
 }

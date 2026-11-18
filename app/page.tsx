@@ -76,7 +76,7 @@ export default function Dashboard() {
     return ok(s) ? [{ city, c: s }] : [];
   });
   const failed = cities.length > 0 && cities.every((city) => data[cityKey(city)] instanceof Error);
-  const pending = loaded.length === 0 && !failed;
+  const pending = loaded.length === 0 && !failed && cities.length > 0;
 
   const critical = loaded.filter(({ c }) => (c.days[0].maxScore ?? 0) >= CRITICAL_SCORE);
   const upcoming = useUpcoming();

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node lib/wbgt.test.ts"
+    "test": "node --experimental-strip-types --import ./scripts/ts-resolve.mjs lib/wbgt.test.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -18,11 +18,11 @@
     "clsx": "^2.1.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.73.0",
-    "next": "14.2.35",
+    "next": "^15.5.29",
     "next-themes": "^0.4.6",
-    "react": "^18",
-    "react-dom": "^18",
-    "react-leaflet": "^4.2.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-leaflet": "^5.0.0",
     "recharts": "^3.10.1",
     "tailwind-merge": "^3.7.0",
     "tailwindcss-animate": "^1.0.7"
@@ -30,10 +30,10 @@
   "devDependencies": {
     "@types/leaflet": "^1.9.22",
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "eslint": "^8",
-    "eslint-config-next": "14.2.35",
+    "eslint-config-next": "^15.5.29",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"

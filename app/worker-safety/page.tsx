@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { HardHat } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,19 +18,20 @@ import { fetchForecast } from "@/lib/weather";
 import { INTENSITIES, heatFlag, workRegimen } from "@/lib/work-rest";
 
 interface Props {
-  searchParams: { lat?: string; lon?: string; name?: string; country?: string };
+  searchParams: Promise<{ lat?: string; lon?: string; name?: string; country?: string }>;
 }
 
 const DEFAULT = WORLD_CITIES.find((c) => c.name === "Abu Dhabi")!;
 
-function cityFromUrl(p: Props["searchParams"]): City | null {
+function cityFromUrl(p: Awaited<Props["searchParams"]>): City | null {
   const lat = Number(p.lat);
   const lon = Number(p.lon);
   if (!p.lat || !p.lon || !Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
   return { name: p.name?.slice(0, 100) || `${lat}, ${lon}`, country: p.country?.slice(0, 100) ?? "", lat, lon };
 }
 
-export default function WorkerSafetyPage({ searchParams }: Props) {
+export default function WorkerSafetyPage(props: Props) {
+  const searchParams = use(props.searchParams);
   const { cities } = useCities();
   const fromUrl = cityFromUrl(searchParams);
   const [selected, setSelected] = useState<City>(fromUrl ?? DEFAULT);

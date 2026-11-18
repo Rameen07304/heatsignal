@@ -41,6 +41,8 @@ export function ruleAlert(i: AlertInput): AlertText {
   if (badAir) actions.push("Wear a well-fitted N95 mask outdoors and keep windows closed while air quality is poor.");
   if (veryBadAir) actions.push("Move exercise and children's outdoor play indoors until the air improves.");
   if (highUv) actions.push(`UV is ${uvBand(i.air!.uv).label.toLowerCase()} (${i.air!.uv.toFixed(0)}): wear a hat and sunglasses and use SPF 30+ sunscreen.`);
+  // Trim the others, never this one: the worst conditions produce the most actions.
+  actions.splice(5);
   actions.push("Seek urgent care for confusion, fainting, hot dry skin or difficulty breathing.");
 
   const worker = [
@@ -52,5 +54,5 @@ export function ruleAlert(i: AlertInput): AlertText {
   if (veryBadAir) worker.push("Issue N95 masks to everyone working outdoors and reduce heavy exertion.");
   worker.push("Use a buddy system so workers can spot signs of heat illness in each other.");
 
-  return { risk_assessment: parts.join(" "), vulnerable_groups: groups, actions: actions.slice(0, 6), worker_safety: worker };
+  return { risk_assessment: parts.join(" "), vulnerable_groups: groups, actions, worker_safety: worker };
 }

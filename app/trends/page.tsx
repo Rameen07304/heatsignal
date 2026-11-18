@@ -10,7 +10,7 @@ import { ErrorState } from "@/components/error-state";
 import { WORLD_CITIES, type City } from "@/lib/cities";
 import { useT } from "@/lib/i18n";
 import { RISK_COLORS } from "@/lib/risk";
-import { TREND_YEARS, allSeasons, linearFit, type SeasonStats } from "@/lib/trends";
+import { TREND_COUNT, allSeasons, linearFit, type SeasonStats } from "@/lib/trends";
 import { useAsync } from "@/lib/use-async";
 import { formatDay } from "@/lib/utils";
 
@@ -27,7 +27,9 @@ function Summary({ city, s }: { city: City; s: SeasonStats[] }) {
   const change =
     first.extremeDays > 0
       ? `${last.extremeDays >= first.extremeDays ? "an increase" : "a decrease"} of ${Math.abs(Math.round(((last.extremeDays - first.extremeDays) / first.extremeDays) * 100))}% in extreme heat days`
-      : `${last.extremeDays} extreme heat days, up from none`;
+      : last.extremeDays > 0
+        ? `${last.extremeDays} extreme heat days, up from none`
+        : "no extreme heat days in either summer";
   const rise = last.avgMaxWbgt - first.avgMaxWbgt;
 
   return (
@@ -36,7 +38,7 @@ function Summary({ city, s }: { city: City; s: SeasonStats[] }) {
       <CardContent className="space-y-2 text-sm leading-relaxed">
         <p>• Between {first.label} and {last.label}, {city.name} saw {change} (WBGT ≥ 33 °C: {first.extremeDays} → {last.extremeDays} days).</p>
         <p>• The average daily peak heat stress {rise >= 0 ? "rose" : "fell"} by <b>{Math.abs(rise).toFixed(1)} °C WBGT</b> (trend {wbgt.slope >= 0 ? "+" : "−"}{Math.abs(wbgt.slope).toFixed(2)} °C a year).</p>
-        <p>• If the {TREND_YEARS.length}-year trend simply continued, {city.name} would see about <b>{projected} extreme days</b> in the summer of 2030.</p>
+        <p>• If the {TREND_COUNT}-year trend simply continued, {city.name} would see about <b>{projected} extreme days</b> in the summer of 2030.</p>
         <p className="text-xs text-muted-foreground">
           Five summers are too few to separate a climate trend from normal year-to-year swings (El Niño, monsoon timing). Treat the
           projection as an illustration, not a forecast; climate studies use 30 years or more.
@@ -62,7 +64,7 @@ export default function TrendsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("trends")}</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            How the hottest season has changed over the last {TREND_YEARS.length} years, from archived weather (ERA5 via
+            How the hottest season has changed over the last {TREND_COUNT} years, from archived weather (ERA5 via
             Open-Meteo). June–August for the northern hemisphere, December–February for the southern.
           </p>
         </div>
@@ -71,7 +73,7 @@ export default function TrendsPage() {
 
       {result.loading && (
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">Loading {TREND_YEARS.length} summers of hourly data — the first time takes a few seconds; after that it’s instant.</p>
+          <p className="text-sm text-muted-foreground">Loading {TREND_COUNT} summers of hourly data — the first time takes a few seconds; after that it’s instant.</p>
           <Skeleton className="h-72 w-full rounded-lg" />
         </div>
       )}

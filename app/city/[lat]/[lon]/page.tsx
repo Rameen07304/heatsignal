@@ -1,5 +1,6 @@
 "use client";
 
+import { use, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, HardHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,8 @@ import { formatDay } from "@/lib/utils";
 import { fetchForecast, fetchSeasonalAverage, type DailySummary } from "@/lib/weather";
 
 interface Props {
-  params: { lat: string; lon: string };
-  searchParams: { name?: string; country?: string };
+  params: Promise<{ lat: string; lon: string }>;
+  searchParams: Promise<{ name?: string; country?: string }>;
 }
 
 function Delta({ label, today, average }: { label: string; today: number; average: number }) {
@@ -67,7 +68,9 @@ function HistoricalComparison({ lat, lon, today }: { lat: number; lon: number; t
   );
 }
 
-export default function CityPage({ params, searchParams }: Props) {
+export default function CityPage(props: Props) {
+  const params = use(props.params);
+  const searchParams = use(props.searchParams);
   const lat = Number(params.lat);
   const lon = Number(params.lon);
   const valid = Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
@@ -85,6 +88,11 @@ export default function CityPage({ params, searchParams }: Props) {
     return buildConditions(forecast, air);
   }, [lat, lon]);
   const c = result.data;
+
+  // A client page can't export metadata, so name the tab here.
+  useEffect(() => {
+    document.title = `${valid ? city.name : "Unknown location"} · HeatSignal`;
+  }, [valid, city.name]);
 
   const today = c?.days[0];
   const todayHours = c?.hours.filter((h) => h.time.startsWith(today!.date)) ?? [];

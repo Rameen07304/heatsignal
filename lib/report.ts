@@ -25,7 +25,7 @@ const LOGO = `<svg viewBox="0 0 32 32" fill="none"><path d="M13 28c-4.4 0-7-3-7-
  */
 export function openPrintable(title: string, subtitle: string, body: string) {
   const win = window.open("", "_blank", "width=860,height=1000");
-  if (!win) return;
+  if (!win) return alert("Your browser blocked the report window. Allow pop-ups for this site and try again.");
   win.document.write(
     `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>${CSS}</style></head><body>` +
       `<header>${LOGO}<h1>${esc(title)}</h1></header><p class="sub">${esc(subtitle)}</p>${body}` +

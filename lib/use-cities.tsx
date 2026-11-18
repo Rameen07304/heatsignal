@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { fetchAirMany } from "./air";
 import { WORLD_CITIES, cityKey, type City } from "./cities";
 import { buildConditions, type Conditions } from "./conditions";
@@ -48,7 +48,7 @@ export function CitiesProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null");
-      if (Array.isArray(saved) && saved.length) setCities(saved);
+      if (Array.isArray(saved)) setCities(saved);
     } catch {}
     setLoadedList(true);
   }, []);
@@ -61,8 +61,10 @@ export function CitiesProvider({ children }: { children: React.ReactNode }) {
   };
 
   const keys = cities.map(cityKey).join("|");
+  const fetchedAt = useRef(0);
   useEffect(() => {
     if (!loadedList) return;
+    fetchedAt.current = Date.now();
     let live = true;
     Promise.all([
       fetchForecasts(cities),
@@ -88,9 +90,19 @@ export function CitiesProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `keys` captures the city list
   }, [keys, attempt, loadedList]);
 
+  // Refresh stale data while the tab is visible, including the moment a hidden tab comes back.
   useEffect(() => {
-    const id = setInterval(() => document.visibilityState === "visible" && setAttempt((n) => n + 1), REFRESH_MS);
-    return () => clearInterval(id);
+    const tick = () => {
+      if (document.visibilityState === "visible" && fetchedAt.current && Date.now() - fetchedAt.current > REFRESH_MS) {
+        setAttempt((n) => n + 1);
+      }
+    };
+    const id = setInterval(tick, 60_000);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", tick);
+    };
   }, []);
 
   const retry = useCallback(() => {
