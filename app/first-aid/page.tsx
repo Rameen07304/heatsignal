@@ -22,9 +22,9 @@ const STEPS: Record<StepId, Step> = {
   q5: { q: "Are they having trouble breathing or a tight chest?", yes: "air", no: "mild" },
 };
 
-const RESULTS: Record<ResultId, { icon: string; title: string; color: string; call: boolean; steps: string[] }> = {
+const RESULTS: Record<ResultId, { title: string; color: string; call: boolean; steps: string[] }> = {
   unconscious: {
-    icon: "🔴", title: "EMERGENCY — call an ambulance now", color: "#dc2626", call: true,
+    title: "Emergency: call an ambulance now", color: "#dc2626", call: true,
     steps: [
       "Call an ambulance immediately.",
       "Move the person into shade or a cool place.",
@@ -34,7 +34,7 @@ const RESULTS: Record<ResultId, { icon: string; title: string; color: string; ca
     ],
   },
   heatstroke: {
-    icon: "🔴", title: "Likely HEATSTROKE — a medical emergency", color: "#dc2626", call: true,
+    title: "Likely heatstroke. This is a medical emergency", color: "#dc2626", call: true,
     steps: [
       "Call an ambulance now.",
       "Move them to shade or air conditioning.",
@@ -44,7 +44,7 @@ const RESULTS: Record<ResultId, { icon: string; title: string; color: string; ca
     ],
   },
   exhaustion: {
-    icon: "🟠", title: "Likely HEAT EXHAUSTION", color: "#ea580c", call: false,
+    title: "Likely heat exhaustion", color: "#ea580c", call: false,
     steps: [
       "Move them to a cool place.",
       "Give small sips of water.",
@@ -54,7 +54,7 @@ const RESULTS: Record<ResultId, { icon: string; title: string; color: string; ca
     ],
   },
   early: {
-    icon: "🟡", title: "EARLY HEAT STRESS", color: "#ca8a04", call: false,
+    title: "Early heat stress", color: "#ca8a04", call: false,
     steps: [
       "Move into shade and stop all physical activity.",
       "Drink water.",
@@ -63,7 +63,7 @@ const RESULTS: Record<ResultId, { icon: string; title: string; color: string; ca
     ],
   },
   air: {
-    icon: "🟠", title: "Possible reaction to polluted air", color: "#ea580c", call: false,
+    title: "Possible reaction to polluted air", color: "#ea580c", call: false,
     steps: [
       "Move indoors to cleaner air and close the windows.",
       "If they have asthma, help them use their inhaler.",
@@ -72,17 +72,17 @@ const RESULTS: Record<ResultId, { icon: string; title: string; color: string; ca
     ],
   },
   mild: {
-    icon: "🟢", title: "Likely mild — prevent it getting worse", color: "#16a34a", call: false,
+    title: "Likely mild. Stop it getting worse", color: "#16a34a", call: false,
     steps: ["Encourage water, shade and rest as a precaution.", "Check on them again in 30 minutes."],
   },
 };
 
 const TIPS = [
-  { title: "For outdoor workers", tips: ["Drink a cup of water every 15–20 minutes in the heat, even if not thirsty.", "Take rest breaks in shade — see the Worker Safety page for your schedule.", "Do the heaviest work early in the morning.", "Wear light, loose clothing and a hat.", "Work in pairs and watch each other for warning signs.", "New to the heat? Build up over 1–2 weeks."] },
+  { title: "For outdoor workers", tips: ["Drink a cup of water every 15–20 minutes in the heat, even if not thirsty.", "Take rest breaks in shade. The Worker Safety page has your schedule for your schedule.", "Do the heaviest work early in the morning.", "Wear light, loose clothing and a hat.", "Work in pairs and watch each other for warning signs.", "New to the heat? Build up over 1–2 weeks."] },
   { title: "For parents and caregivers", tips: ["Never leave a child in a parked car, even for a minute.", "Keep babies out of direct sun; dress them lightly.", "Offer water often; breastfed babies may need more feeds.", "Move play indoors in the hottest hours.", "Watch for unusual sleepiness, irritability or fewer wet nappies."] },
   { title: "For elderly people living alone", tips: ["Arrange for someone to check on you twice a day in a heatwave.", "Stay in the coolest room; close curtains on the sunny side.", "Drink regularly even if you don’t feel thirsty.", "Take cool showers or use wet cloths.", "Know where the nearest cooled public space is."] },
   { title: "For athletes and exercisers", tips: ["Train early morning or evening.", "Weigh yourself before and after; drink to replace losses.", "Cut intensity when WBGT is above 28 °C.", "Stop at once if you feel dizzy, confused or stop sweating.", "Acclimatise gradually over 10–14 days."] },
-  { title: "For people with chronic conditions", tips: ["Ask your doctor whether your medicines affect heat tolerance.", "Keep inhalers and medicines cool and with you.", "Avoid going out when the air is unhealthy (AQI above 150).", "Have a plan for power cuts if you rely on cooling.", "Seek help early — symptoms can escalate quickly."] },
+  { title: "For people with chronic conditions", tips: ["Ask your doctor whether your medicines affect heat tolerance.", "Keep inhalers and medicines cool and with you.", "Avoid going out when the air is unhealthy (AQI above 150).", "Have a plan for power cuts if you rely on cooling.", "Get help early. Symptoms can get worse fast."] },
 ];
 
 export default function FirstAidPage() {
@@ -107,10 +107,10 @@ export default function FirstAidPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t("firstAid")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("firstAid")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Someone may be suffering from heat illness. Answer a few questions and we’ll tell you what to do. This guide is
-          fixed advice, not AI — it works instantly and offline once loaded.
+          fixed advice, not AI, so it works instantly and offline once loaded.
         </p>
       </div>
 
@@ -147,7 +147,7 @@ export default function FirstAidPage() {
             </ol>
           </div>
           <Card className={r.call ? "border-red-500" : undefined}>
-            <CardHeader><CardTitle className="flex items-center gap-2"><Phone className="h-5 w-5" /> Emergency numbers — {city.country || city.name}</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="flex items-center gap-2"><Phone className="h-5 w-5" /> Emergency numbers: {city.country || city.name}</CardTitle></CardHeader>
             <CardContent>
               {numbers ? (
                 <div className="flex flex-wrap gap-3">

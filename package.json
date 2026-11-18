@@ -1,6 +1,7 @@
 {
   "name": "heatsignal",
   "version": "0.1.0",
+  "description": "Real-time environmental health intelligence platform",
   "private": true,
   "scripts": {
     "dev": "next dev",

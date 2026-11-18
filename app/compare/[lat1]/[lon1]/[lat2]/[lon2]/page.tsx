@@ -76,7 +76,7 @@ export default function ComparePage(props: Props) {
       <Link href={a ? cityHref(a) : "/"} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Back
       </Link>
-      <h1 className="text-3xl font-bold tracking-tight">
+      <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
         <span style={{ color: COLORS[0] }}>{a?.name ?? "?"}</span> <span className="text-muted-foreground">vs</span>{" "}
         <span style={{ color: COLORS[1] }}>{b?.name ?? "?"}</span>
       </h1>

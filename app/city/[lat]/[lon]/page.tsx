@@ -110,7 +110,7 @@ export default function CityPage(props: Props) {
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{valid ? city.name : "Unknown location"}</h1>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{valid ? city.name : "Unknown location"}</h1>
           <p className="text-sm text-muted-foreground">
             {[city.country, valid && `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`, c && `Local time ${formatDay(c.now.time)}, ${c.now.time.slice(11, 16)}`]
               .filter(Boolean)

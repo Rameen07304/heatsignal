@@ -121,6 +121,10 @@
   body {
     background: white !important;
   }
+  /* The sidebar is hidden, so drop the space kept for it. */
+  .lg\:ms-60 {
+    margin-inline-start: 0 !important;
+  }
   .site-card {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;

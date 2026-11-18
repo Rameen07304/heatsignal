@@ -30,7 +30,7 @@ export function RiskBadge({ level, className }: { level: RiskLevel; className?: 
 export function AqiBadge({ aqi, short, className }: { aqi: number; short?: boolean; className?: string }) {
   const band = aqiBand(aqi);
   return (
-    <Pill color={band.color} className={className} title={`US AQI ${formatAqi(aqi)} — ${band.label}`}>
+    <Pill color={band.color} className={className} title={`US AQI ${formatAqi(aqi)}, ${band.label}`}>
       {short ? band.label.replace(" for sensitive groups", " (sensitive)") : `AQI ${formatAqi(aqi)} · ${band.label}`}
     </Pill>
   );

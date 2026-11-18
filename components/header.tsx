@@ -109,7 +109,7 @@ function NavLinks() {
                   href={href}
                   aria-current={active(href) ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-foreground/80 transition-colors hover:bg-muted hover:text-foreground",
+                    "flex items-center gap-2.5 rounded-md px-2 py-2.5 text-sm lg:py-1.5 text-foreground/80 transition-colors hover:bg-muted hover:text-foreground",
                     active(href) && "bg-primary/10 font-medium text-primary hover:bg-primary/10 hover:text-primary",
                   )}
                 >
@@ -125,6 +125,11 @@ function NavLinks() {
   );
 }
 
+function ago(d: Date, now: number) {
+  const min = Math.max(0, Math.round((now - d.getTime()) / 60_000));
+  return min < 1 ? "just now" : min < 60 ? `${min} min ago` : `${Math.round(min / 60)} h ago`;
+}
+
 /** Desktop sidebar + top bar, and a drawer on small screens. */
 export function Header() {
   const pathname = usePathname();
@@ -132,8 +137,13 @@ export function Header() {
   const { t } = useT();
   const { updatedAt } = useCities();
   const [open, setOpen] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <>
@@ -150,7 +160,7 @@ export function Header() {
           </Button>
           <div className="lg:hidden"><Brand /></div>
           <p className="ms-auto hidden text-xs text-muted-foreground sm:block">
-            {updatedAt ? `Data updated ${updatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · Open-Meteo` : "Loading live data…"}
+            {updatedAt ? <span title={updatedAt.toLocaleString()}>Updated {ago(updatedAt, now)} · Open-Meteo</span> : "Loading live data…"}
           </p>
           <div className="ms-auto flex items-center gap-1 sm:ms-3">
             <NotifyButton />

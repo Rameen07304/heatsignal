@@ -275,6 +275,18 @@ export function recommendations(p: DayProfile, city: string): Recommendation[] {
     });
   }
 
+  if (air && sun && (air.respiratory === "high" || air.respiratory === "severe") && (sun.risk === "high" || sun.risk === "very_high")) {
+    recs.push({
+      id: "iron",
+      icon: "utensils",
+      name: "Iron and B vitamins",
+      why: `${city} has dirty air (AQI **${formatAqi(air.aqi)}**) and little sun today. Days indoors under smog often leave people tired, and low iron makes that worse.`,
+      suggestion: "Eat iron-rich food: lentils, chickpeas, spinach, eggs or meat. Add lemon or another vitamin C food to help your body absorb the iron. Only take iron tablets if a blood test shows you need them.",
+      priority: "optional",
+      category: "supplement",
+    });
+  }
+
   if (heat.sweat === "heavy") {
     recs.push({
       id: "magnesium",

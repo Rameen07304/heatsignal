@@ -77,12 +77,15 @@ export async function fetchMany<T>(
   return results.flat();
 }
 
+// Archive requests for 5 summers can be slow, so 15 s rather than 10.
+const get = (url: string) => fetch(url, { signal: AbortSignal.timeout(15_000) });
+
 export async function getJson<T>(url: string): Promise<T> {
-  let res = await fetch(url);
+  let res = await get(url);
   // The free API answers 429 when busy; one patient retry usually gets through.
   if (res.status === 429) {
     await new Promise((r) => setTimeout(r, 2000));
-    res = await fetch(url);
+    res = await get(url);
   }
   if (!res.ok) throw new Error(`Open-Meteo request failed (${res.status})`);
   return res.json();

@@ -94,7 +94,7 @@ const aiUnavailable = (e: unknown) => {
 
 const STAGES = ["full", "compose", "recommend", "translate", "event", "health"];
 
-// shortcut: in-memory, so each serverless instance counts separately and a cold start resets it.
+// Note: in-memory, so each serverless instance counts separately and a cold start resets it.
 // Move to Upstash/Vercel KV if the URL is shared widely and quota abuse shows up in the logs.
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_CALLS = 30; // one pipeline run is 3 calls

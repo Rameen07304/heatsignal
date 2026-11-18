@@ -93,10 +93,10 @@ export default function RiskAssessmentPage() {
   async function share() {
     if (!r || !peak || !c) return;
     const text = [
-      `My HeatSignal Risk Assessment — ${city.name}${city.country ? `, ${city.country}` : ""}, ${formatDay(c.now.time)}`,
+      `My HeatSignal Risk Assessment: ${city.name}${city.country ? `, ${city.country}` : ""}, ${formatDay(c.now.time)}`,
       peak.score != null ? `Environmental Risk: ${compoundBand(peak.score).level} (Score: ${peak.score}/100)` : null,
-      `Heat Stress (WBGT): ${peak.wbgt.toFixed(1)} °C — ${peak.risk}`,
-      peak.air ? `Air Quality (AQI): ${formatAqi(peak.air.aqi)} — ${aqiBand(peak.air.aqi).label}` : null,
+      `Heat Stress (WBGT): ${peak.wbgt.toFixed(1)} °C, ${peak.risk}`,
+      peak.air ? `Air Quality (AQI): ${formatAqi(peak.air.aqi)}, ${aqiBand(peak.air.aqi).label}` : null,
       `My Personal Risk: ${r.level.label} (${r.score}/100)`,
       `Key advice: ${r.advice[0]}`,
       `💧 Drink at least ${r.litres} litres of water today`,
@@ -114,9 +114,9 @@ export default function RiskAssessmentPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t("riskAssessment")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("riskAssessment")}</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Your own risk from today’s heat and air, based on who you are and what you’re doing. Instant, private — nothing
+          Your own risk from today’s heat and air, based on who you are and what you’re doing. Instant and private. Nothing
           you enter leaves this page.
         </p>
       </div>

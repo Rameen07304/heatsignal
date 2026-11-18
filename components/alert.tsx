@@ -54,7 +54,7 @@ function printAlert(title: string, subtitle: string, alert: HeatAlert) {
     const list = (h: string, xs: string[]) => (xs.length ? `<h3>${esc(h)}</h3><ul>${xs.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "");
     return `<section dir="${l.dir}" lang="${l.lang}"><h2>${esc(l.label)}</h2><h3>${esc(l.headings[0])}</h3><p>${esc(t.risk_assessment)}</p>${list(l.headings[1], t.vulnerable_groups)}${list(l.headings[2], t.actions)}${list(l.headings[3], t.worker_safety)}</section>`;
   }).join("");
-  const note = alert.source === "ai" ? "AI-written — review before public distribution." : "Standard guidance (AI unavailable).";
+  const note = alert.source === "ai" ? "Written by AI. Review it before sharing publicly." : "Standard guidance (AI unavailable).";
   openPrintable(title, `${subtitle} · ${note}`, blocks);
 }
 
@@ -78,7 +78,7 @@ export function AlertView({ alert, note, title, subtitle }: { alert: HeatAlert; 
               variant="outline"
               onClick={async () => {
                 try {
-                  await navigator.clipboard.writeText(alertToText(`${title} — ${subtitle}`, alert));
+                  await navigator.clipboard.writeText(alertToText(`${title}, ${subtitle}`, alert));
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 } catch {}
@@ -160,7 +160,7 @@ function AlertState({ state, city, hour }: { state: ReturnType<typeof useAlert>;
         </div>
       )}
       {state.alert && (
-        <AlertView alert={state.alert} note={state.note} title={`Health alert — ${city.name}`} subtitle={summary(hour)} />
+        <AlertView alert={state.alert} note={state.note} title={`Health alert: ${city.name}`} subtitle={summary(hour)} />
       )}
     </>
   );
@@ -178,7 +178,7 @@ export function AlertDialog({ city, hour, label = "Generate Alert", ...buttonPro
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-center gap-2">
-            Health alert — {city.name} {hour.score != null && <CompoundBadge score={hour.score} />}
+            Health alert: {city.name} {hour.score != null && <CompoundBadge score={hour.score} />}
           </DialogTitle>
           <DialogDescription>{summary(hour)}</DialogDescription>
         </DialogHeader>

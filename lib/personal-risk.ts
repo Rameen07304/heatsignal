@@ -42,7 +42,7 @@ export const LEVELS = [
   { max: 39, label: "Elevated", color: "#eab308" },
   { max: 59, label: "High", color: "#f97316" },
   { max: 79, label: "Very High", color: "#ef4444" },
-  { max: 100, label: "Critical", color: "#a855f7" },
+  { max: 100, label: "Critical", color: "#991b1b" },
 ] as const;
 
 export interface PersonalRisk {
@@ -107,7 +107,7 @@ export function assess(p: Profile, e: Env): PersonalRisk {
     "Conditions are manageable today: keep drinking water and rest in shade if you feel unwell.",
     "Wear light-coloured, loose clothing and a hat outdoors.",
     p.activity === "outdoor" ? "Plan the heaviest tasks for the early morning." : "Plan outdoor errands for the early morning or evening.",
-    "Know the warning signs — dizziness, headache, nausea, confusion — and stop and cool down if they appear.",
+    "Know the warning signs: dizziness, headache, nausea, confusion. Stop and cool down if they appear.",
     "Check on older relatives and neighbours who live alone.",
   ];
   for (const g of general) if (advice.length < 5) advice.push(g);

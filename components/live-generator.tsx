@@ -90,7 +90,7 @@ export function LiveGenerator() {
         note: fb
           ? id === "translate"
             ? "One translation failed; the alert goes out in the languages that succeeded."
-            : "AI unavailable — used HeatSignal’s rule-based guidance."
+            : "AI unavailable, so HeatSignal’s built-in rules wrote this alert."
           : undefined,
       });
       return r;
@@ -216,14 +216,14 @@ export function LiveGenerator() {
       {result && (
         <Card >
           <CardHeader>
-            <CardTitle>Final alert — {result.city.name}</CardTitle>
+            <CardTitle>Final alert: {result.city.name}</CardTitle>
             <CardDescription>Combined output of all agents.</CardDescription>
           </CardHeader>
           <CardContent>
             <AlertView
               alert={result.alert}
               note={result.alert.ur && result.alert.ar ? undefined : "A translation was not available, so some languages are missing."}
-              title={`Health alert — ${result.city.name}`}
+              title={`Health alert: ${result.city.name}`}
               subtitle={`WBGT ${result.hour.wbgt.toFixed(1)} °C${result.hour.air ? ` · AQI ${formatAqi(result.hour.air.aqi)}` : ""}${result.hour.score != null ? ` · compound ${result.hour.score}/100` : ""}`}
             />
           </CardContent>

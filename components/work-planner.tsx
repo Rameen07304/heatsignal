@@ -48,14 +48,14 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Prop
   const sensitiveRanges = hourRanges(hours, sensitiveAir);
   const peakAqi = Math.max(0, ...hours.map((h) => h.aqi ?? 0));
   const airNote = sensitiveRanges.length
-    ? ` Sensitive groups (asthma, heart disease, children, older adults) should limit exertion — AQI up to ${formatAqi(peakAqi)}.`
+    ? ` Sensitive groups (asthma, heart disease, children, older adults) should limit exertion. AQI up to ${formatAqi(peakAqi)}.`
     : "";
 
   const headline =
     safeHours === hours.length
       ? `Safe all day for ${sensitiveRanges.length ? "healthy adults doing " : ""}${what}.${airNote}`
       : safeHours === 0
-        ? `No fully safe hours for ${what} — ${
+        ? `No fully safe hours for ${what}. ${
             hours.every(badAir)
               ? "the air is unhealthy all day"
               : hours.every((h) => h.regimen.workMin < 60)
@@ -76,7 +76,7 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Prop
       <CardHeader>
         <CardTitle>Safe outdoor hours</CardTitle>
         <CardDescription>
-          When it is safe to work or be active outside, hour by hour — combining heat stress and smog — and how
+          When it is safe to work or be active outside, hour by hour, counting both heat stress and smog, and how
           much rest is needed when it is not.
         </CardDescription>
       </CardHeader>
@@ -161,17 +161,17 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Prop
               ranges: hasAir ? hourRanges(hours, (h) => h.aqi != null && h.aqi <= 100) : [],
             },
             {
-              label: "Air unhealthy for sensitive groups — they should limit exertion",
+              label: "Air unhealthy for sensitive groups. They should limit exertion",
               color: aqiBand(120).color,
               ranges: sensitiveRanges,
             },
             {
-              label: "Unhealthy air — wear an N95 mask and take it easy",
+              label: "Unhealthy air. Wear an N95 mask and take it easy",
               color: aqiBand(UNHEALTHY_AQI).color,
               ranges: hourRanges(hours, (h) => badAir(h) && !worstAir(h)),
             },
             {
-              label: "Very unhealthy air — stay indoors if you can",
+              label: "Very unhealthy air. Stay indoors if you can",
               color: aqiBand(VERY_UNHEALTHY_AQI).color,
               ranges: hourRanges(hours, worstAir),
             },
@@ -192,8 +192,8 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Prop
           <p className="flex items-start gap-2 rounded-lg border p-3 text-sm">
             <Droplets className="mt-0.5 h-4 w-4 shrink-0 text-sky-500" />
             <span>
-              In the heat-restricted hours, drink one cup of water (about 250 ml) every 15–20 minutes — roughly
-              1 litre an hour — even if you are not thirsty. Rest in shade, not in the sun.
+              In the heat-restricted hours, drink one cup of water (about 250 ml) every 15–20 minutes, roughly
+              1 litre an hour, even if you are not thirsty. Rest in shade, not in the sun.
             </span>
           </p>
         )}

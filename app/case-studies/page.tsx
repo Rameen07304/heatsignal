@@ -67,7 +67,7 @@ const CASES: CaseStudy[] = [
     withAir: false,
     hero: { value: "52 °C", label: "recorded in Jacobabad" },
     summary:
-      "A prolonged heatwave across Sindh pushed Jacobabad to 52 °C — among the highest temperatures ever measured in Pakistan. Early warning could have triggered work-stop advisories for outdoor labourers.",
+      "A prolonged heatwave across Sindh pushed Jacobabad to 52 °C, among the highest temperatures ever measured in Pakistan. Early warning could have triggered work-stop advisories for outdoor labourers.",
     eventDate: "2024-05-26",
     eventLabel: "52 °C recorded (approx.)",
     eventPhrase: "the 52 °C reading",
@@ -84,7 +84,7 @@ const CASES: CaseStudy[] = [
     withAir: true,
     hero: { value: "400+", label: "AQI on India’s own scale (“severe”)" },
     summary:
-      "Delhi’s air reached “severe” levels for days in early November 2023 and primary schools were closed — while afternoons were still around 30 °C. Temperature-only warning systems saw nothing; the compound score shows both hazards at once.",
+      "Delhi’s air reached “severe” levels for days in early November 2023 and primary schools were closed, while afternoons were still around 30 °C. Temperature-only warning systems saw nothing; the compound score shows both hazards at once.",
     eventDate: "2023-11-03",
     eventLabel: "Schools closed (approx.)",
     eventPhrase: "schools were closed",
@@ -147,7 +147,7 @@ function findings(c: CaseStudy, days: CombinedDay[], hours: CombinedHour[], norm
       peakHour: worstHour,
       markerDate: worst.date,
       markerLabel: `Compound ${worst.maxScore}`,
-      headline: `Compound risk reached ${worst.maxScore}/100 (${worst.level}) on ${formatDay(worst.date)} — while heat on its own was only “${worst.risk}”.`,
+      headline: `Compound risk reached ${worst.maxScore}/100 (${worst.level}) on ${formatDay(worst.date)}, while heat on its own was only “${worst.risk}”.`,
       detail: `Air quality was “Unhealthy” or worse on ${smogDays} of ${days.length} days (model peak AQI ${formatAqi(Math.max(...days.map((d) => d.maxAqi ?? 0)))}), with afternoon WBGT up to ${peak.maxWbgt.toFixed(1)} °C.`,
       actions: [
         `Unhealthy-air alerts on ${smogDays} of ${days.length} days, starting ${formatDay(days.find((d) => (d.maxAqi ?? 0) >= UNHEALTHY_AQI)?.date ?? c.start)}.`,
@@ -170,13 +170,13 @@ function findings(c: CaseStudy, days: CombinedDay[], hours: CombinedHour[], norm
     markerLabel: wave ? "Heatwave warning" : "Extreme flagged",
     headline: wave
       ? lead > 0
-        ? `HeatSignal would have issued a heatwave warning on ${formatDay(wave.day.date)} — ${lead} day${lead === 1 ? "" : "s"} before ${c.eventPhrase} — as WBGT ran ${wave.anomaly.toFixed(1)} °C above the local normal.`
+        ? `HeatSignal would have issued a heatwave warning on ${formatDay(wave.day.date)}, ${lead} day${lead === 1 ? "" : "s"} before ${c.eventPhrase}, as WBGT ran ${wave.anomaly.toFixed(1)} °C above the local normal.`
         : `HeatSignal would have issued a heatwave warning on ${formatDay(wave.day.date)}, as WBGT ran ${wave.anomaly.toFixed(1)} °C above the local normal.`
       : !firstExtreme
         ? "WBGT stayed below the Extreme threshold in this window."
         : `HeatSignal would have flagged Extreme risk on ${formatDay(firstExtreme.date)}.`,
     detail:
-      `${extremeDays} of ${days.length} days were above the Extreme threshold — normal for this climate in this season, so HeatSignal also ` +
+      `${extremeDays} of ${days.length} days were above the Extreme threshold. That is normal for this climate in this season, so HeatSignal also ` +
       `watches for heat that is unusual: a warning when WBGT runs ${ANOMALY_C} °C or more above the ${NORMAL_YEARS}-year normal for ${RUN_DAYS} days in a row.` +
       (normal ? ` At its worst, WBGT was ${peakAnomaly.toFixed(1)} °C above normal (peak ${peak.maxWbgt.toFixed(1)} °C on ${formatDay(peak.date)}).` : ""),
     actions: [
@@ -284,9 +284,9 @@ export default function CaseStudiesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Case studies</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Case studies</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Three real events replayed through HeatSignal using archived weather and air-quality data — the same
+          Three real events replayed through HeatSignal using archived weather and air-quality data. Same
           formulas and thresholds as the live dashboard, with no local health data required.
         </p>
       </div>

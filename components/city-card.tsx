@@ -63,10 +63,7 @@ export function CityCard({ city, state, onRemove, onRetry }: Props) {
   const air = now?.air;
 
   return (
-    <Card
-      className="flex flex-col"
-     
-    >
+    <Card className="flex flex-col">
       <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
         <div className="min-w-0">
           <CardTitle className="truncate">{city.name}</CardTitle>
@@ -136,6 +133,10 @@ export function CityCard({ city, state, onRemove, onRetry }: Props) {
                 <GaugeRing label="Combined" fraction={0} color="#64748b" value="–" sub="No air data" />
               )}
             </div>
+
+            {now.score != null && (
+              <p className="text-center text-sm font-medium">{compoundBand(now.score).description}</p>
+            )}
 
             <div className="grid grid-cols-4 gap-2 rounded-lg bg-muted/50 p-2">
               <Stat label="Temp" value={`${now.temp.toFixed(1)}°`} />

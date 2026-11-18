@@ -63,7 +63,7 @@ const PRIORITY: Record<Priority, { label: string; color: string }> = {
 };
 const CATEGORIES: { value: Category | "all"; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "supplement", label: "Nutrition" },
+  { value: "supplement", label: "Supplements" },
   { value: "hydration", label: "Hydration" },
   { value: "protection", label: "Protection" },
   { value: "lifestyle", label: "Lifestyle" },
@@ -182,15 +182,16 @@ export default function HealthAdvisorPage() {
         }),
       );
       setReport(r.paragraphs);
-    } catch (e) {
-      setReportError(e instanceof Error ? e.message : "Something went wrong");
+    } catch {
+      // The rule-based cards above already cover everything, so just drop the AI card.
+      setReportError("hidden");
     } finally {
       setLoading(false);
     }
   }
 
   const reportText = (ps: string[]) =>
-    [`HeatSignal health advisory — ${name}, ${today && formatDay(today.date)}`, "", ...ps.flatMap((p) => [p, ""]),
+    [`HeatSignal health advisory: ${name}, ${today && formatDay(today.date)}`, "", ...ps.flatMap((p) => [p, ""]),
       "General wellness guidance based on environmental data, not medical advice. Consult your healthcare provider before starting any supplement."].join("\n");
 
   async function copy(ps: string[]) {
@@ -206,7 +207,7 @@ export default function HealthAdvisorPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t("healthAdvisor")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("healthAdvisor")}</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
           What today’s sunlight, air and heat mean for your body: vitamin D, hydration, lung and skin protection, with
           nutrition and lifestyle suggestions tied to the live numbers.
@@ -273,7 +274,7 @@ export default function HealthAdvisorPage() {
             </div>
           </section>
 
-          <Card className="border-s-4 border-s-primary">
+          {!reportError && <Card className="border-s-4 border-s-primary">
             <CardHeader className="flex-row flex-wrap items-start justify-between gap-3 space-y-0">
               <div>
                 <CardTitle className="text-base">Your health report</CardTitle>
@@ -283,10 +284,9 @@ export default function HealthAdvisorPage() {
                 {loading ? <Loader2 className="animate-spin" /> : <Sparkles />} Get your health report
               </Button>
             </CardHeader>
-            {(report || reportError) && (
+            {report && (
               <CardContent className="space-y-3 text-sm">
-                {reportError && <p className="rounded-md border border-destructive/50 bg-destructive/10 p-3">{reportError}</p>}
-                {report && (
+                {(
                   <>
                     {report.map((p) => <p key={p} className="leading-relaxed">{p}</p>)}
                     <MedicalDisclaimer />
@@ -295,17 +295,17 @@ export default function HealthAdvisorPage() {
                         {copied ? <Check /> : <Copy />} {copied ? "Copied" : "Copy"}
                       </Button>
                       {canShare && (
-                        <Button size="sm" variant="outline" onClick={() => navigator.share({ title: `HeatSignal health advisory — ${name}`, text: reportText(report) }).catch(() => {})}>
+                        <Button size="sm" variant="outline" onClick={() => navigator.share({ title: `HeatSignal health advisory: ${name}`, text: reportText(report) }).catch(() => {})}>
                           <Share2 /> Share
                         </Button>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground">AI-generated — check it against the recommendations above.</p>
+                    <p className="text-xs text-muted-foreground">Written by AI. Check it against the recommendations above.</p>
                   </>
                 )}
               </CardContent>
             )}
-          </Card>
+          </Card>}
 
           <Card>
             <CardHeader>

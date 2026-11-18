@@ -47,7 +47,7 @@ export default function WeatherMap({ cities, data, mode }: Props) {
       >
         <TileLayer
           key={tiles}
-          attribution="Tiles &copy; Esri — Esri, HERE, Garmin, OpenStreetMap contributors"
+          attribution="Tiles &copy; Esri, Esri, HERE, Garmin, OpenStreetMap contributors"
           url={`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${tiles}/MapServer/tile/{z}/{y}/{x}`}
           maxZoom={16}
         />

@@ -31,11 +31,11 @@ export const isElevated = (level: RiskLevel) =>
 export type CompoundLevel = "Low" | "Moderate" | "High" | "Critical" | "Emergency";
 
 export const COMPOUND_BANDS: { level: CompoundLevel; max: number; color: string; description: string }[] = [
-  { level: "Low", max: 25, color: "#22c55e", description: "Safe for all outdoor activities" },
-  { level: "Moderate", max: 50, color: "#eab308", description: "Caution for sensitive groups" },
-  { level: "High", max: 75, color: "#f97316", description: "Reduce outdoor exposure" },
-  { level: "Critical", max: 90, color: "#ef4444", description: "Dangerous — limit all outdoor work" },
-  { level: "Emergency", max: 100, color: "#a855f7", description: "Life-threatening — stay indoors" },
+  { level: "Low", max: 25, color: "#22c55e", description: "Safe for normal outdoor activity" },
+  { level: "Moderate", max: 50, color: "#eab308", description: "Fine for most. Children, older and sick people take breaks" },
+  { level: "High", max: 75, color: "#f97316", description: "Cut outdoor time, rest in shade, drink extra water" },
+  { level: "Critical", max: 90, color: "#ef4444", description: "Dangerous. Keep outdoor work short, with long breaks" },
+  { level: "Emergency", max: 100, color: "#991b1b", description: "Life-threatening. Stay indoors" },
 ];
 
 export function compoundRiskScore(wbgt: number, aqi: number, uv: number): number {

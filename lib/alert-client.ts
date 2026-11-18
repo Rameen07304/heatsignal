@@ -40,6 +40,9 @@ export async function postAlert<T>(body: unknown): Promise<T> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(50_000), // the server gives the AI up to 40 s
+  }).catch((e) => {
+    throw new Error(e?.name === "TimeoutError" ? "The AI took too long to answer. Try again." : "Network error. Check your connection.");
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.error || `Request failed (${res.status})`);
@@ -121,9 +124,9 @@ export function alertToText(title: string, alert: HeatAlert): string {
     title,
     "",
     block(alert.en, ["Who is at risk", "What to do", "Worker safety"]),
-    ...(alert.ur ? ["", "— اردو —", block(alert.ur, ["کون زیادہ خطرے میں ہے", "کیا کریں", "مزدوروں کی حفاظت"])] : []),
-    ...(alert.ar ? ["", "— العربية —", block(alert.ar, ["الفئات الأكثر عرضة", "ماذا تفعل", "سلامة العمال"])] : []),
+    ...(alert.ur ? ["", "اردو", block(alert.ur, ["کون زیادہ خطرے میں ہے", "کیا کریں", "مزدوروں کی حفاظت"])] : []),
+    ...(alert.ar ? ["", "العربية", block(alert.ar, ["الفئات الأكثر عرضة", "ماذا تفعل", "سلامة العمال"])] : []),
     "",
-    "— HeatSignal",
+    "Sent from HeatSignal",
   ].join("\n");
 }

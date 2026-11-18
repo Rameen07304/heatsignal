@@ -18,12 +18,14 @@ export function AddCityDialog({
   label = "Add City",
   title = "Add a city to monitor",
   variant,
+  icon = <Plus />,
 }: {
   onAdd: (city: City) => void;
   monitored: Set<string>;
   label?: string;
   title?: string;
   variant?: "outline";
+  icon?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -63,7 +65,7 @@ export function AddCityDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant={variant}>
-          <Plus /> {label}
+          {icon} {label}
         </Button>
       </DialogTrigger>
       <DialogContent>

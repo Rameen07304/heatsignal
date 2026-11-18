@@ -36,7 +36,7 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
     "Light-coloured, loose, breathable clothing; cooling towel or neck shade",
     maxUv >= 3 ? `Wide-brim hat or hard-hat sun brim, sunglasses and SPF 30+ (UV up to ${maxUv.toFixed(0)})` : "Hat for any time in direct sun",
     maxAqi >= UNHEALTHY_AQI
-      ? `N95 / FFP2 mask — AQI reaches ${formatAqi(maxAqi)} during this shift, regardless of the heat`
+      ? `N95 / FFP2 mask: AQI reaches ${formatAqi(maxAqi)} during this shift, regardless of the heat`
       : maxAqi > 100
         ? `N95 mask for workers with asthma or heart conditions (AQI up to ${formatAqi(maxAqi)})`
         : null,
@@ -134,7 +134,7 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
                         <span>
                           {w === 60 && "Work the full hour"}
                           {w > 0 && w < 60 && <>Work {mm(hour, 0)}–{mm(hour, w)}, rest {mm(hour, w)}–{mm(hour, 60)}</>}
-                          {w === 0 && <span className="font-semibold text-destructive">No outdoor work — rest or indoor tasks</span>}
+                          {w === 0 && <span className="font-semibold text-destructive">No outdoor work. Rest or do indoor tasks</span>}
                         </span>
                         <span className="ml-auto text-xs text-muted-foreground">{h.wbgt.toFixed(1)} °C</span>
                       </li>

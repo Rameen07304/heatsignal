@@ -10,9 +10,18 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "HeatSignal — Environmental Health Intelligence", template: "%s · HeatSignal" },
+  metadataBase: new URL("https://heatsignal-rho.vercel.app"),
+  title: { default: "HeatSignal: Environmental Health Intelligence", template: "%s · HeatSignal" },
   description:
-    "Compound climate-health early warning: heat stress, air quality and UV for any city, with AI alerts in English, Urdu and Arabic.",
+    "Real-time heat stress, air quality and UV monitoring with health recommendations for 100+ cities worldwide.",
+  keywords: ["heat stress", "WBGT", "air quality", "environmental health", "public health", "climate", "UV index"],
+  openGraph: {
+    title: "HeatSignal",
+    description: "Know the environmental health risks before you step outside.",
+    type: "website",
+    url: "https://heatsignal-rho.vercel.app",
+    siteName: "HeatSignal",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -33,7 +42,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                   <a className="underline" href="https://open-meteo.com/" target="_blank" rel="noreferrer">
                     Open-Meteo
                   </a>{" "}
-                  (CC BY 4.0). HeatSignal is a decision-support tool, not medical advice. Team HeatSignal — Kinnaird College
+                  (CC BY 4.0). HeatSignal is a decision-support tool, not medical advice. Team HeatSignal, Kinnaird College
                   for Women, Lahore.
                 </footer>
               </div>

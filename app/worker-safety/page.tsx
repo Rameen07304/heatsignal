@@ -53,7 +53,7 @@ export default function WorkerSafetyPage(props: Props) {
     <div className="space-y-6">
       <div className="no-print flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
+          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight sm:text-3xl">
             <HardHat className="h-7 w-7 text-primary" /> Worker safety
           </h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">

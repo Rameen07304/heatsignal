@@ -62,7 +62,7 @@ export default function TrendsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("trends")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("trends")}</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             How the hottest season has changed over the last {TREND_COUNT} years, from archived weather (ERA5 via
             Open-Meteo). June–August for the northern hemisphere, December–February for the southern.
@@ -73,11 +73,11 @@ export default function TrendsPage() {
 
       {result.loading && (
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">Loading {TREND_COUNT} summers of hourly data — the first time takes a few seconds; after that it’s instant.</p>
+          <p className="text-sm text-muted-foreground">Loading {TREND_COUNT} summers of hourly data. The first load takes a few seconds, then it’s instant.</p>
           <Skeleton className="h-72 w-full rounded-lg" />
         </div>
       )}
-      {result.error && <ErrorState message="Couldn’t load the archive (the free service may be busy — try again in a minute)." onRetry={result.retry} />}
+      {result.error && <ErrorState message="Couldn’t load the weather archive. The free service may be busy, so try again in a minute." onRetry={result.retry} />}
 
       {s && rows && (
         <>
@@ -107,7 +107,7 @@ export default function TrendsPage() {
               <CardHeader>
                 <CardTitle>Average peak heat stress</CardTitle>
                 <CardDescription>
-                  Mean daily max WBGT each summer{warming ? " — trending upward" : ""}.
+                  Mean daily max WBGT each summer{warming ? ", trending upward" : ""}.
                 </CardDescription>
               </CardHeader>
               <CardContent>

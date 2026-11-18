@@ -32,7 +32,7 @@ export function ruleAlert(i: AlertInput): AlertText {
 
   const actions: string[] = [];
   if (i.heatRisk !== "Low") {
-    actions.push("Drink water regularly — about one cup every 15–20 minutes when active outdoors — even if not thirsty.");
+    actions.push("Drink about one cup of water every 15–20 minutes when active outdoors, even if not thirsty.");
     actions.push("Stay in shade or air-conditioned spaces during the hottest hours, usually 11:00–16:00.");
     actions.push("Check on older neighbours and relatives at least twice a day.");
   } else {

@@ -6,7 +6,7 @@ const en = {
   // Navigation
   monitor: "Monitor",
   protect: "Protect",
-  intelligence: "Intelligence",
+  intelligence: "Learn",
   dashboard: "Dashboard",
   trends: "Trends",
   riskAssessment: "Risk Assessment",
@@ -17,7 +17,7 @@ const en = {
   caseStudies: "Case Studies",
   alerts: "Alerts",
   about: "About",
-  tagline: "Environmental Health Intelligence",
+  tagline: "Heat, air and UV warnings",
   menu: "Menu",
   language: "Language",
   // Measures
@@ -51,7 +51,7 @@ const en = {
   isItSafe: "Is it safe to be outside?",
   citiesMonitored: "Cities monitored",
   atCritical: "At Critical+ risk",
-  highestWbgt: "Highest WBGT today",
+  highestWbgt: "Worst heat stress today",
   worstAqi: "Worst air now",
   risingRisks: "Rising risks",
   upcomingRisks: "Upcoming risks",
@@ -59,8 +59,8 @@ const en = {
   map: "Map",
   monitoredCities: "Monitored cities",
   // Banner
-  bannerHigh: "{city} is forecast to reach HIGH environmental risk in {hours} hours — compound score rising to {score}",
-  bannerCritical: "CRITICAL: {city} expected to reach dangerous levels in {hours} hours — take precautions now",
+  bannerHigh: "{city} is forecast to reach High risk in {hours} hours, with the combined score rising to {score}",
+  bannerCritical: "Critical: {city} is expected to reach dangerous levels in {hours} hours. Take precautions now",
   moreWarnings: "+{n} more",
 } as const;
 
@@ -118,8 +118,8 @@ const ur: Dict = {
   globalRankings: "عالمی درجہ بندی",
   map: "نقشہ",
   monitoredCities: "زیرِ نگرانی شہر",
-  bannerHigh: "{city} میں {hours} گھنٹوں میں ماحولیاتی خطرہ زیادہ ہونے کی پیش گوئی ہے — اسکور {score} تک",
-  bannerCritical: "نازک: {city} میں {hours} گھنٹوں میں خطرناک سطح متوقع ہے — ابھی احتیاط کریں",
+  bannerHigh: "{city} میں {hours} گھنٹوں میں ماحولیاتی خطرہ زیادہ ہونے کی پیش گوئی ہے، اسکور {score} تک",
+  bannerCritical: "نازک: {city} میں {hours} گھنٹوں میں خطرناک سطح متوقع ہے، ابھی احتیاط کریں",
   moreWarnings: "+{n} مزید",
 };
 
@@ -174,8 +174,8 @@ const ar: Dict = {
   globalRankings: "التصنيف العالمي للمخاطر",
   map: "الخريطة",
   monitoredCities: "المدن المرصودة",
-  bannerHigh: "من المتوقع أن تصل {city} إلى خطر بيئي مرتفع خلال {hours} ساعة — الدرجة ترتفع إلى {score}",
-  bannerCritical: "حرج: من المتوقع أن تصل {city} إلى مستويات خطرة خلال {hours} ساعة — اتخذ الاحتياطات الآن",
+  bannerHigh: "من المتوقع أن تصل {city} إلى خطر بيئي مرتفع خلال {hours} ساعة، الدرجة ترتفع إلى {score}",
+  bannerCritical: "حرج: من المتوقع أن تصل {city} إلى مستويات خطرة خلال {hours} ساعة، اتخذ الاحتياطات الآن",
   moreWarnings: "+{n} أخرى",
 };
 
@@ -254,7 +254,7 @@ const hi: Dict = {
 const es: Dict = {
   monitor: "Monitoreo",
   protect: "Protección",
-  intelligence: "Inteligencia",
+  intelligence: "Aprender",
   dashboard: "Panel",
   trends: "Tendencias",
   riskAssessment: "Evaluación de riesgo",

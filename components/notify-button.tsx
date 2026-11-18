@@ -37,7 +37,7 @@ function flashTitle() {
   const original = document.title;
   let n = 0;
   const id = setInterval(() => {
-    document.title = n++ % 2 ? original : "🚨 ALERT — HeatSignal";
+    document.title = n++ % 2 ? original : "ALERT: HeatSignal";
     if (n > 12) {
       clearInterval(id);
       document.title = original;

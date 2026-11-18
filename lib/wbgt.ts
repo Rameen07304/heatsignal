@@ -23,7 +23,7 @@ const wbgtSun = (t: number, rh: number) => 0.567 * t + 0.393 * vapourPressure(t,
 /** ISO 7243 WBGT without solar load (0.7·Tw + 0.3·Tg, with globe ≈ air temperature). */
 const wbgtShade = (t: number, rh: number) => 0.7 * wetBulb(t, rh) + 0.3 * t;
 
-// ponytail: radiation (W/m²) at which the BoM "sunny day" assumption is taken to hold fully.
+// Note: radiation (W/m²) at which the BoM "sunny day" assumption is taken to hold fully.
 // A linear blend, not a globe-temperature model — swap in Liljegren (2008) if this needs to be
 // defended to a met service; tune this constant against station WBGT readings if you get any.
 const FULL_SUN = 500;

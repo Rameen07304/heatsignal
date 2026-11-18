@@ -45,7 +45,7 @@ export function AlertHistory() {
         <div>
           <CardTitle>Alert history</CardTitle>
           <CardDescription>
-            Every alert generated in this browser — from city pages, cards and the live pipeline. Click a row to read it.
+            Every alert generated in this browser, from city pages, cards and the live pipeline. Click a row to read it.
           </CardDescription>
         </div>
         {entries.length > 0 && (
@@ -105,7 +105,7 @@ export function AlertHistory() {
                   {open === e.id && (
                     <TableRow className="hover:bg-transparent">
                       <TableCell colSpan={7} className="whitespace-normal bg-muted/30 p-4">
-                        <AlertView alert={e.alert} title={`Health alert — ${e.city}`} subtitle={new Date(e.at).toLocaleString()} />
+                        <AlertView alert={e.alert} title={`Health alert: ${e.city}`} subtitle={new Date(e.at).toLocaleString()} />
                       </TableCell>
                     </TableRow>
                   )}

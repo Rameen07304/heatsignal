@@ -222,7 +222,7 @@ function EventSafety() {
 
   const reportText = (r: EventReport) =>
     [
-      `Event Safety Report — ${type}, ${city.name}, ${date && formatDay(date)} ${hh(start)}–${hh(end)}`,
+      `Event Safety Report: ${type}, ${city.name}, ${date && formatDay(date)} ${hh(start)}–${hh(end)}`,
       `Rating: ${EVENT[status]}`,
       "",
       r.summary,
@@ -237,7 +237,7 @@ function EventSafety() {
   function printReport(r: EventReport) {
     const list = (h: string, xs: string[]) => `<h2>${esc(h)}</h2><ul>${xs.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
     openPrintable(
-      `Event Safety Report — ${type}`,
+      `Event Safety Report: ${type}`,
       `${city.name}${city.country ? `, ${city.country}` : ""} · ${date ? formatDay(date) : ""} ${hh(start)}–${hh(end)} · ${attendance} people · Rating: ${EVENT[status]}`,
       `<section><h2>Summary</h2><p>${esc(r.summary)}</p></section>${list("Risks", r.risks)}${list("Precautions", r.precautions)}${list("Schedule", r.schedule)}${list("Emergency plan", r.emergency_plan)}<p><b>Emergency: ${esc(emergencyLine(city.country))}</b></p>`,
     );
@@ -286,7 +286,7 @@ function EventSafety() {
 
           {better && (
             <p className="rounded-lg border border-sky-500/40 bg-sky-500/10 p-3 text-sm">
-              <b>Recommended change:</b> consider starting at <b>{hh(better.start)}</b> instead of {hh(start)} — the same{" "}
+              <b>Recommended change:</b> consider starting at <b>{hh(better.start)}</b> instead of {hh(start)}. The same{" "}
               {end - start}-hour window would peak at WBGT {better.wbgt.toFixed(1)} °C instead of {maxWbgt.toFixed(1)} °C
               {better.status < status ? ` (rating: ${EVENT[better.status]})` : ""}.
             </p>
@@ -352,7 +352,7 @@ function EventSafety() {
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => printReport(report)}><FileDown /> Download as PDF</Button>
                     </div>
-                    <p className="text-xs text-muted-foreground">AI-generated — review before sharing.</p>
+                    <p className="text-xs text-muted-foreground">Written by AI. Review it before sharing.</p>
                   </>
                 )}
               </CardContent>
@@ -369,7 +369,7 @@ export default function SafetyAdvisorPage() {
   return (
     <div className="space-y-6">
       <div className="no-print">
-        <h1 className="text-3xl font-bold tracking-tight">{t("safetyAdvisor")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("safetyAdvisor")}</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
           Should outdoor activities go ahead? Today’s advisory for schools, and a risk check with a precautions list for
           outdoor events up to a week ahead.

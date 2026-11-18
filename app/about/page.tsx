@@ -6,7 +6,7 @@ import { Logo } from "@/components/header";
 import { AQI_BANDS } from "@/lib/air";
 import { COMPOUND_BANDS, RISK_BANDS } from "@/lib/risk";
 
-export const metadata: Metadata = { title: "About" };
+export const metadata: Metadata = { title: "About", description: "Why HeatSignal exists, how the risk score works, and the data behind it." };
 
 const A = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <a href={href} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-foreground">
@@ -24,7 +24,7 @@ const TEAM = [
 const STEPS = [
   { icon: Radar, title: "Monitor", text: "Hourly heat, humidity, sunlight, air pollutants and UV for 100+ cities, from free global forecasts." },
   { icon: TrendingUp, title: "Analyze", text: "WBGT heat stress, US AQI and UV combine into one compound score, with a penalty when heat and bad air coincide." },
-  { icon: BellRing, title: "Alert", text: "Safe-hour plans for workers and AI-written alerts in English, Urdu and Arabic — with rule-based backup." },
+  { icon: BellRing, title: "Alert", text: "Safe-hour plans for workers and AI-written alerts in English, Urdu and Arabic. If the AI is down, built-in rules write the alert instead." },
 ];
 
 const STACK = [
@@ -41,15 +41,15 @@ export default function AboutPage() {
     <div className="mx-auto max-w-4xl space-y-8">
       <section className="rounded-lg border bg-card p-8 sm:p-10">
         <Logo className="h-9 w-10" />
-        <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">HeatSignal</h1>
-        <p className="mt-2 text-lg text-muted-foreground">Environmental health intelligence for the hottest, most polluted places on Earth.</p>
+        <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">HeatSignal</h1>
+        <p className="mt-2 text-lg text-muted-foreground">Heat, air and UV warnings for the hottest, most polluted places on Earth.</p>
         <p className="mt-6 max-w-2xl leading-relaxed">
-          HeatSignal answers one question for anyone who works or lives outdoors: <b>is it safe to be outside right now — and if
+          HeatSignal answers one question for anyone who works or lives outdoors: <b>is it safe to be outside right now? If
           not, when will it be?</b> It watches heat stress, air pollution and UV together, because that is how people
           experience them.
         </p>
         <div className="mt-6 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full border bg-background/60 px-3 py-1">Built for the Future Health Digital Innovation Challenge 2026 — Abu Dhabi Department of Health</span>
+          <span className="rounded-full border bg-background/60 px-3 py-1">Built for the Future Health Digital Innovation Challenge 2026, Abu Dhabi Department of Health</span>
         </div>
       </section>
 
@@ -58,13 +58,13 @@ export default function AboutPage() {
         <CardContent className="space-y-3 text-sm leading-relaxed">
           <p>
             Heat kills more people than any other type of extreme weather, and most of those deaths are preventable with
-            early, specific warnings. The people most exposed — construction workers, farm labourers, delivery riders,
-            older people without cooling — are the least likely to get them.
+            early, specific warnings. The people most exposed are the least likely to get them: construction workers,
+            farm labourers, delivery riders, and older people without cooling.
           </p>
           <p>
             Most warning systems look at air temperature alone. But 38 °C in humid Karachi is far more dangerous than
-            38 °C in dry Riyadh; and in South Asia the danger outdoors doesn’t end with summer — from October to
-            February smog takes over. Studies of heat and air pollution have found that the two together raise
+            38 °C in dry Riyadh; and in South Asia the danger outdoors doesn’t end with summer. From October to
+            February, smog takes over. Studies of heat and air pollution have found that the two together raise
             mortality more than either alone: heat makes people breathe faster and deeper, taking in more of the
             polluted air.
           </p>
@@ -72,13 +72,13 @@ export default function AboutPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Our innovation</CardTitle></CardHeader>
+        <CardHeader><CardTitle>What’s new here</CardTitle></CardHeader>
         <CardContent className="space-y-3 text-sm leading-relaxed">
           <p>
             HeatSignal combines heat stress (WBGT), air quality (US AQI) and UV into a single <b>Compound Environmental
             Health Risk Score</b> from 0 to 100, and turns it into action: an hour-by-hour safe-work plan, a printable
             site notice, and AI-written alerts in English, Urdu and Arabic. It works for any city on Earth on day one,
-            because it relies on universal physiology and free global forecasts — not on local hospital records that
+            because it relies on universal physiology and free global forecasts, not on local hospital records that
             many of the hottest cities don’t have.
           </p>
           <div className="flex overflow-hidden rounded-md text-center text-xs font-semibold text-white">
@@ -114,11 +114,11 @@ export default function AboutPage() {
         <CardHeader><CardTitle>The science</CardTitle></CardHeader>
         <CardContent className="space-y-5 text-sm leading-relaxed">
           <div>
-            <h3 className="mb-1 font-semibold">Heat stress — WBGT</h3>
+            <h3 className="mb-1 font-semibold">Heat stress (WBGT)</h3>
             <p className="text-muted-foreground">
               Wet Bulb Globe Temperature measures how hard it is for the body to shed heat. HeatSignal uses the Australian
-              Bureau of Meteorology’s formula for sunny conditions, and — because that formula overstates heat stress at
-              night — blends to the ISO 7243 shade formula as measured sunlight falls to zero.
+              Bureau of Meteorology’s formula for sunny conditions. That formula overstates heat stress at night, so HeatSignal
+              blends to the ISO 7243 shade formula as sunlight falls to zero.
             </p>
             <pre className="mt-2 overflow-x-auto rounded-lg border bg-muted/40 p-3 text-xs">
 {`Sun:   WBGT = 0.567 × T + 0.393 × e + 3.94,   e = (RH/100) × 6.105 × exp(17.27·T / (237.7 + T))
@@ -175,7 +175,7 @@ score   = min(100, round(100 × base × penalty))`}
       <Card>
         <CardHeader><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" /> Team</CardTitle></CardHeader>
         <CardContent>
-          <p className="font-semibold">Team HeatSignal — Kinnaird College for Women, Lahore</p>
+          <p className="font-semibold">Team HeatSignal, Kinnaird College for Women, Lahore</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             {TEAM.map((m) => (
               <div key={m.name} className="rounded-lg border p-3">
@@ -197,12 +197,12 @@ score   = min(100, round(100 × base × penalty))`}
             <li>
               Weather forecasts, historical archive, air quality and geocoding by <A href="https://open-meteo.com/">Open-Meteo</A>,
               licensed under <A href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</A>. Air quality from the Copernicus
-              Atmosphere Monitoring Service (CAMS) model — estimates, not street-level monitors.
+              Atmosphere Monitoring Service (CAMS) model. These are model estimates, not street-level monitors.
             </li>
             <li>WBGT: <A href="http://www.bom.gov.au/info/thermal_stress/">Australian Bureau of Meteorology</A>; ISO 7243; wet-bulb temperature from Stull (2011).</li>
             <li>Work–rest limits: ACGIH, as published in the OSHA Technical Manual; heat guidance from WHO and NIOSH.</li>
             <li>US EPA Air Quality Index categories; WHO 2021 PM2.5 guideline; WHO UV index.</li>
-            <li>Map tiles © OpenStreetMap contributors and CARTO.</li>
+            <li>Map tiles © Esri, HERE, Garmin and OpenStreetMap contributors.</li>
             <li>City populations are rounded metro-area estimates, used only to indicate scale.</li>
             <li>Alerts are written by Google Gemini from HeatSignal’s computed values and should be reviewed before public use.</li>
           </ul>

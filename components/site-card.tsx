@@ -76,12 +76,12 @@ export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; 
           <section>
             <h3 className="mb-2 font-bold uppercase tracking-wide">Water &amp; protection</h3>
             <p className="text-3xl font-black tabular-nums">{peakLitres.toFixed(peakLitres < 1 ? 2 : 0)} L / hour</p>
-            <p className="text-sm">in the hottest hours — one cup every 15–20 minutes, even if not thirsty. Do not exceed 1.5 L an hour.</p>
+            <p className="text-sm">in the hottest hours. One cup every 15–20 minutes, even if not thirsty. Do not exceed 1.5 L an hour.</p>
             <ul className="mt-3 list-disc space-y-1 ps-5 text-sm">
               <li>Rest in shade, never in the sun</li>
               <li>Work in pairs and watch each other</li>
               <li>New workers: half a shift for the first days</li>
-              {maxAqi >= UNHEALTHY_AQI && <li><b>N95 masks required</b> — AQI {formatAqi(maxAqi)}</li>}
+              {maxAqi >= UNHEALTHY_AQI && <li><b>N95 masks required</b>: AQI {formatAqi(maxAqi)}</li>}
             </ul>
           </section>
 
@@ -89,7 +89,7 @@ export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; 
             <h3 className="mb-2 font-bold uppercase tracking-wide">Emergency signs</h3>
             <p className="text-sm font-semibold">Heat exhaustion</p>
             <p className="mb-2 text-sm">Heavy sweating, dizziness, headache, nausea, cramps, weakness → move to shade, loosen clothes, sip water, cool with wet cloths.</p>
-            <p className="text-sm font-semibold text-destructive">Heat stroke — call emergency now</p>
+            <p className="text-sm font-semibold text-destructive">Heat stroke: call emergency now</p>
             <p className="text-sm">Confusion, slurred speech, fainting, seizures, very hot skin → call for help, cool the body with water and fanning, do not give drinks if not alert.</p>
             <p className="mt-2 text-xs font-semibold">Emergency: {emergencyLine(city.country)}</p>
           </section>
