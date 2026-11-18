@@ -3,9 +3,12 @@
 import { use, useState } from "react";
 import { HardHat } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { MedicalDisclaimer } from "@/components/medical-disclaimer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { AqiBadge, CompoundBadge } from "@/components/risk-badge";
+import { ShareDialog } from "@/components/share-dialog";
+import { EmployerChecklist, IncidentLog } from "@/components/worksite-tools";
 import { ShiftPlanner } from "@/components/shift-planner";
 import { SiteCard } from "@/components/site-card";
 import { WorkPlanner } from "@/components/work-planner";
@@ -76,6 +79,8 @@ export default function WorkerSafetyPage(props: Props) {
         </label>
       </div>
 
+      <MedicalDisclaimer>Schedules follow published heat limits for healthy, acclimatised workers. They do not replace a site safety plan or medical advice. New, older or unwell workers need extra care.</MedicalDisclaimer>
+
       {result.loading && (
         <div className="space-y-6">
           <Skeleton className="h-40 w-full rounded-lg" />
@@ -98,6 +103,19 @@ export default function WorkerSafetyPage(props: Props) {
               <div className="flex flex-wrap gap-2">
                 {now.air && <AqiBadge aqi={now.air.aqi} />}
                 {now.score != null && <CompoundBadge score={now.score} />}
+                <ShareDialog
+                  title={`Worker safety: ${selected.name}`}
+                  text={[
+                    `⚠️ Worker safety: ${selected.name}`,
+                    "",
+                    `Heat stress (WBGT) ${now.wbgt.toFixed(1)}°C at ${now.time.slice(11, 16)}`,
+                    ...INTENSITIES.map((i) => `${i.label} work: ${workRegimen(now.wbgt, i.key).label}`),
+                    ...(now.air && now.air.aqi >= UNHEALTHY_AQI ? [`Air is unhealthy (AQI ${formatAqi(now.air.aqi)}). Wear N95 masks outdoors.`] : []),
+                    "",
+                    "Drink a cup of water every 15–20 minutes and rest in shade, not in the sun.",
+                  ].join("\n")}
+                  path={`/worker-safety?lat=${selected.lat}&lon=${selected.lon}&name=${encodeURIComponent(selected.name)}&country=${encodeURIComponent(selected.country)}`}
+                />
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -140,8 +158,12 @@ export default function WorkerSafetyPage(props: Props) {
             </div>
             <SiteCard city={selected} now={now} today={today} />
           </div>
+
+          <EmployerChecklist city={selected} today={today} />
         </>
       )}
+
+      <IncidentLog city={selected} />
     </div>
   );
 }

@@ -10,19 +10,22 @@ import { cityHref, cityKey, type City } from "@/lib/cities";
 import { analyzeSunlight, LEVEL_LABEL, VITD_COLORS } from "@/lib/health-advisor";
 import { compoundBand, RISK_COLORS } from "@/lib/risk";
 import { ok, type CityState } from "@/lib/use-cities";
+import { workRegimen, type Intensity } from "@/lib/work-rest";
 
-export type MapMode = "compound" | "heat" | "air" | "vitd";
+export type MapMode = "compound" | "heat" | "air" | "vitd" | "work";
 
 interface Props {
   cities: City[];
   data: Record<string, CityState>;
   mode: MapMode;
+  /** For mode "work": colour by the work–rest regimen for this work type at today’s peak heat. */
+  work?: Intensity;
 }
 
 const NO_DATA = "#64748b";
 
 // Load with next/dynamic({ ssr: false }) — Leaflet needs `window`.
-export default function WeatherMap({ cities, data, mode }: Props) {
+export default function WeatherMap({ cities, data, mode, work = "heavy" }: Props) {
   const { resolvedTheme } = useTheme();
   // Esri grey canvas: free with attribution, no API key (CARTO now requires one).
   const tiles = resolvedTheme === "dark" ? "World_Dark_Gray_Base" : "World_Light_Gray_Base";
@@ -56,6 +59,7 @@ export default function WeatherMap({ cities, data, mode }: Props) {
           const c = ok(s) ? s : null;
           const today = c?.days[0];
           const air = c?.now.air;
+          const regimen = mode === "work" && today ? workRegimen(today.maxWbgt, work) : null;
           const sun = mode === "vitd" && c && today ? analyzeSunlight(c.hours.filter((h) => h.time.startsWith(today.date)), city.lat) : null;
           // Heat and compound use today's peak, not this instant: on a world map half the cities are in night.
           let color = NO_DATA;
@@ -67,6 +71,8 @@ export default function WeatherMap({ cities, data, mode }: Props) {
             color = RISK_COLORS[today.risk];
           } else if (mode === "air" && air) {
             color = aqiBand(air.aqi).color;
+          } else if (regimen) {
+            color = regimen.color;
           } else if (sun) {
             color = VITD_COLORS[sun.risk];
           }
@@ -80,7 +86,11 @@ export default function WeatherMap({ cities, data, mode }: Props) {
               <Popup>
                 <strong>{city.name}</strong>, {city.country}
                 <br />
-                {sun ? (
+                {regimen && today ? (
+                  <>
+                    At today’s peak (WBGT {today.maxWbgt.toFixed(1)} °C): <strong>{regimen.label}</strong>
+                  </>
+                ) : sun ? (
                   <>
                     Vitamin D need: <strong>{LEVEL_LABEL[sun.risk]}</strong>
                     <br />

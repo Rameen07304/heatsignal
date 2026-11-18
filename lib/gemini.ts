@@ -50,7 +50,8 @@ async function generateJson<T>(prompt: string, schema: Schema): Promise<T> {
         systemInstruction: SYSTEM,
       });
       const result = await model.generateContent(prompt, { timeout: Math.min(18_000, left) });
-      return JSON.parse(result.response.text()) as T;
+      // The model sometimes adds markdown (**bold**, * bullets); the page shows plain text, so drop it.
+      return JSON.parse(result.response.text(), (_, v) => (typeof v === "string" ? v.replace(/\*+/g, "").replace(/\s{2,}/g, " ").trim() : v)) as T;
     } catch (e) {
       lastError = e;
     }

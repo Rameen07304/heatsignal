@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CompoundBadge } from "@/components/risk-badge";
+import { ShareDialog } from "@/components/share-dialog";
 import { formatAqi } from "@/lib/air";
 import { alertBody, alertToText, postAlert, saveToHistory } from "@/lib/alert-client";
 import type { AlertText, HeatAlert } from "@/lib/alert-types";
-import type { City } from "@/lib/cities";
+import { cityHref, type City } from "@/lib/cities";
 import type { CombinedHour } from "@/lib/conditions";
 import { esc, openPrintable } from "@/lib/report";
 
@@ -58,7 +59,23 @@ function printAlert(title: string, subtitle: string, alert: HeatAlert) {
   openPrintable(title, `${subtitle} · ${note}`, blocks);
 }
 
-export function AlertView({ alert, note, title, subtitle }: { alert: HeatAlert; note?: string; title: string; subtitle: string }) {
+const shareText = (title: string, t: AlertText) =>
+  [`⚠️ ${title}`, "", t.risk_assessment, "", "What to do:", ...t.actions.map((a) => `• ${a}`)].join("\n");
+
+export function AlertView({
+  alert,
+  note,
+  title,
+  subtitle,
+  path = "/",
+}: {
+  alert: HeatAlert;
+  note?: string;
+  title: string;
+  subtitle: string;
+  /** Page the shared link opens, e.g. the city page. */
+  path?: string;
+}) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="space-y-3">
@@ -72,7 +89,7 @@ export function AlertView({ alert, note, title, subtitle }: { alert: HeatAlert; 
               <TabsTrigger key={l.key} value={l.key} disabled={!alert[l.key]}>{l.label}</TabsTrigger>
             ))}
           </TabsList>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               size="sm"
               variant="outline"
@@ -86,6 +103,7 @@ export function AlertView({ alert, note, title, subtitle }: { alert: HeatAlert; 
             >
               {copied ? <Check /> : <Copy />} {copied ? "Copied" : "Copy alert"}
             </Button>
+            {alert.en && <ShareDialog title={title} text={shareText(title, alert.en)} path={path} />}
             <Button size="sm" variant="outline" onClick={() => printAlert(title, subtitle, alert)}>
               <FileDown /> Download as PDF
             </Button>
@@ -160,7 +178,7 @@ function AlertState({ state, city, hour }: { state: ReturnType<typeof useAlert>;
         </div>
       )}
       {state.alert && (
-        <AlertView alert={state.alert} note={state.note} title={`Health alert: ${city.name}`} subtitle={summary(hour)} />
+        <AlertView alert={state.alert} note={state.note} title={`Health alert: ${city.name}`} subtitle={summary(hour)} path={cityHref(city)} />
       )}
     </>
   );

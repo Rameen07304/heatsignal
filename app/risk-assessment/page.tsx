@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Copy, Droplets } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MedicalDisclaimer } from "@/components/medical-disclaimer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CityPicker } from "@/components/city-picker";
@@ -120,6 +121,8 @@ export default function RiskAssessmentPage() {
           you enter leaves this page.
         </p>
       </div>
+
+      <MedicalDisclaimer>Your score is a general estimate from today’s conditions, not medical advice. If you have a health condition, ask your doctor how heat and air pollution affect you.</MedicalDisclaimer>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
         <div className="space-y-5">

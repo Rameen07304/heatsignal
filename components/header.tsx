@@ -10,6 +10,7 @@ import {
   BellRing,
   BookOpen,
   ClipboardCheck,
+  Factory,
   HardHat,
   HeartPulse,
   Info,
@@ -23,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { InstallApp } from "@/components/install-app";
 import { NotifyButton } from "@/components/notify-button";
 import { LANGUAGES, useT, type Key, type Lang } from "@/lib/i18n";
 import { useCities } from "@/lib/use-cities";
@@ -33,6 +35,7 @@ const GROUPS: { label: Key; items: { href: string; label: Key; icon: typeof Acti
     label: "monitor",
     items: [
       { href: "/", label: "dashboard", icon: LayoutDashboard },
+      { href: "/workforce-risk", label: "workforceRisk", icon: Factory },
       { href: "/trends", label: "trends", icon: TrendingUp },
     ],
   },
@@ -163,6 +166,7 @@ export function Header() {
             {updatedAt ? <span title={updatedAt.toLocaleString()}>Updated {ago(updatedAt, now)} · Open-Meteo</span> : "Loading live data…"}
           </p>
           <div className="ms-auto flex items-center gap-1 sm:ms-3">
+            <InstallApp />
             <NotifyButton />
             <Button variant="ghost" size="icon" aria-label="Toggle light/dark theme" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
               <Moon className="dark:hidden" />

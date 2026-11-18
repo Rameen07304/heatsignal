@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { EarlyWarningBanner } from "@/components/early-warning-banner";
 import { Header } from "@/components/header";
+import { SosButton } from "@/components/sos-button";
 import { LanguageProvider } from "@/lib/i18n";
 import { CitiesProvider } from "@/lib/use-cities";
 import "./globals.css";
@@ -22,7 +23,10 @@ export const metadata: Metadata = {
     url: "https://heatsignal-rho.vercel.app",
     siteName: "HeatSignal",
   },
+  icons: { apple: "/pwa-icon/192" },
 };
+
+export const viewport: Viewport = { themeColor: "#ffffff" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -32,12 +36,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <LanguageProvider>
             <CitiesProvider>
               <Header />
+              <SosButton />
               <div className="min-w-0 lg:ms-60">
                 <main className="mx-auto max-w-[1400px] px-4 py-6 lg:px-8">
                   <EarlyWarningBanner />
                   {children}
                 </main>
-                <footer className="no-print mx-auto max-w-[1400px] border-t px-4 py-6 text-xs text-muted-foreground lg:px-8">
+                <footer className="no-print mx-auto max-w-[1400px] border-t px-4 pb-24 pt-6 text-xs text-muted-foreground lg:px-8">
                   Weather and air-quality data by{" "}
                   <a className="underline" href="https://open-meteo.com/" target="_blank" rel="noreferrer">
                     Open-Meteo

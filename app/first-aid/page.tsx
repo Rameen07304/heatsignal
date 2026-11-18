@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Phone, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MedicalDisclaimer } from "@/components/medical-disclaimer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CityPicker } from "@/components/city-picker";
 import { WORLD_CITIES, type City } from "@/lib/cities";
@@ -78,7 +79,7 @@ const RESULTS: Record<ResultId, { title: string; color: string; call: boolean; s
 };
 
 const TIPS = [
-  { title: "For outdoor workers", tips: ["Drink a cup of water every 15–20 minutes in the heat, even if not thirsty.", "Take rest breaks in shade. The Worker Safety page has your schedule for your schedule.", "Do the heaviest work early in the morning.", "Wear light, loose clothing and a hat.", "Work in pairs and watch each other for warning signs.", "New to the heat? Build up over 1–2 weeks."] },
+  { title: "For outdoor workers", tips: ["Drink a cup of water every 15–20 minutes in the heat, even if not thirsty.", "Take rest breaks in shade. The Worker Safety page has your schedule.", "Do the heaviest work early in the morning.", "Wear light, loose clothing and a hat.", "Work in pairs and watch each other for warning signs.", "New to the heat? Build up over 1–2 weeks."] },
   { title: "For parents and caregivers", tips: ["Never leave a child in a parked car, even for a minute.", "Keep babies out of direct sun; dress them lightly.", "Offer water often; breastfed babies may need more feeds.", "Move play indoors in the hottest hours.", "Watch for unusual sleepiness, irritability or fewer wet nappies."] },
   { title: "For elderly people living alone", tips: ["Arrange for someone to check on you twice a day in a heatwave.", "Stay in the coolest room; close curtains on the sunny side.", "Drink regularly even if you don’t feel thirsty.", "Take cool showers or use wet cloths.", "Know where the nearest cooled public space is."] },
   { title: "For athletes and exercisers", tips: ["Train early morning or evening.", "Weigh yourself before and after; drink to replace losses.", "Cut intensity when WBGT is above 28 °C.", "Stop at once if you feel dizzy, confused or stop sweating.", "Acclimatise gradually over 10–14 days."] },
@@ -113,6 +114,8 @@ export default function FirstAidPage() {
           fixed advice, not AI, so it works instantly and offline once loaded.
         </p>
       </div>
+
+      <MedicalDisclaimer>This guide gives general first-aid steps, not a diagnosis. If you are unsure or the person gets worse, call emergency services.</MedicalDisclaimer>
 
       <CityPicker value={city} onChange={setCity} label="Where are you? (for emergency numbers)" />
 

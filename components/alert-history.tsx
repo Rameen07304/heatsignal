@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertView } from "@/components/alert";
+import { cityHref } from "@/lib/cities";
 import { AqiBadge, CompoundBadge, RiskBadge } from "@/components/risk-badge";
 import { clearHistory, loadHistory, type HistoryEntry } from "@/lib/alert-client";
 import { COMPOUND_BANDS } from "@/lib/risk";
@@ -105,7 +106,7 @@ export function AlertHistory() {
                   {open === e.id && (
                     <TableRow className="hover:bg-transparent">
                       <TableCell colSpan={7} className="whitespace-normal bg-muted/30 p-4">
-                        <AlertView alert={e.alert} title={`Health alert: ${e.city}`} subtitle={new Date(e.at).toLocaleString()} />
+                        <AlertView alert={e.alert} title={`Health alert: ${e.city}`} subtitle={new Date(e.at).toLocaleString()} path={cityHref({ name: e.city, country: "", lat: e.lat, lon: e.lon })} />
                       </TableCell>
                     </TableRow>
                   )}

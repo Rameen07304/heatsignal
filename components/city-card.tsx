@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog } from "@/components/alert";
 import { GaugeRing } from "@/components/gauge-ring";
+import { riskMessage, ShareDialog } from "@/components/share-dialog";
 import { aqiBand, formatAqi } from "@/lib/air";
 import { cityHref, type City } from "@/lib/cities";
 import { nextHours, type Conditions } from "@/lib/conditions";
@@ -163,6 +164,7 @@ export function CityCard({ city, state, onRemove, onRetry }: Props) {
           <Link href={cityHref(city)}>Details</Link>
         </Button>
         {now && <AlertDialog city={city} hour={now} size="sm" className="flex-1" />}
+        {now && <ShareDialog iconOnly size="sm" title={`${city.name} health alert`} text={riskMessage(city, now)} path={cityHref(city)} />}
       </CardFooter>
     </Card>
   );

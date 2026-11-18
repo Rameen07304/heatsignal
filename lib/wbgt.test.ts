@@ -9,6 +9,7 @@ import { upcomingRisk } from "./risk-forecast.ts";
 import { trendYears } from "./trends.ts";
 import type { CombinedHour, Conditions } from "./conditions.ts";
 import { dayProfile, healthScores, recommendations } from "./health-advisor.ts";
+import { productivityLoss, workDay } from "./workforce.ts";
 
 // 30°C / 50% RH: e = 0.5 * 6.105 * exp(17.27*30/267.7) ≈ 21.14 hPa → WBGT ≈ 29.26
 assert.ok(Math.abs(wbgt(30, 50) - 29.26) < 0.05, `wbgt(30,50)=${wbgt(30, 50)}`);
@@ -130,4 +131,15 @@ assert.ok(hotRecs.some((r) => r.id === "electrolytes") && hotRecs.some((r) => r.
 assert.ok(!hotRecs.some((r) => r.id === "vit-d" || r.id === "respiratory"));
 assert.equal(healthScores(hot).skin, 0);
 
-console.log("wbgt, risk, compound, work/rest, personal-risk, rule-alert, early-warning, trend-year and health-advisor checks passed");
+// Workforce: a scorching midday forces heavy work to stop, and an early shift recovers hours.
+const site = workDay(mk("2026-06-02", (h) => ({ temp: h >= 10 && h <= 16 ? 42 : 24, uv: 5, aqi: 50, pm25: 10 })), "heavy")!;
+assert.equal(site.worst.workMin, 0);
+assert.equal(site.standardHours, 3); // 07–09 full, 10–14 stopped
+assert.ok(site.bestHours > site.standardHours && site.bestStart < 7);
+assert.deepEqual(site.safeWindows.map((r) => r.from), ["05:00", "17:00"]);
+const loss = productivityLoss(site, 100, 10);
+assert.equal(loss.lostTotal, 500);
+assert.equal(loss.dailyCost, 5000);
+assert.equal(workDay(mk("2026-06-03", () => ({ temp: 20, uv: 3, aqi: 40, pm25: 8 })), "heavy")!.action, "Normal schedule");
+
+console.log("wbgt, risk, compound, work/rest, personal-risk, rule-alert, early-warning, trend-year, health-advisor and workforce checks passed");

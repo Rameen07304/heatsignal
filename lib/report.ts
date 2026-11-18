@@ -2,7 +2,7 @@ import { aqiBand, formatAqi } from "./air";
 import type { AlertText } from "./alert-types";
 import type { City } from "./cities";
 import type { Conditions } from "./conditions";
-import { compoundBand, uvBand } from "./risk";
+import { COMPOUND_BANDS, compoundBand, uvBand, type CompoundLevel } from "./risk";
 import { formatDay } from "./utils";
 
 export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -116,6 +116,52 @@ ${ranked
     ]),
   )
   .join("")}
+</table></section>
+<section><h2>Next 48 hours: the 10 highest-risk cities</h2><table>
+${row(["City", "Peak score in 48 h", "Level", "When (local)"], true)}
+${ranked
+  .slice(0, 10)
+  .map((r) => {
+    const peak = next48(r.c).reduce<Conditions["hours"][number] | null>((b, h) => (h.score != null && (!b || h.score > (b.score ?? -1)) ? h : b), null);
+    return row([r.city.name, peak?.score ?? "–", peak?.level ?? "–", peak ? `${formatDay(peak.time)} ${peak.time.slice(11, 16)}` : "–"]);
+  })
+  .join("")}
+</table></section>
+<section><h2>Suggested public health response by level</h2><table>
+${row(["Level", "Score", "Response"], true)}
+${COMPOUND_BANDS.map((b, i) => row([b.level, `${i === 0 ? 0 : COMPOUND_BANDS[i - 1].max + 1}–${b.max}`, RESPONSE[b.level]])).join("")}
 </table></section>`;
   openPrintable("HeatSignal Global Environmental Health Summary", `Generated ${new Date().toLocaleString()}`, body);
+}
+
+const next48 = (c: Conditions) => c.hours.filter((h) => h.time >= c.now.time).slice(0, 48);
+
+const RESPONSE: Record<CompoundLevel, string> = {
+  Low: "Routine monitoring.",
+  Moderate: "Remind sensitive groups (older people, children, people with heart or lung disease) to take breaks and drink water.",
+  High: "Issue a public advisory. Enforce work–rest schedules for outdoor workers, open drinking-water points, and alert primary care.",
+  Critical: "Activate the heat-health action plan. Stop heavy outdoor work in peak hours, open cooling centres, and prepare hospitals for heat illness.",
+  Emergency: "Emergency response. Suspend outdoor work and school activities, check on older people living alone, and add emergency department capacity.",
+};
+
+/** Every city's current conditions as CSV, for Excel or GIS tools. */
+export function globalCsv(rows: { city: City; c: Conditions }[]) {
+  const cell = (v: unknown) => {
+    const s = v == null ? "" : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const header = ["City", "Country", "Latitude", "Longitude", "Local time", "Temperature (C)", "Humidity (%)", "WBGT (C)", "Heat risk", "US AQI", "PM2.5 (ug/m3)", "UV index", "Compound score", "Risk level", "Today peak score", "Next 48 h peak score"];
+  const lines = rows.map(({ city, c }) => {
+    const n = c.now;
+    const peak48 = Math.max(-1, ...next48(c).map((h) => h.score ?? -1));
+    return [city.name, city.country, city.lat, city.lon, n.time, n.temp.toFixed(1), n.rh.toFixed(0), n.wbgt.toFixed(1), n.risk, n.air ? Math.round(n.air.aqi) : "", n.air ? n.air.pm25.toFixed(0) : "", n.air ? n.air.uv.toFixed(1) : "", n.score ?? "", n.level ?? "", c.days[0].maxScore ?? "", peak48 < 0 ? "" : peak48]
+      .map(cell)
+      .join(",");
+  });
+  const blob = new Blob(["﻿" + [header.join(","), ...lines].join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `heatsignal-cities-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }

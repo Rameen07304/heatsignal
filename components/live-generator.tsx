@@ -9,7 +9,7 @@ import { AlertView } from "@/components/alert";
 import { fetchAir, formatAqi } from "@/lib/air";
 import { alertBody, postAlert, saveToHistory } from "@/lib/alert-client";
 import type { AlertText, HeatAlert } from "@/lib/alert-types";
-import { WORLD_CITIES, cityKey, type City } from "@/lib/cities";
+import { WORLD_CITIES, cityHref, cityKey, type City } from "@/lib/cities";
 import { buildConditions, type CombinedHour } from "@/lib/conditions";
 import { aqiBand } from "@/lib/air";
 import { compoundBand, isCompoundEvent, uvBand } from "@/lib/risk";
@@ -224,6 +224,7 @@ export function LiveGenerator() {
               alert={result.alert}
               note={result.alert.ur && result.alert.ar ? undefined : "A translation was not available, so some languages are missing."}
               title={`Health alert: ${result.city.name}`}
+              path={cityHref(result.city)}
               subtitle={`WBGT ${result.hour.wbgt.toFixed(1)} °C${result.hour.air ? ` · AQI ${formatAqi(result.hour.air.aqi)}` : ""}${result.hour.score != null ? ` · compound ${result.hour.score}/100` : ""}`}
             />
           </CardContent>

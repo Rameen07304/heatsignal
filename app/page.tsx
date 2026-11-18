@@ -4,8 +4,9 @@ import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ClipboardCheck, FileDown, GitCompare, HardHat, Pill, Search, UserRound } from "lucide-react";
+import { ClipboardCheck, GitCompare, HardHat, Pill, Search, UserRound } from "lucide-react";
 import { compareHref } from "@/components/city-actions";
+import { OfficialsMenu } from "@/components/officials-menu";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,12 +25,12 @@ import { AQI_BANDS, aqiBand, formatAqi } from "@/lib/air";
 import { WORLD_CITIES, cityHref, cityKey, type City } from "@/lib/cities";
 import type { Conditions } from "@/lib/conditions";
 import { useT } from "@/lib/i18n";
-import { globalReport } from "@/lib/report";
 import { COMPOUND_BANDS, RISK_BANDS } from "@/lib/risk";
 import { CRITICAL_SCORE } from "@/lib/risk-forecast";
 import { useUpcoming } from "@/components/early-warning-banner";
 import { hoursOf, worstHour } from "@/lib/use-city-conditions";
 import { ok, useCities } from "@/lib/use-cities";
+import { workRegimen } from "@/lib/work-rest";
 
 const WeatherMap = dynamic(() => import("@/components/weather-map"), {
   ssr: false,
@@ -76,6 +77,7 @@ const LEGENDS: Record<MapMode, { label: string; color: string }[]> = {
   heat: RISK_BANDS.map((b) => ({ label: b.level, color: b.color })),
   air: AQI_BANDS.map((b) => ({ label: b.label.replace(" for sensitive groups", " (sensitive)"), color: b.color })),
   vitd: [], // Health Advisor only
+  work: [], // Workforce Risk only
 };
 
 export default function Dashboard() {
@@ -106,6 +108,9 @@ export default function Dashboard() {
     .sort((a, b) => (b.c.days[0].maxScore ?? -1) - (a.c.days[0].maxScore ?? -1))
     .slice(0, 6)
     .map((r) => ({ ...r, peak: worstHour(hoursOf(r.c, r.c.days[0].date)) ?? r.c.now }));
+
+  const heavy = loaded.map((r) => ({ ...r, w: workRegimen(r.c.days[0].maxWbgt, "heavy").workMin }));
+  const work = { total: loaded.length, stop: heavy.filter((r) => r.w === 0), breaks: heavy.filter((r) => r.w > 0 && r.w < 60) };
 
   const monitored = useMemo(() => new Set(cities.map(cityKey)), [cities]);
   const q = filter.trim().toLowerCase();
@@ -141,9 +146,7 @@ export default function Dashboard() {
             icon={<Search />}
           />
           <AddCityDialog onAdd={add} monitored={monitored} variant="outline" />
-          <Button variant="outline" disabled={!loaded.length} onClick={() => globalReport(loaded)}>
-            <FileDown /> {t("downloadReport")}
-          </Button>
+          <OfficialsMenu rows={loaded} />
         </div>
       </div>
 
@@ -251,6 +254,29 @@ export default function Dashboard() {
                 )}
               </CardContent>
             </Card>
+          </section>
+
+          <section className="rounded-lg border bg-card p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="flex items-center gap-2 text-base font-semibold"><HardHat className="h-5 w-5 text-primary" /> Workforce impact today</h2>
+                <p className="text-sm text-muted-foreground">Heavy outdoor work (construction, farming, sanitation) at each city’s hottest hour.</p>
+              </div>
+              <Button asChild variant="outline" size="sm"><Link href="/workforce-risk">Plan by industry</Link></Button>
+            </div>
+            <dl className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {[
+                ["Must stop outdoor work", pending ? "–" : `${work.stop.length} of ${work.total}`, pending ? "" : `≈ ${people(work.stop).toLocaleString("en")} million people live in these cities`],
+                ["Need break schedules", pending ? "–" : `${work.breaks.length} of ${work.total}`, pending ? "" : `≈ ${people(work.breaks).toLocaleString("en")} million people`],
+                ["Normal work all day", pending ? "–" : `${work.total - work.stop.length - work.breaks.length} of ${work.total}`, "cities"],
+              ].map(([k, v, s]) => (
+                <div key={k} className="rounded-md bg-muted/40 p-3">
+                  <dt className="text-xs text-muted-foreground">{k}</dt>
+                  <dd className="text-xl font-semibold tabular-nums">{v}</dd>
+                  <dd className="text-xs text-muted-foreground">{s}</dd>
+                </div>
+              ))}
+            </dl>
           </section>
 
           <UpcomingRisks />

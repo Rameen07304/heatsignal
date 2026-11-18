@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileDown, GitCompare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { riskMessage, ShareDialog } from "@/components/share-dialog";
+import { SOS_COUNTRY_KEY } from "@/components/sos-button";
 import { groupsAtRisk } from "@/components/vulnerable-groups";
 import { hourToInput, loadHistory } from "@/lib/alert-client";
-import { cityKey, type City } from "@/lib/cities";
+import { cityHref, cityKey, type City } from "@/lib/cities";
 import type { CombinedHour, Conditions } from "@/lib/conditions";
 import { useT } from "@/lib/i18n";
 import { cityReport } from "@/lib/report";
@@ -19,13 +21,20 @@ const SIX_HOURS = 6 * 60 * 60 * 1000;
 export const compareHref = (a: City, b: City) =>
   `/compare/${a.lat}/${a.lon}/${b.lat}/${b.lon}?n1=${encodeURIComponent(a.name)}&c1=${encodeURIComponent(a.country)}&n2=${encodeURIComponent(b.name)}&c2=${encodeURIComponent(b.country)}`;
 
-/** "Download Report" and "Compare with…" for the city page. */
+/** "Download Report", "Share" and "Compare with…" for the city page. */
 export function CityActions({ city, c, peak }: { city: City; c: Conditions; peak?: CombinedHour }) {
   const { t } = useT();
   const router = useRouter();
   const { cities } = useCities();
   const options = cities.filter((o) => cityKey(o) !== cityKey(city)).sort((a, b) => a.name.localeCompare(b.name));
   const [other, setOther] = useState("");
+
+  // The SOS button offers the emergency number of the last city viewed.
+  useEffect(() => {
+    try {
+      if (city.country) localStorage.setItem(SOS_COUNTRY_KEY, city.country);
+    } catch {}
+  }, [city.country]);
 
   function report() {
     // Use an AI alert generated for this city in the last 6 hours if there is one; otherwise the rule-based text.
@@ -38,6 +47,7 @@ export function CityActions({ city, c, peak }: { city: City; c: Conditions; peak
 
   return (
     <div className="flex flex-wrap gap-2">
+      <ShareDialog size="default" title={`${city.name} health alert`} text={riskMessage(city, c.now)} path={cityHref(city)} />
       <Button variant="outline" onClick={report}>
         <FileDown /> {t("downloadReport")}
       </Button>

@@ -22,6 +22,7 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
   const [start, setStart] = useState(7);
   const [length, setLength] = useState(8);
   const [intensity, setIntensity] = useState<Intensity>("heavy");
+  const [workers, setWorkers] = useState(50);
 
   const first = hours.findIndex((h) => h.time === `${day}T${hh(start)}`);
   const shift = (first < 0 ? [] : hours.slice(first, first + length)).map((h) => ({ ...h, regimen: workRegimen(h.wbgt, intensity) }));
@@ -31,6 +32,8 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
   const maxUv = Math.max(0, ...shift.map((h) => h.air?.uv ?? 0));
   const stops = shift.filter((h) => h.regimen.workMin === 0).length;
   const hot = shift.some((h) => h.regimen.workMin < 60);
+  // Cal/OSHA: enough water on site for at least 1 quart (~0.95 L) per worker per hour of the shift.
+  const siteLitres = Math.ceil(workers * Math.max(water, 0.95 * shift.length));
 
   const ppe = [
     "Light-coloured, loose, breathable clothing; cooling towel or neck shade",
@@ -70,6 +73,18 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
               {[2, 4, 6, 8, 10, 12].map((n) => <option key={n} value={n}>{n} hours</option>)}
             </select>
           </label>
+          <label className="space-y-1 text-xs text-muted-foreground">
+            <span className="block">Workers on site</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={10000}
+              className={`${SELECT} w-24`}
+              value={workers}
+              onChange={(e) => setWorkers(Math.min(10000, Math.max(1, Math.round(Number(e.target.value)) || 1)))}
+            />
+          </label>
           <div className="space-y-1 text-xs text-muted-foreground">
             <span className="block">Work type</span>
             <Tabs value={intensity} onValueChange={(v) => setIntensity(v as Intensity)}>
@@ -103,7 +118,7 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
               <p className="mt-1 text-xs text-muted-foreground">Coloured = work, hatched = rest in shade.</p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <div className="rounded-lg border p-3">
                 <div className="text-xs text-muted-foreground">Productive time</div>
                 <div className="text-2xl font-bold tabular-nums">{(workMinutes / 60).toFixed(1)} h</div>
@@ -113,6 +128,11 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
                 <div className="flex items-center gap-1 text-xs text-muted-foreground"><Droplets className="h-3 w-3" /> Water per worker</div>
                 <div className="text-2xl font-bold tabular-nums">{water.toFixed(1)} L</div>
                 <div className="text-xs text-muted-foreground">{hot ? "1 cup (250 ml) every 15–20 min in the hot hours" : "about 2 cups an hour"}</div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground"><Droplets className="h-3 w-3" /> Water for the site</div>
+                <div className="text-2xl font-bold tabular-nums">{siteLitres.toLocaleString("en")} L</div>
+                <div className="text-xs text-muted-foreground">for {workers} workers; at least 1 L per worker per hour on site</div>
               </div>
               <div className="rounded-lg border p-3">
                 <div className="text-xs text-muted-foreground">Air during shift</div>

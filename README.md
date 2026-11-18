@@ -14,13 +14,16 @@ Extreme heat kills more people than any other type of weather. The danger isn't 
 - **Dashboard.** 101 cities on one map, a global ranking, and a "Check your city" search for any town in the world.
 - **City detail.** Current conditions, a 7-day timeline, who is at risk, safe outdoor hours, and a downloadable alert.
 - **Health Advisor.** Food, supplement, water and protection advice from the day's actual conditions: vitamin D when UV is too low, electrolytes in heat stress, lung protection and antioxidant-rich food in smog. Includes a global vitamin D map.
-- **Worker Safety.** Work–rest cycles (ACGIH limits from the OSHA Technical Manual) for light, moderate and heavy work, a shift planner, water targets and a printable site notice.
+- **Workforce Risk.** Pick an industry (construction, agriculture, oil and gas, delivery and more) to see which cities need break schedules or a work stop today, each city’s safe working windows, and the cost of heat in lost paid hours, including how much a better shift time wins back.
+- **Worker Safety.** Work–rest cycles (ACGIH limits from the OSHA Technical Manual) for light, moderate and heavy work, an hour-by-hour work planner, a shift planner with total water for the site, a printable site notice, an employer checklist, and an anonymous heat-incident log.
 - **Personal Risk Assessment.** Age, health conditions, activity and access to cooling give a personal score and daily water target.
 - **Safety Advisor.** Go / adjust / postpone checks for school activities and outdoor events up to a week ahead, with a printable report.
 - **48-hour early warning.** A banner on every page when a city is forecast to reach High or Critical risk, plus opt-in browser notifications.
 - **AI alerts.** A visible pipeline: a rule-based Risk Analyzer computes the numbers, then Gemini agents write the alert, recommend actions and translate. If Gemini is down, built-in rules write the alert, so a warning always goes out.
 - **Case studies.** Karachi 2015, Sindh 2024 and Delhi 2023 replayed from archived data.
 - **Trends, Compare, First Aid.** Five-year summer trends, two cities side by side, and a heat-illness decision guide with emergency numbers by country.
+- **Emergency and sharing.** An SOS button on every page with the local ambulance number, one-tap calling and the nearest hospital; WhatsApp sharing for warnings; PDF and CSV exports for health officials.
+- **Installable app.** Add HeatSignal to a phone’s home screen; the dashboard, first-aid guide and last-seen data open offline.
 - **Languages.** English, Urdu and Arabic (right-to-left), with Japanese, Hindi and Spanish navigation.
 
 ## How it works
@@ -73,6 +76,7 @@ The 101 cities are fetched in batches of 50 and cached for 15 minutes, to stay i
 ```
 app/
 ├── page.tsx                      Dashboard: map, rankings, city cards
+├── workforce-risk/               Industry risk map, shift windows, cost of heat
 ├── city/[lat]/[lon]/             One city in detail
 ├── compare/[lat1]/[lon1]/...     Two cities side by side
 ├── health-advisor/               Nutrition, hydration and protection advice
@@ -94,6 +98,8 @@ lib/
 ├── work-rest.ts                  ACGIH work–rest limits
 ├── health-advisor.ts             Health Advisor analyzers and rules
 ├── personal-risk.ts              Personal risk model
+├── workforce.ts                  Industry work days and productivity loss
+├── emergency.ts                  Emergency numbers by country
 ├── rule-alert.ts                 Rule-based alert (AI fallback)
 ├── gemini.ts                     Gemini prompts
 ├── i18n.tsx                      Translations
