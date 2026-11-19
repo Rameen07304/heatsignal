@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { fetchAirMany } from "./air";
 import { WORLD_CITIES, cityKey, type City } from "./cities";
 import { buildConditions, type Conditions } from "./conditions";
-import { fetchForecasts } from "./weather";
+import { fetchForecasts, takeStaleSince } from "./weather";
 
 // v2: the monitored list now starts with every world city (v1 started with six).
 const STORAGE_KEY = "heatsignal-cities-v2";
@@ -28,6 +28,8 @@ interface CitiesValue {
   retry: () => void;
   /** When the data last arrived. */
   updatedAt: Date | null;
+  /** Set when the network failed and last-known data is shown: when that data was fetched. */
+  staleSince: Date | null;
 }
 
 const Ctx = createContext<CitiesValue | null>(null);
@@ -43,6 +45,7 @@ export function CitiesProvider({ children }: { children: React.ReactNode }) {
   const [airFailed, setAirFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const [staleSince, setStaleSince] = useState<Date | null>(null);
 
   // Read after mount so server and client render the same first frame.
   useEffect(() => {
@@ -66,6 +69,7 @@ export function CitiesProvider({ children }: { children: React.ReactNode }) {
     if (!loadedList) return;
     fetchedAt.current = Date.now();
     let live = true;
+    takeStaleSince();
     Promise.all([
       fetchForecasts(cities),
       // Air quality is an extra layer: if it fails, heat data still shows.
@@ -75,7 +79,9 @@ export function CitiesProvider({ children }: { children: React.ReactNode }) {
         if (!live) return;
         setAirFailed(airs == null);
         setData(Object.fromEntries(cities.map((c, i) => [cityKey(c), buildConditions(forecasts[i], airs?.[i])])));
-        setUpdatedAt(new Date());
+        const stale = takeStaleSince();
+        setStaleSince(stale);
+        setUpdatedAt(stale ?? new Date());
       },
       (e) => {
         if (!live) return;
@@ -124,6 +130,7 @@ export function CitiesProvider({ children }: { children: React.ReactNode }) {
         airFailed,
         retry,
         updatedAt,
+        staleSince,
       }}
     >
       {children}

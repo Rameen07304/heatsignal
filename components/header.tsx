@@ -138,7 +138,19 @@ export function Header() {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
   const { t } = useT();
-  const { updatedAt, data } = useCities();
+  const { updatedAt, data, staleSince } = useCities();
+  const [offline, setOffline] = useState(false);
+  useEffect(() => {
+    const sync = () => setOffline(!navigator.onLine);
+    sync();
+    window.addEventListener("online", sync);
+    window.addEventListener("offline", sync);
+    return () => {
+      window.removeEventListener("online", sync);
+      window.removeEventListener("offline", sync);
+    };
+  }, []);
+  const dataTime = (staleSince ?? updatedAt)?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const failed = !updatedAt && Object.values(data).some((d) => d instanceof Error);
   const [open, setOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
@@ -163,7 +175,12 @@ export function Header() {
             <Menu />
           </Button>
           <div className="lg:hidden"><Brand /></div>
-          <p className="ms-auto hidden text-xs text-muted-foreground sm:block">
+          {(offline || staleSince) && (
+            <span role="status" className="ms-auto rounded-full border border-amber-500/50 bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-300">
+              {offline ? "Offline" : "No connection"}{dataTime && <> · <span className="hidden sm:inline">showing data from </span>{dataTime}</>}
+            </span>
+          )}
+          <p className={`${offline || staleSince ? "ms-3" : "ms-auto"} hidden text-xs text-muted-foreground sm:block`}>
             {updatedAt ? <span title={updatedAt.toLocaleString()}>Updated {ago(updatedAt, now)} · Open-Meteo</span> : failed ? "Live data unavailable. Refresh to retry." : "Loading live data…"}
           </p>
           <div className="ms-auto flex items-center gap-1 sm:ms-3">

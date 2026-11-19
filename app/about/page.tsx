@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BellRing, Bot, Cloud, Code2, Globe2, Map, Radar, Server, ShieldCheck, TrendingUp, Users } from "lucide-react";
+import { BellRing, Bot, Cloud, Code2, Globe2, Map, Radar, Server, ShieldCheck, TrendingUp, Users, WifiOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/header";
 import { AQI_BANDS } from "@/lib/air";
@@ -168,6 +168,19 @@ score   = min(100, round(100 × base × penalty))`}
               a cup every 15–20 minutes, at most 1.5 litres an hour).
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2"><WifiOff className="h-5 w-5" /> Works in the field</CardTitle></CardHeader>
+        <CardContent>
+          <ul className="list-disc space-y-2 ps-5 text-sm leading-relaxed">
+            <li><b>Installable.</b> Add HeatSignal to a phone’s home screen; it opens like an app.</li>
+            <li><b>Last-known data when offline.</b> If the network drops or the forecast service fails, the last good readings stay on screen with an amber “Offline” label and their time.</li>
+            <li><b>First Aid works offline.</b> The first-aid guide is stored on the device the first time the app loads.</li>
+            <li><b>Alerts without the AI service.</b> If the AI is unavailable, built-in rules write the alert from the same measurements.</li>
+            <li><b>Low data use.</b> One batched request per 50 cities, refreshed every 30 minutes, so it runs on a weak mobile signal.</li>
+          </ul>
         </CardContent>
       </Card>
 

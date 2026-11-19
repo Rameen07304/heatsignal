@@ -102,11 +102,45 @@ export async function getJsonCached<T>(url: string, key: string): Promise<T> {
     const cached = JSON.parse(sessionStorage.getItem(key) ?? "null");
     if (cached?.url === url && Date.now() - cached.at < CACHE_TTL) return cached.data;
   } catch {}
-  const data = await getJson<T>(url);
+  const last = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(`${key}-last`) ?? "null");
+      return saved?.url === url ? (saved as { at: number; data: T }) : null;
+    } catch {
+      return null;
+    }
+  };
+  // Field fallback: offline, or the request fails (timeout, 429), means the last good copy, marked stale.
+  const fallback = (err: unknown) => {
+    const saved = last();
+    if (!saved) throw err;
+    staleSince = Math.min(staleSince ?? Infinity, saved.at);
+    return saved.data;
+  };
+  if (typeof navigator !== "undefined" && navigator.onLine === false && last()) return fallback(null);
+  let data: T;
   try {
-    sessionStorage.setItem(key, JSON.stringify({ url, at: Date.now(), data }));
+    data = await getJson<T>(url);
+  } catch (e) {
+    return fallback(e);
+  }
+  const entry = JSON.stringify({ url, at: Date.now(), data });
+  try {
+    sessionStorage.setItem(key, entry);
   } catch {} // quota exceeded or storage disabled — just refetch next time
+  try {
+    localStorage.setItem(`${key}-last`, entry);
+  } catch {}
   return data;
+}
+
+let staleSince: number | null = null;
+
+/** When the oldest last-known copy served since the previous call was saved (null if all data was live). Resets. */
+export function takeStaleSince(): Date | null {
+  const s = staleSince;
+  staleSince = null;
+  return s == null ? null : new Date(s);
 }
 
 function toPoints({ hourly: h }: OpenMeteoResponse): HourlyPoint[] {
