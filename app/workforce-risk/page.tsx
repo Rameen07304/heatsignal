@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ErrorState } from "@/components/error-state";
+import { WorkerContextPicker } from "@/components/worker-context-picker";
+import { useWorkerContext } from "@/lib/use-worker-context";
 import { WORLD_CITIES, cityHref, cityKey } from "@/lib/cities";
 import type { Conditions } from "@/lib/conditions";
 import { useT } from "@/lib/i18n";
@@ -47,17 +49,18 @@ export default function WorkforceRiskPage() {
   const [industryId, setIndustryId] = useState(INDUSTRIES[0].id);
   const industry = INDUSTRIES.find((i) => i.id === industryId)!;
   const [showAll, setShowAll] = useState(false);
+  const [ctx] = useWorkerContext();
 
   const rows = useMemo(
     () =>
       cities
         .flatMap((city) => {
           const s = data[cityKey(city)];
-          const d = ok(s) ? workDay(today(s), industry.work) : null;
+          const d = ok(s) ? workDay(today(s), industry.work, ctx) : null;
           return d ? [{ city, d }] : [];
         })
         .sort((a, b) => b.d.peakWbgt - a.d.peakWbgt),
-    [cities, data, industry.work],
+    [cities, data, industry.work, ctx],
   );
   const failed = cities.length > 0 && cities.every((c) => data[cityKey(c)] instanceof Error);
   const pending = rows.length === 0 && !failed;
@@ -81,6 +84,8 @@ export default function WorkforceRiskPage() {
           in lost working hours.
         </p>
       </div>
+
+      <WorkerContextPicker />
 
       <section aria-label="Industry" className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
         {INDUSTRIES.map((i) => {
@@ -130,7 +135,7 @@ export default function WorkforceRiskPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="h-[340px] sm:h-[440px]">
-                <WeatherMap cities={cities} data={data} mode="work" work={industry.work} />
+                <WeatherMap cities={cities} data={data} mode="work" work={industry.work} ctx={ctx} />
               </div>
               <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-label="Map legend">
                 {REGIMENS.map((r) => (

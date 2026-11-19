@@ -1,5 +1,5 @@
 import type { CombinedHour } from "./conditions";
-import { hourRanges, litresPerHour, workRegimen, type HourRange, type Intensity, type Regimen } from "./work-rest";
+import { hourRanges, litresPerHour, workRegimen, type HourRange, type Intensity, type Regimen, type WorkerContext } from "./work-rest";
 
 export interface Industry {
   id: string;
@@ -45,21 +45,21 @@ export interface WorkDay {
   action: string;
 }
 
-const productive = (hours: CombinedHour[], from: number, work: Intensity) =>
-  hours.filter((h) => hourOf(h) >= from && hourOf(h) < from + SHIFT_LEN).reduce((s, h) => s + workRegimen(h.wbgt, work).workMin / 60, 0);
+const productive = (hours: CombinedHour[], from: number, work: Intensity, ctx?: WorkerContext) =>
+  hours.filter((h) => hourOf(h) >= from && hourOf(h) < from + SHIFT_LEN).reduce((s, h) => s + workRegimen(h.wbgt, work, ctx).workMin / 60, 0);
 
 /** One city's working day (`hours` = that day's 24 hours) for one type of work. Null if the day is incomplete. */
-export function workDay(hours: CombinedHour[], work: Intensity): WorkDay | null {
+export function workDay(hours: CombinedHour[], work: Intensity, ctx?: WorkerContext): WorkDay | null {
   const day = hours.filter((h) => hourOf(h) >= DAY_START && hourOf(h) < DAY_END);
   if (day.length < DAY_END - DAY_START) return null;
   const peak = day.reduce((b, h) => (h.wbgt > b.wbgt ? h : b));
-  const worst = workRegimen(peak.wbgt, work);
-  const safe = (h: CombinedHour) => workRegimen(h.wbgt, work).workMin === 60;
+  const worst = workRegimen(peak.wbgt, work, ctx);
+  const safe = (h: CombinedHour) => workRegimen(h.wbgt, work, ctx).workMin === 60;
 
   let bestStart = SHIFT_START;
   let bestHours = -1;
   for (let s = DAY_START; s + SHIFT_LEN <= DAY_END; s++) {
-    const p = productive(day, s, work);
+    const p = productive(day, s, work, ctx);
     if (p > bestHours) [bestStart, bestHours] = [s, p];
   }
 
@@ -68,10 +68,10 @@ export function workDay(hours: CombinedHour[], work: Intensity): WorkDay | null 
     peakWbgt: peak.wbgt,
     safeHours: day.filter(safe).length,
     safeWindows: hourRanges(day, safe),
-    standardHours: productive(day, SHIFT_START, work),
+    standardHours: productive(day, SHIFT_START, work, ctx),
     bestStart,
     bestHours,
-    waterL: day.filter((h) => hourOf(h) >= SHIFT_START && hourOf(h) < SHIFT_START + SHIFT_LEN).reduce((s, h) => s + litresPerHour(workRegimen(h.wbgt, work)), 0),
+    waterL: day.filter((h) => hourOf(h) >= SHIFT_START && hourOf(h) < SHIFT_START + SHIFT_LEN).reduce((s, h) => s + litresPerHour(workRegimen(h.wbgt, work, ctx)), 0),
     action:
       worst.workMin === 60
         ? "Normal schedule"

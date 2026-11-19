@@ -12,6 +12,7 @@ import { emergencyLine } from "@/lib/emergency";
 import { esc, openPrintable } from "@/lib/report";
 import { useCities } from "@/lib/use-cities";
 import { hourRanges, litresPerHour, workRegimen } from "@/lib/work-rest";
+import { useWorkerContext } from "@/lib/use-worker-context";
 
 const read = <T,>(key: string, fallback: T): T => {
   try {
@@ -30,9 +31,10 @@ const write = (key: string, value: unknown) => {
 
 /** Today's employer checklist, built from the site's forecast. Ticks are kept in this browser, per site and day. */
 export function EmployerChecklist({ city, today }: { city: City; today: CombinedHour[] }) {
+  const [ctx] = useWorkerContext();
   const peak = today.reduce<CombinedHour | null>((b, h) => (!b || h.wbgt > b.wbgt ? h : b), null);
-  const heavyStops = hourRanges(today, (h) => workRegimen(h.wbgt, "heavy").workMin < 60);
-  const water = Math.max(8 * 0.95, today.filter((h) => +h.time.slice(11, 13) >= 7 && +h.time.slice(11, 13) < 15).reduce((s, h) => s + litresPerHour(workRegimen(h.wbgt, "heavy")), 0));
+  const heavyStops = hourRanges(today, (h) => workRegimen(h.wbgt, "heavy", ctx).workMin < 60);
+  const water = Math.max(8 * 0.95, today.filter((h) => +h.time.slice(11, 13) >= 7 && +h.time.slice(11, 13) < 15).reduce((s, h) => s + litresPerHour(workRegimen(h.wbgt, "heavy", ctx)), 0));
   const maxAqi = Math.max(0, ...today.map((h) => h.air?.aqi ?? 0));
 
   const required = [

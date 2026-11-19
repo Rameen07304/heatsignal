@@ -12,6 +12,8 @@ import { EmployerChecklist, IncidentLog } from "@/components/worksite-tools";
 import { ShiftPlanner } from "@/components/shift-planner";
 import { SiteCard } from "@/components/site-card";
 import { WorkPlanner } from "@/components/work-planner";
+import { WorkerContextPicker } from "@/components/worker-context-picker";
+import { useWorkerContext } from "@/lib/use-worker-context";
 import { UNHEALTHY_AQI, fetchAir, formatAqi } from "@/lib/air";
 import { WORLD_CITIES, cityKey, type City } from "@/lib/cities";
 import { buildConditions } from "@/lib/conditions";
@@ -38,6 +40,7 @@ export default function WorkerSafetyPage(props: Props) {
   const { cities } = useCities();
   const fromUrl = cityFromUrl(searchParams);
   const [selected, setSelected] = useState<City>(fromUrl ?? DEFAULT);
+  const [ctx] = useWorkerContext();
   const options = [...cities].sort((a, b) => a.name.localeCompare(b.name));
   if (!options.some((c) => cityKey(c) === cityKey(selected))) options.unshift(selected);
 
@@ -81,6 +84,8 @@ export default function WorkerSafetyPage(props: Props) {
 
       <MedicalDisclaimer>Schedules follow published heat limits for healthy, acclimatised workers. They do not replace a site safety plan or medical advice. New, older or unwell workers need extra care.</MedicalDisclaimer>
 
+      <WorkerContextPicker />
+
       {result.loading && (
         <div className="space-y-6">
           <Skeleton className="h-40 w-full rounded-lg" />
@@ -109,7 +114,7 @@ export default function WorkerSafetyPage(props: Props) {
                     `⚠️ Worker safety: ${selected.name}`,
                     "",
                     `Heat stress (WBGT) ${now.wbgt.toFixed(1)}°C at ${now.time.slice(11, 16)}`,
-                    ...INTENSITIES.map((i) => `${i.label} work: ${workRegimen(now.wbgt, i.key).label}`),
+                    ...INTENSITIES.map((i) => `${i.label} work: ${workRegimen(now.wbgt, i.key, ctx).label}`),
                     ...(now.air && now.air.aqi >= UNHEALTHY_AQI ? [`Air is unhealthy (AQI ${formatAqi(now.air.aqi)}). Wear N95 masks outdoors.`] : []),
                     "",
                     "Drink a cup of water every 15–20 minutes and rest in shade, not in the sun.",
@@ -121,7 +126,7 @@ export default function WorkerSafetyPage(props: Props) {
             <CardContent className="space-y-3">
               <div className="grid gap-3 sm:grid-cols-3">
                 {INTENSITIES.map((i) => {
-                  const r = workRegimen(now.wbgt, i.key);
+                  const r = workRegimen(now.wbgt, i.key, ctx);
                   const flag = heatFlag(r);
                   return (
                     <div key={i.key} className="rounded-lg border p-3" style={{ borderColor: `${r.color}80`, backgroundColor: `${r.color}14` }}>
@@ -147,7 +152,7 @@ export default function WorkerSafetyPage(props: Props) {
           </Card>
 
           <div className="no-print space-y-6">
-            <WorkPlanner hourly={c.hours} now={now.time.slice(0, 13)} initialIntensity="heavy" />
+            <WorkPlanner hourly={c.hours} now={now.time.slice(0, 13)} initialIntensity="heavy" ctx={ctx} />
             <ShiftPlanner hours={c.hours} now={now.time.slice(0, 13)} />
           </div>
 

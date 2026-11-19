@@ -8,6 +8,7 @@ import { UNHEALTHY_AQI, formatAqi } from "@/lib/air";
 import type { CombinedHour } from "@/lib/conditions";
 import { formatDay } from "@/lib/utils";
 import { INTENSITIES, litresPerHour, workRegimen, type Intensity } from "@/lib/work-rest";
+import { useWorkerContext } from "@/lib/use-worker-context";
 
 const hh = (h: number) => `${String(h % 24).padStart(2, "0")}:00`;
 const mm = (h: number, m: number) => `${String((h + Math.floor(m / 60)) % 24).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
@@ -23,9 +24,10 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
   const [length, setLength] = useState(8);
   const [intensity, setIntensity] = useState<Intensity>("heavy");
   const [workers, setWorkers] = useState(50);
+  const [ctx] = useWorkerContext();
 
   const first = hours.findIndex((h) => h.time === `${day}T${hh(start)}`);
-  const shift = (first < 0 ? [] : hours.slice(first, first + length)).map((h) => ({ ...h, regimen: workRegimen(h.wbgt, intensity) }));
+  const shift = (first < 0 ? [] : hours.slice(first, first + length)).map((h) => ({ ...h, regimen: workRegimen(h.wbgt, intensity, ctx) }));
   const workMinutes = shift.reduce((s, h) => s + h.regimen.workMin, 0);
   const water = shift.reduce((s, h) => s + litresPerHour(h.regimen), 0);
   const maxAqi = Math.max(0, ...shift.map((h) => h.air?.aqi ?? 0));

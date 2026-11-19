@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UNHEALTHY_AQI, aqiBand, formatAqi } from "@/lib/air";
 import { formatDay } from "@/lib/utils";
-import { INTENSITIES, REGIMENS, hourRanges, workRegimen, type HourRange, type Intensity } from "@/lib/work-rest";
+import { INTENSITIES, REGIMENS, hourRanges, workRegimen, type HourRange, type Intensity, type WorkerContext } from "@/lib/work-rest";
 import type { CombinedHour } from "@/lib/conditions";
 
 export const listRanges = (ranges: HourRange[]) => ranges.map((r) => `${r.from}–${r.to}`).join(", ");
@@ -21,16 +21,18 @@ interface Props {
   now: string;
   /** Activity level to start on. */
   initialIntensity?: Intensity;
+  /** Crew clothing and acclimatisation (worker tools only). */
+  ctx?: WorkerContext;
 }
 
-export function WorkPlanner({ hourly, now, initialIntensity = "moderate" }: Props) {
+export function WorkPlanner({ hourly, now, initialIntensity = "moderate", ctx }: Props) {
   const [intensity, setIntensity] = useState<Intensity>(initialIntensity);
   const days = Array.from(new Set(hourly.map((p) => p.time.slice(0, 10)))).slice(0, 3);
   const [day, setDay] = useState(days[0]);
 
   const hours = hourly
     .filter((p) => p.time.startsWith(day))
-    .map((p) => ({ ...p, regimen: workRegimen(p.wbgt, intensity), aqi: p.air?.aqi }));
+    .map((p) => ({ ...p, regimen: workRegimen(p.wbgt, intensity, ctx), aqi: p.air?.aqi }));
   const hasAir = hours.some((h) => h.aqi != null);
   const badAir = (h: (typeof hours)[number]) => (h.aqi ?? 0) >= UNHEALTHY_AQI;
   const worstAir = (h: (typeof hours)[number]) => (h.aqi ?? 0) >= VERY_UNHEALTHY_AQI;

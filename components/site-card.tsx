@@ -8,20 +8,22 @@ import { UNHEALTHY_AQI, formatAqi } from "@/lib/air";
 import type { City } from "@/lib/cities";
 import type { CombinedHour } from "@/lib/conditions";
 import { formatDay } from "@/lib/utils";
-import { INTENSITIES, REGIMENS, heatFlag, hourRanges, litresPerHour, workRegimen, type Intensity } from "@/lib/work-rest";
+import { INTENSITIES, REGIMENS, contextLabel, heatFlag, hourRanges, litresPerHour, workRegimen, type Intensity } from "@/lib/work-rest";
+import { useWorkerContext } from "@/lib/use-worker-context";
 import { listRanges } from "@/components/work-planner";
 import { emergencyLine } from "@/lib/emergency";
 
 /** A one-page notice to print and post at a work site. */
 export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; today: CombinedHour[] }) {
   const [intensity, setIntensity] = useState<Intensity>("heavy");
+  const [ctx] = useWorkerContext();
   const daytime = today.filter((h) => {
     const hour = Number(h.time.slice(11, 13));
     return hour >= 6 && hour < 20;
   });
-  const withRegimen = daytime.map((h) => ({ ...h, regimen: workRegimen(h.wbgt, intensity) }));
+  const withRegimen = daytime.map((h) => ({ ...h, regimen: workRegimen(h.wbgt, intensity, ctx) }));
   // The posted flag is the day's worst daytime hour, not the moment it was printed.
-  const strictest = withRegimen.reduce((a, b) => (b.regimen.workMin < a.regimen.workMin ? b : a), withRegimen[0] ?? { ...now, regimen: workRegimen(now.wbgt, intensity) });
+  const strictest = withRegimen.reduce((a, b) => (b.regimen.workMin < a.regimen.workMin ? b : a), withRegimen[0] ?? { ...now, regimen: workRegimen(now.wbgt, intensity, ctx) });
   const flag = heatFlag(strictest.regimen);
   const peakLitres = Math.max(...withRegimen.map((h) => litresPerHour(h.regimen)));
   const maxAqi = Math.max(0, ...today.map((h) => h.air?.aqi ?? 0));
@@ -59,7 +61,7 @@ export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; 
         <div className="grid gap-5 p-5 md:grid-cols-3">
           <section>
             <h3 className="mb-2 font-bold uppercase tracking-wide">Today’s work–rest schedule</h3>
-            <p className="mb-2 text-xs text-muted-foreground">{INTENSITIES.find((i) => i.key === intensity)!.label} work, 06:00–20:00</p>
+            <p className="mb-2 text-xs text-muted-foreground">{INTENSITIES.find((i) => i.key === intensity)!.label} work, 06:00–20:00 · {contextLabel(ctx)}</p>
             <ul className="space-y-1.5 text-sm">
               {REGIMENS.map((r) => {
                 const ranges = hourRanges(withRegimen, (h) => h.regimen === r);
@@ -95,8 +97,8 @@ export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; 
           </section>
         </div>
         <p className="border-t px-5 py-2 text-xs text-muted-foreground">
-          HeatSignal · ACGIH work–rest limits (OSHA Technical Manual) for healthy, heat-acclimatised workers. Unacclimatised,
-          older or unwell workers need more rest. Not a substitute for a site safety officer.
+          HeatSignal · ACGIH work–rest limits (OSHA Technical Manual). Schedule assumes: {contextLabel(ctx)}. Older or unwell
+          workers need more rest. Not a substitute for a site safety officer.
         </p>
       </div>
     </div>
