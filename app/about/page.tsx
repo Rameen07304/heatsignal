@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BellRing, Bot, Cloud, Code2, Globe2, Map, Radar, Server, TrendingUp, Users } from "lucide-react";
+import { BellRing, Bot, Cloud, Code2, Globe2, Map, Radar, Server, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/header";
 import { AQI_BANDS } from "@/lib/air";
@@ -168,6 +168,22 @@ score   = min(100, round(100 × base × penalty))`}
               a cup every 15–20 minutes, at most 1.5 litres an hour).
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card id="worker-rights" className="scroll-mt-20">
+        <CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5" /> Worker rights and data</CardTitle></CardHeader>
+        <CardContent>
+          <ul className="list-disc space-y-2 ps-5 text-sm leading-relaxed">
+            <li><b>No personal health data is collected.</b> Risk is calculated from weather, workload, clothing and acclimatisation only.</li>
+            <li><b>Incident reports are anonymous and aggregated.</b> Counts below 5 are hidden so no report can be traced to a person.</li>
+            <li><b>Data must not be used for disciplinary, hiring, ranking or pay decisions.</b> Worker protection comes before productivity.</li>
+            <li>
+              <b>Wearables are a future option, and only ever opt-in.</b> Signals such as heart rate or skin temperature would
+              need informed consent, minimal retention, and would be visible only to the worker and the site medic.
+            </li>
+            <li><b>Supervisors see crew- and site-level schedules,</b> never individual clinical detail.</li>
+          </ul>
         </CardContent>
       </Card>
 

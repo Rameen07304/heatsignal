@@ -147,6 +147,15 @@ interface Incident {
   time: string;
 }
 
+/** Small-cell suppression: counts of 1–4 could identify a worker, so they are never shown exactly. */
+export const suppress = (n: number) => (n > 0 && n < 5 ? "fewer than 5" : String(n));
+
+/** Incidents logged in this browser in the last 7 days. */
+export function incidentsThisWeek(): Incident[] {
+  const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+  return read<Incident[]>(KEY, []).filter((i) => i.date >= weekAgo);
+}
+
 const SELECT = "h-10 w-full rounded-md border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 /**
@@ -167,6 +176,7 @@ export function IncidentLog({ city }: { city: City }) {
 
   const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
   const week = list.filter((i) => i.date >= weekAgo);
+  const byType = TYPES.map((type) => [type, week.filter((i) => i.type === type).length] as const).filter(([, n]) => n > 0);
   const names = Array.from(new Set([city.name, ...cities.map((c) => c.name)])).sort();
 
   function submit(e: React.FormEvent) {
@@ -196,9 +206,8 @@ export function IncidentLog({ city }: { city: City }) {
       <CardHeader>
         <CardTitle>Report a heat incident</CardTitle>
         <CardDescription>
-          Anonymous. No names are collected. {week.length} incident{week.length === 1 ? "" : "s"} logged this week across{" "}
-          {new Set(week.map((i) => i.city)).size} {new Set(week.map((i) => i.city)).size === 1 ? "city" : "cities"}. This demo keeps reports in this
-          browser only.
+          Anonymous. No names are collected. Incidents logged this week: {suppress(week.length)}. This demo keeps
+          reports in this browser only.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -212,22 +221,30 @@ export function IncidentLog({ city }: { city: City }) {
             <Button type="submit">Submit report</Button>
             {saved && <span className="text-sm text-muted-foreground" role="status">Saved. Thank you.</span>}
           </div>
+          <p className="text-xs text-muted-foreground sm:col-span-2 lg:col-span-5">
+            Reports are anonymous and aggregated. They must never be used to discipline, rank or dismiss workers.
+          </p>
         </form>
 
         {list.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold">Recent reports</h3>
+              <h3 className="text-sm font-semibold">This week, by type</h3>
               <Button size="sm" variant="ghost" onClick={clear}><Trash2 /> Clear all</Button>
             </div>
-            <ul className="divide-y rounded-md border text-sm">
-              {list.slice(0, 8).map((i) => (
-                <li key={i.id} className="flex flex-wrap justify-between gap-x-3 px-3 py-2">
-                  <span><b>{i.type}</b> · {i.industry}</span>
-                  <span className="text-muted-foreground">{i.city} · {i.date} · {i.time}</span>
-                </li>
-              ))}
-            </ul>
+            {byType.length ? (
+              <ul className="divide-y rounded-md border text-sm">
+                {byType.map(([type, n]) => (
+                  <li key={type} className="flex justify-between gap-x-3 px-3 py-2">
+                    <span>{type}</span>
+                    <span className="tabular-nums text-muted-foreground">{suppress(n)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">No reports in the last 7 days.</p>
+            )}
+            <p className="text-xs text-muted-foreground">Counts below 5 are hidden so no single report can be traced to a worker.</p>
           </div>
         )}
       </CardContent>

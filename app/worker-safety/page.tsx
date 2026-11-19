@@ -179,6 +179,12 @@ export default function WorkerSafetyPage(props: Props) {
       )}
 
       <IncidentLog city={selected} />
+
+      <p className="no-print text-xs text-muted-foreground">
+        HeatSignal collects no personal health data, and nothing here may be used to discipline, rank or dismiss
+        workers. Worker protection comes before productivity.{" "}
+        <Link href="/about#worker-rights" className="font-medium text-primary underline-offset-2 hover:underline">Worker rights and data</Link>
+      </p>
     </div>
   );
 }
