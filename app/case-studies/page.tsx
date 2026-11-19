@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog } from "@/components/alert";
 import { CompoundChart } from "@/components/compound-chart";
@@ -118,7 +119,7 @@ async function loadCase(c: CaseStudy) {
 }
 
 /** The day a heatwave would be declared: the last day of the first run of RUN_DAYS unusually hot days. */
-function heatwaveStart(days: CombinedDay[], normal: Map<string, number>) {
+function heatwaveStart<D extends { date: string; maxWbgt: number }>(days: D[], normal: Map<string, number>) {
   let run = 0;
   for (const d of days) {
     const n = normal.get(d.date.slice(5));
@@ -126,6 +127,90 @@ function heatwaveStart(days: CombinedDay[], normal: Map<string, number>) {
     if (run === RUN_DAYS) return { day: d, anomaly: d.maxWbgt - n! };
   }
   return null;
+}
+
+/**
+ * Back-test: run the same heatwave rule over each earlier year's same window. The normal for each year
+ * is the mean of the other years (leave-one-out), so a year is never compared with itself.
+ */
+function falseAlarms(id: string) {
+  const years = (CASE_NORMALS as unknown as { perYear: Record<string, Record<string, Record<string, number>>> }).perYear[id] ?? {};
+  const ys = Object.keys(years);
+  return ys.map((y) => {
+    const others = ys.filter((o) => o !== y);
+    const days = Object.entries(years[y]).map(([md, maxWbgt]) => ({ date: `${y}-${md}`, maxWbgt }));
+    const normal = new Map(days.map((d) => [d.date.slice(5), others.reduce((s, o) => s + years[o][d.date.slice(5)], 0) / others.length]));
+    return { year: y, warning: heatwaveStart(days, normal)?.day.date ?? null };
+  });
+}
+
+const HEAT_CASES = CASES.filter((c) => !c.withAir);
+
+function ValidationCard() {
+  const live = useAsync(() => Promise.all(HEAT_CASES.map(loadCase)), []);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Validation</CardTitle>
+        <CardDescription>
+          The heatwave rule (daily max WBGT at least {ANOMALY_C} °C above the local normal for {RUN_DAYS} days) tested on
+          the two heat events and on the same weeks in the {NORMAL_YEARS} years before each.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Event</TableHead>
+                <TableHead>Detected</TableHead>
+                <TableHead>Lead time</TableHead>
+                <TableHead>Warnings in earlier years</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {HEAT_CASES.map((c, i) => {
+                const d = live.data?.[i];
+                const wave = d?.normal ? heatwaveStart(d.days, d.normal) : null;
+                const lead = wave ? dayDiff(wave.day.date, c.eventDate) : null;
+                const fa = falseAlarms(c.id);
+                const hits = fa.filter((x) => x.warning);
+                return (
+                  <TableRow key={c.id}>
+                    <TableCell className="font-medium">{c.title}</TableCell>
+                    <TableCell>{live.loading ? "…" : live.error ? "–" : wave ? `Yes, ${formatDay(wave.day.date)}` : "No"}</TableCell>
+                    <TableCell className="tabular-nums">{lead == null ? "–" : lead > 0 ? `${lead} days before ${c.eventPhrase}` : "Same day or after"}</TableCell>
+                    <TableCell>
+                      {hits.length} warning{hits.length === 1 ? "" : "s"} in {fa.length} non-event seasons
+                      {hits.length > 0 && <span className="block text-xs text-muted-foreground">{hits.map((x) => x.year).join(", ")}</span>}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc space-y-1 ps-5 text-sm text-muted-foreground">
+          <li>
+            <b className="text-foreground">Honest reading:</b> the rule catches both events early, but it also fires in
+            several earlier summers. Some of those were hot spells in their own right (South Asia had a severe heatwave in
+            2022), so not every one is a false alarm, but the rule is sensitive by design: it favours warning too often over
+            missing a heatwave.
+          </li>
+          <li>Normals for each earlier year are the mean of the other {NORMAL_YEARS - 1} years, so no year is compared with itself.</li>
+          <li><b className="text-foreground">Data latency:</b> forecast updated hourly; archive (ERA5) about 5 days behind.</li>
+          <li>
+            <b className="text-foreground">Missing inputs:</b> missing sunlight data falls back to a full-sun estimate (more
+            cautious). If air quality fails, heat warnings still work. If the AI service fails, rule-based alerts are used.
+          </li>
+        </ul>
+        <p className="text-xs text-muted-foreground">
+          Small sample (2 heat events), so these numbers demonstrate the method rather than prove accuracy. A real
+          evaluation needs many more events and local health records.
+        </p>
+      </CardContent>
+    </Card>
+  );
 }
 
 /** What the archived data actually supports — nothing below is hard-coded. */
@@ -290,6 +375,7 @@ export default function CaseStudiesPage() {
           formulas and thresholds as the live dashboard, with no local health data required.
         </p>
       </div>
+      <ValidationCard />
       {CASES.map((c) => <CaseStudyCard key={c.id} c={c} />)}
       <p className="max-w-3xl text-xs text-muted-foreground">
         Death tolls, records and event dates are from contemporary news reporting and are approximate. In hot, humid

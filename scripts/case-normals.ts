@@ -1,5 +1,6 @@
 // Precomputes the "normal" daily max WBGT for each heat case study, so the page doesn't make
-// five archive requests per case for numbers that never change.
+// five archive requests per case for numbers that never change. Also keeps each previous year's
+// daily max WBGT (perYear), so the page can back-test the heatwave rule for false alarms.
 // Run: node scripts/case-normals.ts   (writes lib/case-normals.json)
 import { writeFileSync } from "node:fs";
 import { wbgt } from "../lib/wbgt.ts";
@@ -29,6 +30,8 @@ async function dailyMax(lat: number, lon: number, start: string, end: string) {
 }
 
 const result: Record<string, Record<string, number>> = {};
+const perYear: Record<string, Record<string, Record<string, number>>> = {};
+const round2 = (x: number) => Math.round(x * 100) / 100;
 for (const c of CASES) {
   const year = Number(c.start.slice(0, 4));
   const sums: Record<string, number[]> = {};
@@ -36,6 +39,7 @@ for (const c of CASES) {
     const y = year - k;
     const days = await dailyMax(c.lat, c.lon, `${y}${c.start.slice(4)}`, `${y}${c.end.slice(4)}`);
     for (const [d, v] of Object.entries(days)) (sums[d] ??= []).push(v);
+    (perYear[c.id] ??= {})[y] = Object.fromEntries(Object.entries(days).map(([d, v]) => [d, round2(v)]));
     await sleep(500); // be gentle with the free API
   }
   result[c.id] = Object.fromEntries(
@@ -46,5 +50,5 @@ for (const c of CASES) {
 
 writeFileSync(
   new URL("../lib/case-normals.json", import.meta.url),
-  JSON.stringify({ years: YEARS, note: "Mean daily max WBGT by MM-DD over the previous years; see scripts/case-normals.ts", ...result }, null, 2) + "\n",
+  JSON.stringify({ years: YEARS, note: "Mean daily max WBGT by MM-DD over the previous years, and each year's values (perYear); see scripts/case-normals.ts", ...result, perYear }, null, 2) + "\n",
 );

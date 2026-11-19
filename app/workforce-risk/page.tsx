@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Flame, HardHat, MapPin, Shield, Trash2, Truck, Wheat, type LucideIcon } from "lucide-react";
@@ -10,12 +10,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ErrorState } from "@/components/error-state";
 import { WorkerContextPicker } from "@/components/worker-context-picker";
+import { incidentsThisWeek, suppress } from "@/components/worksite-tools";
 import { useWorkerContext } from "@/lib/use-worker-context";
 import { WORLD_CITIES, cityHref, cityKey } from "@/lib/cities";
 import type { Conditions } from "@/lib/conditions";
 import { useT } from "@/lib/i18n";
 import { ok, useCities } from "@/lib/use-cities";
-import { REGIMENS, type Regimen } from "@/lib/work-rest";
+import { REGIMENS, contextLabel, type Regimen } from "@/lib/work-rest";
 import { INDUSTRIES, productivityLoss, shiftLabel, workDay, type WorkDay } from "@/lib/workforce";
 import { cn } from "@/lib/utils";
 
@@ -74,6 +75,9 @@ export default function WorkforceRiskPage() {
   const [wage, setWage] = useState(5);
   const site = rows.find((r) => cityKey(r.city) === siteKey) ?? rows[0];
   const loss = site && productivityLoss(site.d, workers, wage);
+  const [incidents, setIncidents] = useState<{ city: string }[]>([]);
+  useEffect(() => setIncidents(incidentsThisWeek()), []);
+  const siteIncidents = site ? incidents.filter((i) => i.city === site.city.name).length : 0;
 
   return (
     <div className="space-y-6">
@@ -265,6 +269,39 @@ export default function WorkforceRiskPage() {
               )}
             </CardContent>
           </Card>
+
+          {site && loss && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Safety and productivity measures</CardTitle>
+                <CardDescription>
+                  {site.city.name} today · {industry.label.toLowerCase()} ({industry.work} work) · {contextLabel(ctx)} · {workers} workers
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                  {[
+                    ["Protected rest", `${loss.lostPerWorker.toFixed(1)} h`, `per worker, vs ${site.d.standardHours.toFixed(1)} h of work in 07:00–15:00`],
+                    ["Work hours lost, 07:00 start", money(loss.lostTotal), "crew total today"],
+                    [`Work hours lost, best start`, money(loss.lostTotal - loss.recoveredHours), `starting ${shiftLabel(site.d.bestStart)}`],
+                    ["Incidents reported this week", suppress(siteIncidents), `in ${site.city.name}, anonymous log`],
+                  ].map(([k, v, sub]) => (
+                    <div key={k} className="rounded-lg border p-3">
+                      <dt className="text-xs text-muted-foreground">{k}</dt>
+                      <dd className="text-2xl font-bold tabular-nums">{v}</dd>
+                      <dd className="text-xs text-muted-foreground">{sub}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="rounded-lg border bg-muted/40 p-3">
+                  Rest time is protection, not lost productivity: one heat-stroke case costs more than a week of breaks.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Alert lead time and false-alarm rate are reported on the <Link href="/case-studies" className="font-medium text-primary underline-offset-2 hover:underline">Case Studies</Link> validation table.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
     </div>
