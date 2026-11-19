@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { wbgt, wetBulb } from "./wbgt.ts";
 import { classifyRisk, compoundBand, compoundRiskScore } from "./risk.ts";
-import { hourRanges, workRegimen } from "./work-rest.ts";
+import { DEFAULT_CONTEXT, effectiveWbgt, hourRanges, workRegimen, type Intensity } from "./work-rest.ts";
 import { assess, hydrationLitres } from "./personal-risk.ts";
 import { ruleAlert } from "./rule-alert.ts";
 import { upcomingRisk } from "./risk-forecast.ts";
@@ -53,6 +53,19 @@ assert.equal(workRegimen(26.8, "heavy").workMin, 30);
 assert.equal(workRegimen(31.1, "moderate").workMin, 15);
 assert.equal(workRegimen(31.2, "moderate").workMin, 0);
 assert.equal(workRegimen(40, "light").workMin, 0);
+
+// Clothing and acclimatisation only ever make the schedule stricter; no context = the plain table.
+for (let w = 20; w <= 36; w += 0.3) {
+  for (const k of ["light", "moderate", "heavy"] as Intensity[]) {
+    const base = workRegimen(w, k).workMin;
+    assert.equal(workRegimen(w, k, DEFAULT_CONTEXT).workMin, base);
+    assert.ok(workRegimen(w, k, { clothing: "coveralls", acclimatised: true }).workMin <= base);
+    assert.ok(workRegimen(w, k, { clothing: "double", acclimatised: true }).workMin <= workRegimen(w, k, { clothing: "coveralls", acclimatised: true }).workMin);
+    assert.ok(workRegimen(w, k, { clothing: "normal", acclimatised: false }).workMin <= base);
+  }
+}
+assert.equal(effectiveWbgt(28, { clothing: "double", acclimatised: false }), 33.5);
+assert.equal(workRegimen(26.7, "moderate", { clothing: "double", acclimatised: true }).workMin, 15); // 29.7 effective, past the 29.4 limit
 
 const day = [5, 6, 7, 12, 13, 23].map((h) => ({ time: `2026-06-01T${String(h).padStart(2, "0")}:00` }));
 assert.deepEqual(

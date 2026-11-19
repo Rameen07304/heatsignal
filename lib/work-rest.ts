@@ -25,6 +25,8 @@ export const REGIMENS: Regimen[] = [
  * Highest WBGT (°C) at which each regimen above still applies — the ACGIH work/rest screening
  * values as tabulated in the OSHA Technical Manual (permissible heat exposure TLVs).
  * They assume heat-acclimatised, healthy adults in normal work clothing with water available.
+ * Heavier clothing and unacclimatised workers are handled by raising the WBGT first (effectiveWbgt).
+ * Fully enclosed vapour-barrier suits are outside these tables: they need physiological monitoring.
  */
 const LIMITS: Record<Intensity, [number, number, number, number]> = {
   light: [30.0, 30.6, 31.4, 32.2],
@@ -32,8 +34,42 @@ const LIMITS: Record<Intensity, [number, number, number, number]> = {
   heavy: [25.0, 25.9, 27.9, 30.0],
 };
 
-export function workRegimen(wbgt: number, intensity: Intensity): Regimen {
-  const i = LIMITS[intensity].findIndex((limit) => wbgt <= limit);
+export type Clothing = "normal" | "coveralls" | "double";
+
+/** ACGIH clothing adjustment values (°C added to WBGT). */
+export const CLOTHING: { key: Clothing; label: string; adjust: number; note: string }[] = [
+  { key: "normal", label: "Normal work clothes", adjust: 0, note: "Cotton shirt and trousers" },
+  { key: "coveralls", label: "Coveralls", adjust: 1, note: "Single-layer polyolefin coveralls" },
+  { key: "double", label: "Double layer / heavy PPE", adjust: 3, note: "Double-layer woven clothing, fire-retardant gear" },
+];
+
+/**
+ * Unacclimatised workers (first ~2 weeks in the heat, or back from leave or illness) tolerate less heat.
+ * ACGIH's action limit for them sits roughly 2–3 °C below the acclimatised limit.
+ */
+export const UNACCLIMATISED_ADJUST = 2.5;
+
+export interface WorkerContext {
+  clothing: Clothing;
+  acclimatised: boolean;
+}
+export const DEFAULT_CONTEXT: WorkerContext = { clothing: "normal", acclimatised: true };
+
+/** Effective WBGT: the clothing adjustment, plus a margin for unacclimatised workers. */
+export function effectiveWbgt(wbgt: number, ctx: WorkerContext = DEFAULT_CONTEXT) {
+  const c = CLOTHING.find((x) => x.key === ctx.clothing)?.adjust ?? 0;
+  return wbgt + c + (ctx.acclimatised ? 0 : UNACCLIMATISED_ADJUST);
+}
+
+/** Short description of a crew context, for notices and reports. */
+export function contextLabel(ctx: WorkerContext = DEFAULT_CONTEXT) {
+  const c = CLOTHING.find((x) => x.key === ctx.clothing)?.label ?? "Normal work clothes";
+  return `${c}, ${ctx.acclimatised ? "acclimatised crew" : "crew new to the heat"}`;
+}
+
+export function workRegimen(wbgt: number, intensity: Intensity, ctx?: WorkerContext): Regimen {
+  const w = effectiveWbgt(wbgt, ctx);
+  const i = LIMITS[intensity].findIndex((limit) => w <= limit);
   return REGIMENS[i === -1 ? REGIMENS.length - 1 : i];
 }
 
