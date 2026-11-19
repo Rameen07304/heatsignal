@@ -4,6 +4,19 @@ Real-time environmental health intelligence for 100+ cities worldwide. HeatSigna
 
 **Live:** [heatsignal-rho.vercel.app](https://heatsignal-rho.vercel.app)
 
+Built for the **Future Health Digital Innovation Challenge 2026, Challenge 7: Climate-Resilient Worker Health** (Abu Dhabi Department of Health × Hack2Skill).
+
+## How HeatSignal meets Challenge 7
+
+| Desired outcome | Where HeatSignal delivers it |
+|---|---|
+| Dynamic heat-risk assessment | Worker Safety and Workforce Risk combine hourly WBGT with workload, shift timing, clothing/PPE and acclimatisation. |
+| Clear, graded warnings | Green, yellow, red and black flags with safe actions (water, rest, shift change), clinical escalation on red and black, in six languages; 48-hour early warning and AI or rule-based Alerts. |
+| Worker-first governance | No personal health data, anonymous incident reports with counts below 5 hidden, and a written ban on disciplinary or employment use (Worker rights and data). |
+| Field-ready operation | Installable app, last-known data with an offline label, First Aid offline, rule-based alerts when the AI is down, low data use. |
+| Supervisor decision support | Crew- and site-level shift planner, break schedule, water totals, printable site notice and employer checklist; no individual clinical detail. |
+| Safety and productivity measures | Alert lead time and false-alarm back-test (Case Studies validation), incidents this week, and protected rest vs lost work hours (Workforce Risk). |
+
 ## The problem
 
 Extreme heat kills more people than any other type of weather. The danger isn't temperature alone: it's heat, humidity, air pollution and UV together. 38 °C in humid Karachi is far more dangerous than 38 °C in dry Riyadh, and in South Asia the smog season follows straight after summer. Most warning systems look at one number. The people most exposed (construction workers, farm labourers, delivery riders, older people without cooling) are the least likely to get a warning they can act on.
@@ -15,12 +28,12 @@ Extreme heat kills more people than any other type of weather. The danger isn't 
 - **City detail.** Current conditions, a 7-day timeline, who is at risk, safe outdoor hours, and a downloadable alert.
 - **Health Advisor.** Food, supplement, water and protection advice from the day's actual conditions: vitamin D when UV is too low, electrolytes in heat stress, lung protection and antioxidant-rich food in smog. Includes a global vitamin D map.
 - **Workforce Risk.** Pick an industry (construction, agriculture, oil and gas, delivery and more) to see which cities need break schedules or a work stop today, each city’s safe working windows, and the cost of heat in lost paid hours, including how much a better shift time wins back.
-- **Worker Safety.** Work–rest cycles (ACGIH limits from the OSHA Technical Manual) for light, moderate and heavy work, an hour-by-hour work planner, a shift planner with total water for the site, a printable site notice, an employer checklist, and an anonymous heat-incident log.
+- **Worker Safety.** Work–rest cycles (ACGIH limits from the OSHA Technical Manual) for light, moderate and heavy work, adjusted for clothing/PPE and acclimatisation, with clinical escalation on red and black flags, an hour-by-hour work planner, a shift planner with total water for the site, a printable site notice, an employer checklist, and an anonymous heat-incident log.
 - **Personal Risk Assessment.** Age, health conditions, activity and access to cooling give a personal score and daily water target.
 - **Safety Advisor.** Go / adjust / postpone checks for school activities and outdoor events up to a week ahead, with a printable report.
 - **48-hour early warning.** A banner on every page when a city is forecast to reach High or Critical risk, plus opt-in browser notifications.
 - **AI alerts.** A visible pipeline: a rule-based Risk Analyzer computes the numbers, then Gemini agents write the alert, recommend actions and translate. If Gemini is down, built-in rules write the alert, so a warning always goes out.
-- **Case studies.** Karachi 2015, Sindh 2024 and Delhi 2023 replayed from archived data.
+- **Case studies.** Karachi 2015, Sindh 2024 and Delhi 2023 replayed from archived data, with a validation table: lead time and a false-alarm back-test over earlier years.
 - **Trends, Compare, First Aid.** Five-year summer trends, two cities side by side, and a heat-illness decision guide with emergency numbers by country.
 - **Emergency and sharing.** An SOS button on every page with the local ambulance number, one-tap calling and the nearest hospital; WhatsApp sharing for warnings; PDF and CSV exports for health officials.
 - **Installable app.** Add HeatSignal to a phone’s home screen; the dashboard, first-aid guide and last-seen data open offline.
@@ -59,6 +72,14 @@ All data comes from [Open-Meteo](https://open-meteo.com/) (CC BY 4.0, no API key
 - Geocoding API: city search
 
 The 101 cities are fetched in batches of 50 and cached for 15 minutes, to stay inside the free quota.
+
+## Limitations
+
+- WBGT is estimated from forecast and reanalysis data for a ~10–25 km grid cell, not measured on site. A site WBGT meter should overrule it.
+- No wearables yet. Physiological signals would be opt-in only, with consent and minimal retention.
+- The back-test sample is small (2 heat events, 5 earlier seasons each), so it demonstrates the method rather than proving accuracy, and the rule fires in several non-event years.
+- The incident log is stored per browser in this demo; a shared log needs a backend with access rules.
+- Clothing and acclimatisation adjustments use ACGIH clothing values and a fixed margin for unacclimatised workers; fully enclosed vapour-barrier suits are out of scope.
 
 ## Tech stack
 
@@ -132,7 +153,7 @@ The app works without a Gemini key. Alerts then come from the built-in rules, an
 
 ## Team
 
-Built for the **Future Health Digital Innovation Challenge 2026** (Abu Dhabi Department of Health × Hack2Skill) by Team HeatSignal, Kinnaird College for Women, Lahore.
+Built for the **Future Health Digital Innovation Challenge 2026, Challenge 7: Climate-Resilient Worker Health** (Abu Dhabi Department of Health × Hack2Skill) by Team HeatSignal, Kinnaird College for Women, Lahore.
 
 | Name | Role |
 |------|------|

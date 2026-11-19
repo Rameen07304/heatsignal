@@ -20,6 +20,34 @@ const TEAM = [
   { name: "Dania Imran", role: "Project Management, Documentation & Pitch Video" },
 ];
 
+/** Challenge 7's six desired outcomes, and where HeatSignal delivers each. */
+const OUTCOMES = [
+  [
+    "Dynamic heat-risk assessment",
+    "Worker Safety and Workforce Risk combine hourly WBGT with workload, shift timing, clothing/PPE and acclimatisation."
+  ],
+  [
+    "Clear, graded warnings",
+    "Green, yellow, red and black flags with safe actions (water, rest, shift change), clinical escalation on red and black, in six languages; 48-hour early warning and AI or rule-based Alerts."
+  ],
+  [
+    "Worker-first governance",
+    "No personal health data, anonymous incident reports with counts below 5 hidden, and a written ban on disciplinary or employment use (Worker rights and data)."
+  ],
+  [
+    "Field-ready operation",
+    "Installable app, last-known data with an offline label, First Aid offline, rule-based alerts when the AI is down, low data use."
+  ],
+  [
+    "Supervisor decision support",
+    "Crew- and site-level shift planner, break schedule, water totals, printable site notice and employer checklist; no individual clinical detail."
+  ],
+  [
+    "Safety and productivity measures",
+    "Alert lead time and false-alarm back-test (Case Studies validation), incidents this week, and protected rest vs lost work hours (Workforce Risk)."
+  ]
+];
+
 const STEPS = [
   { icon: Radar, title: "Monitor", text: "Hourly heat, humidity, sunlight, air pollutants and UV for 100+ cities, from free global forecasts." },
   { icon: TrendingUp, title: "Analyze", text: "WBGT heat stress, US AQI and UV combine into one compound score, with a penalty when heat and bad air coincide." },
@@ -48,9 +76,23 @@ export default function AboutPage() {
           experience them.
         </p>
         <div className="mt-6 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full border bg-background/60 px-3 py-1">Built for the Future Health Digital Innovation Challenge 2026, Abu Dhabi Department of Health</span>
+          <span className="rounded-full border bg-background/60 px-3 py-1">Future Health Digital Innovation Challenge 2026, Challenge 7: Climate-Resilient Worker Health · Abu Dhabi Department of Health</span>
         </div>
       </section>
+
+      <Card>
+        <CardHeader><CardTitle>How HeatSignal meets the challenge</CardTitle></CardHeader>
+        <CardContent>
+          <dl className="grid gap-3 text-sm sm:grid-cols-2">
+            {OUTCOMES.map(([k, v]) => (
+              <div key={k} className="rounded-lg border p-3">
+                <dt className="font-semibold">{k}</dt>
+                <dd className="mt-1 text-muted-foreground">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader><CardTitle>The problem</CardTitle></CardHeader>
