@@ -79,12 +79,19 @@ export function workRegimen(wbgt: number, intensity: Intensity, ctx?: WorkerCont
  */
 export const litresPerHour = (r: Regimen) => (r.workMin === 60 ? 0.5 : r.workMin === 45 ? 0.75 : 1);
 
-/** Worksite flag colours (military/sports heat-flag convention): green, yellow, red, black. */
+/** What to do if a worker shows signs of heat stroke. Shown with every Red and Black flag. */
+export const HEAT_ESCALATION =
+  "Stop work, move to shade, cool with water, and call emergency services if the worker is confused, stops sweating, collapses or has a temperature above 40 °C.";
+
+/**
+ * Worksite flag colours (military/sports heat-flag convention): green, yellow, red, black.
+ * `key` and `textKey` are the lib/i18n keys; Red and Black carry the clinical escalation path.
+ */
 export function heatFlag(r: Regimen) {
-  if (r.workMin === 60) return { name: "Green flag", color: "#16a34a", text: "Normal work. Keep water available." };
-  if (r.workMin === 45) return { name: "Yellow flag", color: "#ca8a04", text: "Caution. Scheduled rest breaks every hour." };
-  if (r.workMin > 0) return { name: "Red flag", color: "#dc2626", text: "Danger. Long rest breaks; heavy work only in the cooler hours." };
-  return { name: "Black flag", color: "#0a0a0a", text: "Extreme danger. Stop outdoor work." };
+  if (r.workMin === 60) return { key: "flagGreen", textKey: "flagGreenText", name: "Green flag", color: "#16a34a", text: "Normal work. Keep water available.", escalate: null } as const;
+  if (r.workMin === 45) return { key: "flagYellow", textKey: "flagYellowText", name: "Yellow flag", color: "#ca8a04", text: "Caution. Scheduled rest breaks every hour.", escalate: null } as const;
+  if (r.workMin > 0) return { key: "flagRed", textKey: "flagRedText", name: "Red flag", color: "#dc2626", text: "Danger. Long rest breaks; heavy work only in the cooler hours.", escalate: HEAT_ESCALATION } as const;
+  return { key: "flagBlack", textKey: "flagBlackText", name: "Black flag", color: "#0a0a0a", text: "Extreme danger. Stop outdoor work.", escalate: HEAT_ESCALATION } as const;
 }
 
 export interface HourRange {

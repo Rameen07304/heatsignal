@@ -1,7 +1,8 @@
 "use client";
 
 import { use, useState } from "react";
-import { HardHat } from "lucide-react";
+import Link from "next/link";
+import { HardHat, Siren } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MedicalDisclaimer } from "@/components/medical-disclaimer";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +19,7 @@ import { UNHEALTHY_AQI, fetchAir, formatAqi } from "@/lib/air";
 import { WORLD_CITIES, cityKey, type City } from "@/lib/cities";
 import { buildConditions } from "@/lib/conditions";
 import { useAsync } from "@/lib/use-async";
+import { useT } from "@/lib/i18n";
 import { useCities } from "@/lib/use-cities";
 import { fetchForecast } from "@/lib/weather";
 import { INTENSITIES, heatFlag, workRegimen } from "@/lib/work-rest";
@@ -41,6 +43,7 @@ export default function WorkerSafetyPage(props: Props) {
   const fromUrl = cityFromUrl(searchParams);
   const [selected, setSelected] = useState<City>(fromUrl ?? DEFAULT);
   const [ctx] = useWorkerContext();
+  const { t } = useT();
   const options = [...cities].sort((a, b) => a.name.localeCompare(b.name));
   if (!options.some((c) => cityKey(c) === cityKey(selected))) options.unshift(selected);
 
@@ -132,11 +135,18 @@ export default function WorkerSafetyPage(props: Props) {
                     <div key={i.key} className="rounded-lg border p-3" style={{ borderColor: `${r.color}80`, backgroundColor: `${r.color}14` }}>
                       <div className="text-xs font-medium text-muted-foreground">{i.label} work</div>
                       <div className="mt-1 flex items-center gap-2 font-semibold"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: r.color }} />{r.label}</div>
-                      <div className="text-xs text-muted-foreground">{flag.name} · e.g. {i.examples}</div>
+                      <div className="text-xs text-muted-foreground">{t(flag.key)} · e.g. {i.examples}</div>
                     </div>
                   );
                 })}
               </div>
+              {heatFlag(workRegimen(now.wbgt, "heavy", ctx)).escalate && (
+                <div className="flex flex-wrap items-start gap-x-3 gap-y-1 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm" role="note">
+                  <Siren className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden />
+                  <p className="min-w-0 flex-1"><b>{t(heatFlag(workRegimen(now.wbgt, "heavy", ctx)).key)}:</b> {t("heatEscalate")}</p>
+                  <Link href="/first-aid" className="font-semibold text-primary underline-offset-4 hover:underline">{t("firstAidSteps")} →</Link>
+                </div>
+              )}
               {now.air && now.air.aqi >= UNHEALTHY_AQI && (
                 <p className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm">
                   <b>Air quality is unhealthy (AQI {formatAqi(now.air.aqi)}).</b> Issue N95 masks to everyone working

@@ -63,6 +63,17 @@ const en = {
   bannerHigh: "{city} is forecast to reach High risk in {hours} hours, with the combined score rising to {score}",
   bannerCritical: "Critical: {city} is expected to reach dangerous levels in {hours} hours. Take precautions now",
   moreWarnings: "+{n} more",
+  // Worksite heat flags
+  flagGreen: "Green flag",
+  flagGreenText: "Normal work. Keep water available.",
+  flagYellow: "Yellow flag",
+  flagYellowText: "Caution. Scheduled rest breaks every hour.",
+  flagRed: "Red flag",
+  flagRedText: "Danger. Long rest breaks; heavy work only in the cooler hours.",
+  flagBlack: "Black flag",
+  flagBlackText: "Extreme danger. Stop outdoor work.",
+  heatEscalate: "Stop work, move to shade, cool with water, and call emergency services if the worker is confused, stops sweating, collapses or has a temperature above 40 °C.",
+  firstAidSteps: "First aid steps",
 } as const;
 
 export type Key = keyof typeof en;
@@ -123,6 +134,16 @@ const ur: Dict = {
   bannerHigh: "{city} میں {hours} گھنٹوں میں ماحولیاتی خطرہ زیادہ ہونے کی پیش گوئی ہے، اسکور {score} تک",
   bannerCritical: "نازک: {city} میں {hours} گھنٹوں میں خطرناک سطح متوقع ہے، ابھی احتیاط کریں",
   moreWarnings: "+{n} مزید",
+  flagGreen: "سبز جھنڈا",
+  flagGreenText: "معمول کا کام۔ پانی دستیاب رکھیں۔",
+  flagYellow: "پیلا جھنڈا",
+  flagYellowText: "احتیاط۔ ہر گھنٹے مقررہ وقفے۔",
+  flagRed: "سرخ جھنڈا",
+  flagRedText: "خطرہ۔ لمبے وقفے؛ بھاری کام صرف ٹھنڈے اوقات میں۔",
+  flagBlack: "سیاہ جھنڈا",
+  flagBlackText: "شدید خطرہ۔ باہر کا کام بند کریں۔",
+  heatEscalate: "کام روکیں، سائے میں لے جائیں، پانی سے ٹھنڈا کریں، اور اگر مزدور الجھن کا شکار ہو، پسینہ آنا بند ہو جائے، گر جائے یا درجہ حرارت 40 °C سے زیادہ ہو تو ایمرجنسی سروس کو کال کریں۔",
+  firstAidSteps: "ابتدائی طبی امداد کے اقدامات",
 };
 
 const ar: Dict = {
@@ -180,6 +201,16 @@ const ar: Dict = {
   bannerHigh: "من المتوقع أن تصل {city} إلى خطر بيئي مرتفع خلال {hours} ساعة، الدرجة ترتفع إلى {score}",
   bannerCritical: "حرج: من المتوقع أن تصل {city} إلى مستويات خطرة خلال {hours} ساعة، اتخذ الاحتياطات الآن",
   moreWarnings: "+{n} أخرى",
+  flagGreen: "العلم الأخضر",
+  flagGreenText: "عمل عادي. وفّر الماء.",
+  flagYellow: "العلم الأصفر",
+  flagYellowText: "تنبيه. فترات راحة مجدولة كل ساعة.",
+  flagRed: "العلم الأحمر",
+  flagRedText: "خطر. فترات راحة طويلة؛ العمل الشاق في الساعات الأبرد فقط.",
+  flagBlack: "العلم الأسود",
+  flagBlackText: "خطر شديد. أوقف العمل في الخارج.",
+  heatEscalate: "أوقف العمل، انقل العامل إلى الظل، برّده بالماء، واتصل بالطوارئ إذا كان مرتبكًا أو توقف عن التعرق أو سقط أو تجاوزت حرارته 40 °C.",
+  firstAidSteps: "خطوات الإسعافات الأولية",
 };
 
 const ja: Dict = {
@@ -217,6 +248,16 @@ const ja: Dict = {
   addCity: "都市を追加",
   isItSafe: "外に出ても安全？",
   citiesMonitored: "監視中の都市",
+  flagGreen: "緑旗",
+  flagGreenText: "通常作業。水を用意してください。",
+  flagYellow: "黄旗",
+  flagYellowText: "注意。毎時の休憩を予定してください。",
+  flagRed: "赤旗",
+  flagRedText: "危険。長めの休憩。重作業は涼しい時間帯のみ。",
+  flagBlack: "黒旗",
+  flagBlackText: "極めて危険。屋外作業を中止してください。",
+  heatEscalate: "作業を中止し、日陰に移し、水で体を冷やしてください。意識の混乱、汗が止まる、倒れる、体温が40 °Cを超える場合は救急に通報してください。",
+  firstAidSteps: "応急手当の手順",
 };
 
 const hi: Dict = {
@@ -254,6 +295,16 @@ const hi: Dict = {
   addCity: "शहर जोड़ें",
   isItSafe: "क्या बाहर जाना सुरक्षित है?",
   citiesMonitored: "निगरानी वाले शहर",
+  flagGreen: "हरा झंडा",
+  flagGreenText: "सामान्य काम। पानी उपलब्ध रखें।",
+  flagYellow: "पीला झंडा",
+  flagYellowText: "सावधानी। हर घंटे तय आराम।",
+  flagRed: "लाल झंडा",
+  flagRedText: "खतरा। लंबा आराम; भारी काम केवल ठंडे घंटों में।",
+  flagBlack: "काला झंडा",
+  flagBlackText: "अत्यधिक खतरा। बाहर का काम बंद करें।",
+  heatEscalate: "काम रोकें, छाया में ले जाएँ, पानी से ठंडा करें, और अगर कर्मचारी भ्रमित हो, पसीना आना बंद हो जाए, गिर जाए या तापमान 40 °C से ऊपर हो तो आपातकालीन सेवा को कॉल करें।",
+  firstAidSteps: "प्राथमिक उपचार के कदम",
 };
 
 const es: Dict = {
@@ -291,6 +342,16 @@ const es: Dict = {
   addCity: "Añadir ciudad",
   isItSafe: "¿Es seguro salir?",
   citiesMonitored: "Ciudades monitoreadas",
+  flagGreen: "Bandera verde",
+  flagGreenText: "Trabajo normal. Mantenga agua disponible.",
+  flagYellow: "Bandera amarilla",
+  flagYellowText: "Precaución. Descansos programados cada hora.",
+  flagRed: "Bandera roja",
+  flagRedText: "Peligro. Descansos largos; trabajo pesado solo en las horas más frescas.",
+  flagBlack: "Bandera negra",
+  flagBlackText: "Peligro extremo. Detenga el trabajo al aire libre.",
+  heatEscalate: "Detenga el trabajo, lleve a la persona a la sombra, enfríela con agua y llame a emergencias si está confundida, deja de sudar, se desmaya o supera los 40 °C.",
+  firstAidSteps: "Pasos de primeros auxilios",
 };
 
 export const LANGUAGES = [

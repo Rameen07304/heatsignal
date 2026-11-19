@@ -12,11 +12,13 @@ import { INTENSITIES, REGIMENS, contextLabel, heatFlag, hourRanges, litresPerHou
 import { useWorkerContext } from "@/lib/use-worker-context";
 import { listRanges } from "@/components/work-planner";
 import { emergencyLine } from "@/lib/emergency";
+import { useT } from "@/lib/i18n";
 
 /** A one-page notice to print and post at a work site. */
 export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; today: CombinedHour[] }) {
   const [intensity, setIntensity] = useState<Intensity>("heavy");
   const [ctx] = useWorkerContext();
+  const { t } = useT();
   const daytime = today.filter((h) => {
     const hour = Number(h.time.slice(11, 13));
     return hour >= 6 && hour < 20;
@@ -45,11 +47,12 @@ export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; 
         <div className="flex flex-wrap items-center justify-between gap-3 p-5 text-white" style={{ backgroundColor: flag.color }}>
           <div>
             <div className="text-sm font-medium opacity-95">Heat safety notice · today</div>
-            <div className="text-3xl font-black uppercase tracking-tight">{flag.name}</div>
+            <div className="text-3xl font-black uppercase tracking-tight">{t(flag.key)}</div>
             <div className="text-sm opacity-95">
-              {flag.text}
+              {t(flag.textKey)}
               {strictest.regimen.workMin < 60 && ` Peak around ${strictest.time.slice(11, 16)} (WBGT ${strictest.wbgt.toFixed(1)} °C).`}
             </div>
+            {flag.escalate && <div className="mt-1 max-w-xl text-sm font-semibold">{t("heatEscalate")}</div>}
           </div>
           <div className="text-right text-sm">
             <div className="text-lg font-bold">{city.name}{city.country && `, ${city.country}`}</div>
