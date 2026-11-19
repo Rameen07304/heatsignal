@@ -138,7 +138,8 @@ export function Header() {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
   const { t } = useT();
-  const { updatedAt } = useCities();
+  const { updatedAt, data } = useCities();
+  const failed = !updatedAt && Object.values(data).some((d) => d instanceof Error);
   const [open, setOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
@@ -163,7 +164,7 @@ export function Header() {
           </Button>
           <div className="lg:hidden"><Brand /></div>
           <p className="ms-auto hidden text-xs text-muted-foreground sm:block">
-            {updatedAt ? <span title={updatedAt.toLocaleString()}>Updated {ago(updatedAt, now)} · Open-Meteo</span> : "Loading live data…"}
+            {updatedAt ? <span title={updatedAt.toLocaleString()}>Updated {ago(updatedAt, now)} · Open-Meteo</span> : failed ? "Live data unavailable. Refresh to retry." : "Loading live data…"}
           </p>
           <div className="ms-auto flex items-center gap-1 sm:ms-3">
             <InstallApp />
