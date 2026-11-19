@@ -26,37 +26,72 @@ const SYSTEM =
 /** Total time we allow one generateJson call, inside the route's 60 s limit. */
 const BUDGET_MS = 40_000;
 
+/** Models sometimes add markdown (**bold**, * bullets); the page shows plain text, so drop it. */
+const parsePlain = <T,>(text: string) =>
+  JSON.parse(text, (_, v) => (typeof v === "string" ? v.replace(/\*+/g, "").replace(/\s{2,}/g, " ").trim() : v)) as T;
+
 /**
- * Ask Gemini for JSON matching `schema`. "-latest" aliases survive model retirements. The lite model
- * goes first (it answers in seconds), is retried once — Google's free tier often returns 503 "high
- * demand" or stalls briefly — and the full flash model is the last resort.
+ * Ask for JSON matching `schema`: Gemini first, then Groq if Gemini is missing or every attempt failed.
+ * Gemini: "-latest" aliases survive model retirements. The lite model goes first (it answers in seconds),
+ * is retried once — Google's free tier often returns 503 "high demand" or stalls briefly — and the full
+ * flash model is the last resort. If everything fails the error is rethrown, so callers use the rule-based alert.
  */
 async function generateJson<T>(prompt: string, schema: Schema): Promise<T> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new MissingKeyError("GEMINI_API_KEY is not set");
-  const models = process.env.GEMINI_MODEL
-    ? [process.env.GEMINI_MODEL, process.env.GEMINI_MODEL]
-    : ["gemini-flash-lite-latest", "gemini-flash-lite-latest", "gemini-flash-latest"];
-  const client = new GoogleGenerativeAI(apiKey);
+  const geminiKey = process.env.GEMINI_API_KEY;
+  const groqKey = process.env.GROQ_API_KEY;
+  if (!geminiKey && !groqKey) throw new MissingKeyError("Neither GEMINI_API_KEY nor GROQ_API_KEY is set");
   const started = Date.now();
+  const left = () => BUDGET_MS - (Date.now() - started);
+  // When Groq is configured, Gemini stops early enough to leave it a turn.
+  const reserve = groqKey ? 8_000 : 0;
   let lastError: unknown;
-  for (const name of models) {
-    const left = BUDGET_MS - (Date.now() - started);
-    if (left < 4_000) break;
+
+  if (geminiKey) {
+    const models = process.env.GEMINI_MODEL
+      ? [process.env.GEMINI_MODEL, process.env.GEMINI_MODEL]
+      : ["gemini-flash-lite-latest", "gemini-flash-lite-latest", "gemini-flash-latest"];
+    const client = new GoogleGenerativeAI(geminiKey);
+    for (const name of models) {
+      if (left() - reserve < 4_000) break;
+      try {
+        const model = client.getGenerativeModel({
+          model: name,
+          generationConfig: { responseMimeType: "application/json", responseSchema: schema, temperature: 0.4 },
+          systemInstruction: SYSTEM,
+        });
+        const result = await model.generateContent(prompt, { timeout: Math.min(18_000, left() - reserve) });
+        return parsePlain<T>(result.response.text());
+      } catch (e) {
+        lastError = e;
+      }
+    }
+  }
+
+  if (groqKey && left() >= 4_000) {
     try {
-      const model = client.getGenerativeModel({
-        model: name,
-        generationConfig: { responseMimeType: "application/json", responseSchema: schema, temperature: 0.4 },
-        systemInstruction: SYSTEM,
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${groqKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: SYSTEM },
+            { role: "user", content: `${prompt}\n\nReply with JSON only, matching this shape: ${JSON.stringify(schema)}` },
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.4,
+        }),
+        signal: AbortSignal.timeout(left()),
       });
-      const result = await model.generateContent(prompt, { timeout: Math.min(18_000, left) });
-      // The model sometimes adds markdown (**bold**, * bullets); the page shows plain text, so drop it.
-      return JSON.parse(result.response.text(), (_, v) => (typeof v === "string" ? v.replace(/\*+/g, "").replace(/\s{2,}/g, " ").trim() : v)) as T;
+      if (!res.ok) throw new Error(`Groq request failed (${res.status})`);
+      const content = (await res.json())?.choices?.[0]?.message?.content;
+      if (typeof content !== "string") throw new Error("Groq returned no content");
+      return parsePlain<T>(content);
     } catch (e) {
       lastError = e;
     }
   }
-  throw lastError;
+  throw lastError ?? new Error("AI time budget ran out");
 }
 
 /** The measured conditions, as the model sees them. */

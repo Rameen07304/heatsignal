@@ -89,7 +89,7 @@ The 101 cities are fetched in batches of 50 and cached for 15 minutes, to stay i
 - **Maps:** Leaflet (react-leaflet), Esri grey basemap
 - **Charts:** Recharts
 - **State:** React context (`lib/use-cities.tsx`) shares city data across pages
-- **AI:** Google Gemini (`gemini-flash-lite-latest`, falling back to `gemini-flash-latest`)
+- **AI:** Google Gemini (`gemini-flash-lite-latest`, falling back to `gemini-flash-latest`), with Groq (`llama-3.3-70b-versatile`) as an optional fallback. Order: Gemini → Groq → built-in rule-based alerts.
 - **Deployment:** Vercel
 
 ## Project structure

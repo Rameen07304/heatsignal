@@ -86,9 +86,9 @@ function parseAlertText(v: unknown): AlertText | null {
 }
 
 const aiUnavailable = (e: unknown) => {
-  if (!(e instanceof MissingKeyError)) console.error("Gemini call failed:", e);
+  if (!(e instanceof MissingKeyError)) console.error("AI call failed:", e);
   return e instanceof MissingKeyError
-    ? "AI alerts are not configured (GEMINI_API_KEY is missing)."
+    ? "AI alerts are not configured (set GEMINI_API_KEY or GROQ_API_KEY)."
     : "The AI service is busy or unavailable.";
 };
 
