@@ -753,4 +753,7 @@ export const ur: Dict = {
   compareWord: "موازنہ",
   tab7Days: "7 دن",
   tabVsNormal: "معمول سے موازنہ",
+  compareQuestion: "آج کون سی جگہ زیادہ محفوظ ہے؟",
+  compareSafer: "اس وقت باہر کام کے لیے {city} زیادہ محفوظ ہے: {a} بمقابلہ {b}۔",
+  compareSame: "اس وقت دونوں جگہوں پر باہر کام کے لیے ایک ہی جھنڈا ہے: {flag}۔",
 };

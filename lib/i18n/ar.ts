@@ -753,4 +753,7 @@ export const ar: Dict = {
   compareWord: "مقارنة",
   tab7Days: "7 أيام",
   tabVsNormal: "مقارنة بالمعتاد",
+  compareQuestion: "أي مكان أكثر أمانًا اليوم؟",
+  compareSafer: "{city} أكثر أمانًا للعمل في الخارج الآن: {a} مقابل {b}.",
+  compareSame: "للمكانين العلم نفسه للعمل في الخارج الآن: {flag}.",
 };

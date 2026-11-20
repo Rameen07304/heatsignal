@@ -753,4 +753,7 @@ export const ja: Dict = {
   compareWord: "比較",
   tab7Days: "7日間",
   tabVsNormal: "平年との比較",
+  compareQuestion: "今日はどちらが安全?",
+  compareSafer: "今の屋外作業は{city}のほうが安全です: {a}対{b}。",
+  compareSame: "今はどちらも屋外作業の旗が同じです: {flag}。",
 };

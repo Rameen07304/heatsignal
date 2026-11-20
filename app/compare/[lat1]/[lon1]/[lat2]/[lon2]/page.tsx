@@ -18,6 +18,8 @@ import { useAsync } from "@/lib/use-async";
 import { fetchForecast } from "@/lib/weather";
 import { cityName } from "@/lib/places";
 import { useT } from "@/lib/i18n";
+import { PageTop } from "@/components/page-top";
+import { heatFlag, workRegimen } from "@/lib/work-rest";
 
 interface Props {
   params: Promise<{ lat1: string; lon1: string; lat2: string; lon2: string }>;
@@ -63,7 +65,7 @@ function verdict(a: City, ca: Conditions, b: City, cb: Conditions): string {
 }
 
 export default function ComparePage(props: Props) {
-  const { lang } = useT();
+  const { t, lang } = useT();
   const params = use(props.params);
   const searchParams = use(props.searchParams);
   const a = parse(params.lat1, params.lon1, searchParams.n1, searchParams.c1);
@@ -73,16 +75,42 @@ export default function ComparePage(props: Props) {
     return Promise.all([load(a), load(b)]);
   }, [params.lat1, params.lon1, params.lat2, params.lon2]);
   const pair = result.data;
+  // Answer first: which place is safer for outdoor work today, by heavy-work flag.
+  const flags = pair && a && b ? pair.map((c) => heatFlag(workRegimen(c.now.wbgt, "heavy"))) : null;
+  const work = pair ? pair.map((c) => workRegimen(c.now.wbgt, "heavy").workMin) : null;
+  const answer =
+    flags && work && a && b ? (
+      <div className="rounded-lg bg-card p-4 sm:p-5" role="status">
+        <p className="text-lg font-semibold sm:text-xl">
+          {work[0] === work[1]
+            ? t("compareSame", { flag: t(flags[0].key) })
+            : t("compareSafer", { city: cityName((work[0] > work[1] ? a : b).name, lang), a: t(flags[0].key), b: t(flags[1].key) })}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-sm">
+          {[a, b].map((city, i) => (
+            <span key={i} className="inline-flex items-center gap-2 rounded-full px-3 py-1 font-medium text-white" style={{ backgroundColor: flags[i].color }}>
+              {cityName(city.name, lang)}: {t(flags[i].key)}
+            </span>
+          ))}
+        </div>
+      </div>
+    ) : null;
 
   return (
     <div className="space-y-6">
       <Link href={a ? cityHref(a) : "/"} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Back
+        <ArrowLeft className="h-4 w-4 rtl:rotate-180" /> Back
       </Link>
-      <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-        <span style={{ color: COLORS[0] }}>{a?.name ?? "?"}</span> <span className="text-muted-foreground">vs</span>{" "}
-        <span style={{ color: COLORS[1] }}>{b?.name ?? "?"}</span>
-      </h1>
+      <PageTop
+        title={
+          <span>
+            <span style={{ color: COLORS[0] }}>{a ? cityName(a.name, lang) : "?"}</span> <span className="text-muted-foreground">vs</span>{" "}
+            <span style={{ color: COLORS[1] }}>{b ? cityName(b.name, lang) : "?"}</span>
+          </span>
+        }
+        intro={t("compareQuestion")}
+        answer={answer}
+      />
 
       {result.loading && <Skeleton className="h-96 w-full rounded-lg" />}
       {result.error && <ErrorState message="Couldn’t load both cities." onRetry={result.retry} />}

@@ -753,4 +753,7 @@ export const es: Dict = {
   compareWord: "Comparar",
   tab7Days: "7 días",
   tabVsNormal: "Comparado con lo normal",
+  compareQuestion: "¿Qué lugar es más seguro hoy?",
+  compareSafer: "{city} es más seguro para trabajar afuera ahora: {a} frente a {b}.",
+  compareSame: "Ambos lugares tienen la misma bandera para trabajar afuera ahora: {flag}.",
 };

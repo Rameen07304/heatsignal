@@ -759,6 +759,9 @@ export const en = {
   compareWord: "Compare",
   tab7Days: "7 days",
   tabVsNormal: "Compared with normal",
+  compareQuestion: "Which place is safer today?",
+  compareSafer: "{city} is safer for outdoor work right now: {a} vs {b}.",
+  compareSame: "Both places have the same flag for outdoor work right now: {flag}.",
 } as const;
 
 export type Key = keyof typeof en;
