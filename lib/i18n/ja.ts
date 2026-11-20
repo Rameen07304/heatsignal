@@ -178,7 +178,7 @@ export const ja: Dict = {
   ofDue: "{due}回中{done}回",
   leadTimeTitle: "{work}作業の早期警報",
   flagChangesAt: "{at}に{flag}に変わります({in})。重作業はそれまでに済ませてください。",
-  tomorrowPeak: "明日: {hours}は{flag}。勤務は{start}にしてください。",
+  tomorrowPeak: "明日: {hours}は{flag}。最適な勤務時間: {start}。",
   hotStreak: "{total}日続く暑い日の{day}日目: 疲労が蓄積します。休憩を増やしてください。",
   inMinutes: "{m}分後",
   noFlagChange: "今日と明日、これ以上悪い旗は予想されていません。",

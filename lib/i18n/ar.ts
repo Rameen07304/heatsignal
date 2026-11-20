@@ -178,7 +178,7 @@ export const ar: Dict = {
   ofDue: "{done} من {due}",
   leadTimeTitle: "إنذار مبكر: عمل {work}",
   flagChangesAt: "يتغير العلم إلى {flag} عند {at} ({in}). خطّط للعمل الشاق قبل ذلك.",
-  tomorrowPeak: "غدًا: {flag} {hours}. ابدأ الوردية {start}.",
+  tomorrowPeak: "غدًا: {flag} {hours}. أفضل وردية: {start}.",
   hotStreak: "اليوم {day} من {total} أيام حارة: يتراكم الإرهاق، أضف راحة إضافية.",
   inMinutes: "خلال {m} دقيقة",
   noFlagChange: "لا يُتوقع علم أسوأ اليوم أو غدًا.",

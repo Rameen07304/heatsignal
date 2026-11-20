@@ -34,11 +34,15 @@ function remind(title: string, body: string) {
   } catch {}
 }
 
-/** "HH:MM" today on this device. ponytail: assumes the worker's phone is in the site's time zone. */
-const atToday = (hhmm: string) => {
-  const d = new Date();
-  d.setHours(Number(hhmm.slice(0, 2)), Number(hhmm.slice(3, 5)), 0, 0);
-  return d;
+/**
+ * Milliseconds from now until "HH:MM" on the site's clock. The site's hour comes from the forecast (`siteHour`),
+ * so a phone set to another time zone still counts down correctly; minutes and seconds come from the device.
+ * ponytail: sites on half-hour time zones (e.g. India) are off by 30 min.
+ */
+const msUntil = (hhmm: string, siteHour: number, at: Date) => {
+  const target = Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
+  const nowMin = siteHour * 60 + at.getMinutes();
+  return ((target - nowMin + 1440) % 1440) * 60_000 - at.getSeconds() * 1000;
 };
 
 /** Shift timer: countdown to the next rest break, water reminders every 20 minutes, and today's adherence. */
@@ -84,8 +88,8 @@ export function BreakTimer({ hours, now, ctx }: { hours: CombinedHour[]; now: Co
 
   const from = Math.max(0, hours.findIndex((h) => h.time === now.time));
   const nb = nextBreak({ id: "me", work, ...ctx }, hours.slice(from), new Date(clock).getMinutes());
-  const target = nb.includes(":") ? atToday(nb) : null;
-  const msLeft = target ? target.getTime() - clock : null;
+  const siteHour = Number(hours[from]?.time.slice(11, 13) ?? 0);
+  const msLeft = nb.includes(":") ? msUntil(nb, siteHour, new Date(clock)) : null;
 
   // Count due breaks and water reminders while the shift runs.
   useEffect(() => {
@@ -146,7 +150,7 @@ export function BreakTimer({ hours, now, ctx }: { hours: CombinedHour[]; now: Co
               <div className="text-4xl font-black tabular-nums" dir="ltr">
                 {nb === "now" ? t("breakNow") : nb === "stopped" ? t("stopped") : msLeft != null ? mmss(msLeft) : t("noBreakNeeded")}
               </div>
-              {target && <div className="text-sm text-muted-foreground" dir="ltr">{nb}</div>}
+              {msLeft != null && <div className="text-sm text-muted-foreground" dir="ltr">{nb}</div>}
               {nb === "now" && <p className="mt-1 font-semibold text-destructive">{t("breakDueBody")}</p>}
             </div>
             <div className="flex flex-wrap gap-2">

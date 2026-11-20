@@ -184,7 +184,7 @@ export const en = {
   ofDue: "{done} of {due}",
   leadTimeTitle: "Early warning for {work} work",
   flagChangesAt: "Flag changes to {flag} at {at} ({in}). Plan heavy work before then.",
-  tomorrowPeak: "Tomorrow: {flag} {hours}. Start the shift at {start}.",
+  tomorrowPeak: "Tomorrow: {flag} {hours}. Best shift: {start}.",
   hotStreak: "Day {day} of {total} hot days: fatigue builds up, add extra rest.",
   inMinutes: "in {m} min",
   noFlagChange: "No worse flag expected today or tomorrow.",

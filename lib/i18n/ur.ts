@@ -178,7 +178,7 @@ export const ur: Dict = {
   ofDue: "{due} میں سے {done}",
   leadTimeTitle: "{work} کام کے لیے پیشگی انتباہ",
   flagChangesAt: "جھنڈا {at} پر {flag} ہو جائے گا ({in})۔ بھاری کام اس سے پہلے کر لیں۔",
-  tomorrowPeak: "کل: {flag} {hours}۔ شفٹ {start} پر شروع کریں۔",
+  tomorrowPeak: "کل: {flag} {hours}۔ بہترین شفٹ: {start}۔",
   hotStreak: "{total} گرم دنوں میں سے دن {day}: تھکن بڑھتی ہے، اضافی آرام کریں۔",
   inMinutes: "{m} منٹ میں",
   noFlagChange: "آج یا کل کوئی زیادہ خطرناک جھنڈا متوقع نہیں۔",
