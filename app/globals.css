@@ -140,3 +140,32 @@
     transition: none !important;
   }
 }
+
+/* Field mode: readable in direct sun and on a dusty, cracked screen. Black background, white text, strong
+   borders, larger text and touch targets, and no animation (saves battery). Set on <html data-field="on">. */
+html[data-field="on"].dark {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 5%;
+  --elevated: 0 0% 12%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 0 0% 88%;
+  --border: 0 0% 55%;
+  --primary: 48 100% 55%; /* safety yellow */
+  --primary-foreground: 0 0% 0%;
+  --ring: 48 100% 55%;
+}
+html[data-field="on"] {
+  font-size: 112.5%;
+}
+html[data-field="on"] button,
+html[data-field="on"] select,
+html[data-field="on"] input:not([type="checkbox"]) {
+  min-height: 2.75rem;
+}
+html[data-field="on"] *,
+html[data-field="on"] *::before,
+html[data-field="on"] *::after {
+  animation: none !important;
+  transition: none !important;
+}

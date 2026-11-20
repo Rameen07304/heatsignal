@@ -182,4 +182,13 @@ export const ja: Dict = {
   hotStreak: "{total}日続く暑い日の{day}日目: 疲労が蓄積します。休憩を増やしてください。",
   inMinutes: "{m}分後",
   noFlagChange: "今日と明日、これ以上悪い旗は予想されていません。",
+  fieldMode: "現場モード",
+  fieldModeOn: "現場モードをオン(高コントラスト・大きな文字・省電力)",
+  fieldModeOff: "現場モードをオフ",
+  lowBatteryFieldMode: "電池残量わずか: 現場モードをオン",
+  battery: "電池",
+  mapOffField: "データと電池を節約するため、現場モードでは地図を表示しません。",
+  showMap: "地図を表示",
+  dustToday: "今日は砂ぼこりが多い。",
+  dustAction: "N95/FFP2マスクを着け、目を保護し、飲み水にはふたをしてください。",
 };

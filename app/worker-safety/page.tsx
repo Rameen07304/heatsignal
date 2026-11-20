@@ -18,7 +18,7 @@ import { WorkerCheckin } from "@/components/worker-checkin";
 import { CrewBoard } from "@/components/crew-board";
 import { BreakTimer } from "@/components/break-timer";
 import { useWorkerContext } from "@/lib/use-worker-context";
-import { UNHEALTHY_AQI, fetchAir, formatAqi } from "@/lib/air";
+import { UNHEALTHY_AQI, fetchAir, formatAqi, isDusty } from "@/lib/air";
 import { WORLD_CITIES, cityKey, type City } from "@/lib/cities";
 import { buildConditions } from "@/lib/conditions";
 import { useAsync } from "@/lib/use-async";
@@ -154,6 +154,11 @@ export default function WorkerSafetyPage(props: Props) {
                   <p className="min-w-0 flex-1"><b>{t(heatFlag(workRegimen(now.wbgt, "heavy", ctx)).key)}:</b> {t("heatEscalate")}</p>
                   <Link href="/first-aid" className="font-semibold text-primary underline-offset-4 hover:underline">{t("firstAidSteps")} →</Link>
                 </div>
+              )}
+              {today.some((h) => isDusty(h.air)) && (
+                <p className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-sm">
+                  <b>{t("dustToday")}</b> {t("dustAction")}
+                </p>
               )}
               {now.air && now.air.aqi >= UNHEALTHY_AQI && (
                 <p className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm">

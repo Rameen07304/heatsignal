@@ -1,6 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { MapIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
+import { useFieldMode } from "@/lib/use-field-mode";
 import { useTheme } from "next-themes";
 import { CircleMarker, MapContainer, Popup, TileLayer } from "react-leaflet";
 import type { LatLngBoundsExpression } from "leaflet";
@@ -29,6 +34,9 @@ const NO_DATA = "#64748b";
 // Load with next/dynamic({ ssr: false }) — Leaflet needs `window`.
 export default function WeatherMap({ cities, data, mode, work = "heavy", ctx }: Props) {
   const { resolvedTheme } = useTheme();
+  const { t } = useT();
+  const [field] = useFieldMode();
+  const [show, setShow] = useState(false);
   // Esri grey canvas: free with attribution, no API key (CARTO now requires one).
   const tiles = resolvedTheme === "dark" ? "World_Dark_Gray_Base" : "World_Light_Gray_Base";
   const bounds: LatLngBoundsExpression | undefined = cities.length
@@ -37,6 +45,16 @@ export default function WeatherMap({ cities, data, mode, work = "heavy", ctx }: 
         [Math.max(...cities.map((c) => c.lat)) + 3, Math.max(...cities.map((c) => c.lon)) + 3],
       ]
     : undefined;
+
+  // Field mode: no map until asked for (map tiles cost data and battery).
+  if (field && !show) {
+    return (
+      <div className="flex h-full min-h-[160px] flex-col items-center justify-center gap-2 rounded-lg border p-4 text-center text-sm text-muted-foreground">
+        <p>{t("mapOffField")}</p>
+        <Button variant="outline" onClick={() => setShow(true)}><MapIcon /> {t("showMap")}</Button>
+      </div>
+    );
+  }
 
   return (
     // z-0 keeps Leaflet's internal z-indexes (up to 1000) below dialogs.

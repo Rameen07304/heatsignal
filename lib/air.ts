@@ -114,3 +114,6 @@ export async function fetchAirArchive(lat: number, lon: number, start: string, e
     ),
   );
 }
+
+/** Dust storm conditions for outdoor workers: desert dust ≥ 100 µg/m³ or PM10 ≥ 150 µg/m³. */
+export const isDusty = (a?: { dust: number; pm10: number } | null) => !!a && (a.dust >= 100 || a.pm10 >= 150);

@@ -182,4 +182,13 @@ export const es: Dict = {
   hotStreak: "Día {day} de {total} días calurosos: el cansancio se acumula, agregue descanso.",
   inMinutes: "en {m} min",
   noFlagChange: "No se espera una bandera peor hoy ni mañana.",
+  fieldMode: "Modo campo",
+  fieldModeOn: "Activar modo campo (alto contraste, texto grande, ahorra batería)",
+  fieldModeOff: "Desactivar modo campo",
+  lowBatteryFieldMode: "Batería baja: active el modo campo",
+  battery: "Batería",
+  mapOffField: "El mapa está apagado en modo campo para ahorrar datos y batería.",
+  showMap: "Mostrar mapa",
+  dustToday: "Aire con polvo hoy.",
+  dustAction: "Use mascarilla N95/FFP2, proteja sus ojos y mantenga tapada el agua para beber.",
 };

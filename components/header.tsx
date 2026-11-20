@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FieldModeToggle } from "@/components/field-mode";
 import { InstallApp } from "@/components/install-app";
 import { NotifyButton } from "@/components/notify-button";
 import { LANGUAGES, useT, type Key, type Lang } from "@/lib/i18n";
@@ -184,6 +185,7 @@ export function Header() {
             {updatedAt ? <span title={updatedAt.toLocaleString()}>Updated {ago(updatedAt, now)} · Open-Meteo</span> : failed ? "Live data unavailable. Refresh to retry." : "Loading live data…"}
           </p>
           <div className="ms-auto flex items-center gap-1 sm:ms-3">
+            <FieldModeToggle />
             <InstallApp />
             <NotifyButton />
             <Button variant="ghost" size="icon" aria-label="Toggle light/dark theme" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>

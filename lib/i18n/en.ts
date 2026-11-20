@@ -188,6 +188,15 @@ export const en = {
   hotStreak: "Day {day} of {total} hot days: fatigue builds up, add extra rest.",
   inMinutes: "in {m} min",
   noFlagChange: "No worse flag expected today or tomorrow.",
+  fieldMode: "Field mode",
+  fieldModeOn: "Turn on field mode (high contrast, large text, saves battery)",
+  fieldModeOff: "Turn off field mode",
+  lowBatteryFieldMode: "Battery low: turn on field mode",
+  battery: "Battery",
+  mapOffField: "The map is off in field mode to save data and battery.",
+  showMap: "Show map",
+  dustToday: "Dusty air today.",
+  dustAction: "Wear an N95/FFP2 mask, protect your eyes, and keep drinking water covered.",
 } as const;
 
 export type Key = keyof typeof en;

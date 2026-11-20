@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UNHEALTHY_AQI, formatAqi } from "@/lib/air";
+import { UNHEALTHY_AQI, formatAqi, isDusty } from "@/lib/air";
 import type { City } from "@/lib/cities";
 import type { CombinedHour } from "@/lib/conditions";
 import { formatDay } from "@/lib/utils";
@@ -87,6 +87,7 @@ export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; 
               <li>Work in pairs and watch each other</li>
               <li>New workers: half a shift for the first days</li>
               {maxAqi >= UNHEALTHY_AQI && <li><b>N95 masks required</b>: AQI {formatAqi(maxAqi)}</li>}
+              {today.some((h) => isDusty(h.air)) && <li><b>{t("dustToday")}</b> {t("dustAction")}</li>}
             </ul>
           </section>
 
