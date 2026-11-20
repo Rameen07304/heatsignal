@@ -3,12 +3,12 @@ import { fetchMany, getJson, localHourNow } from "./weather";
 
 /** US EPA Air Quality Index categories, with the EPA's standard colours and activity guidance. */
 export const AQI_BANDS = [
-  { max: 50, label: "Good", color: "#22c55e", advice: "Air quality is fine for outdoor activity." },
-  { max: 100, label: "Moderate", color: "#eab308", advice: "Fine for most people. Unusually sensitive people should watch for symptoms." },
-  { max: 150, label: "Unhealthy for sensitive groups", color: "#f97316", advice: "Children, older adults and people with asthma or heart disease should cut back on hard outdoor activity." },
-  { max: 200, label: "Unhealthy", color: "#ef4444", advice: "Everyone should cut back on hard or long outdoor activity. Wear a well-fitted N95 mask outside." },
-  { max: 300, label: "Very unhealthy", color: "#a855f7", advice: "Avoid hard outdoor activity. Sensitive groups should stay indoors. Wear an N95 mask outside." },
-  { max: Infinity, label: "Hazardous", color: "#991b1b", advice: "Stay indoors with windows closed. Avoid all outdoor exertion." },
+  { max: 50, label: "Good", key: "aqiGood", adviceKey: "aqiGoodAdvice", color: "#22c55e", advice: "Air quality is fine for outdoor activity." },
+  { max: 100, label: "Moderate", key: "aqiModerate", adviceKey: "aqiModerateAdvice", color: "#eab308", advice: "Fine for most people. Unusually sensitive people should watch for symptoms." },
+  { max: 150, label: "Unhealthy for sensitive groups", key: "aqiSensitive", adviceKey: "aqiSensitiveAdvice", color: "#f97316", advice: "Children, older adults and people with asthma or heart disease should cut back on hard outdoor activity." },
+  { max: 200, label: "Unhealthy", key: "aqiUnhealthy", adviceKey: "aqiUnhealthyAdvice", color: "#ef4444", advice: "Everyone should cut back on hard or long outdoor activity. Wear a well-fitted N95 mask outside." },
+  { max: 300, label: "Very unhealthy", key: "aqiVeryUnhealthy", adviceKey: "aqiVeryUnhealthyAdvice", color: "#a855f7", advice: "Avoid hard outdoor activity. Sensitive groups should stay indoors. Wear an N95 mask outside." },
+  { max: Infinity, label: "Hazardous", key: "aqiHazardous", adviceKey: "aqiHazardousAdvice", color: "#991b1b", advice: "Stay indoors with windows closed. Avoid all outdoor exertion." },
 ] as const;
 
 export type AqiBand = (typeof AQI_BANDS)[number];

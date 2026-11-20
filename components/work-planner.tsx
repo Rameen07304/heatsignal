@@ -5,9 +5,9 @@ import { Droplets } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UNHEALTHY_AQI, aqiBand, formatAqi } from "@/lib/air";
-import { formatDay } from "@/lib/utils";
 import { INTENSITIES, REGIMENS, hourRanges, workRegimen, type HourRange, type Intensity, type WorkerContext } from "@/lib/work-rest";
 import type { CombinedHour } from "@/lib/conditions";
+import { useT } from "@/lib/i18n";
 
 export const listRanges = (ranges: HourRange[]) => ranges.map((r) => `${r.from}–${r.to}`).join(", ");
 const list = listRanges;
@@ -27,6 +27,7 @@ interface Props {
 
 export function WorkPlanner({ hourly, now, initialIntensity = "moderate", ctx }: Props) {
   const [intensity, setIntensity] = useState<Intensity>(initialIntensity);
+  const { t, date } = useT();
   const days = Array.from(new Set(hourly.map((p) => p.time.slice(0, 10)))).slice(0, 3);
   const [day, setDay] = useState(days[0]);
 
@@ -43,28 +44,25 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate", ctx }:
   const safeHours = safe.reduce((n, r) => n + r.hours, 0);
   const heatLimited = hours.some((h) => h.regimen.workMin < 60);
   const activity = INTENSITIES.find((i) => i.key === intensity)!;
-  const what = `${activity.label.toLowerCase()} activity`;
+  const what = t("activityOf", { level: t(activity.labelKey).toLowerCase() });
 
   // Air between 101 and 150 doesn't stop healthy adults, but the verdict must still say who it affects.
   const sensitiveAir = (h: (typeof hours)[number]) => (h.aqi ?? 0) > 100 && !badAir(h);
   const sensitiveRanges = hourRanges(hours, sensitiveAir);
   const peakAqi = Math.max(0, ...hours.map((h) => h.aqi ?? 0));
   const airNote = sensitiveRanges.length
-    ? ` Sensitive groups (asthma, heart disease, children, older adults) should limit exertion. AQI up to ${formatAqi(peakAqi)}.`
+    ? ` ${t("sensitiveAirNote", { aqi: formatAqi(peakAqi) })}`
     : "";
 
   const headline =
     safeHours === hours.length
-      ? `Safe all day for ${sensitiveRanges.length ? "healthy adults doing " : ""}${what}.${airNote}`
+      ? t(sensitiveRanges.length ? "safeAllDayHealthy" : "safeAllDay", { what }) + airNote
       : safeHours === 0
-        ? `No fully safe hours for ${what}. ${
-            hours.every(badAir)
-              ? "the air is unhealthy all day"
-              : hours.every((h) => h.regimen.workMin < 60)
-                ? "the heat needs rest breaks all day"
-                : "every hour is limited by either heat or smog"
-          }.`
-        : `Best time outdoors: ${list(safe)}.${airNote}`;
+        ? t("noSafeHours", {
+            what,
+            why: t(hours.every(badAir) ? "whyAirAllDay" : hours.every((h) => h.regimen.workMin < 60) ? "whyHeatAllDay" : "whyHeatOrSmog"),
+          })
+        : t("bestTimeOutdoors", { ranges: list(safe) }) + airNote;
 
   const cell = (h: (typeof hours)[number]) => {
     const key = h.time.slice(0, 13);
@@ -76,49 +74,46 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate", ctx }:
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Safe outdoor hours</CardTitle>
-        <CardDescription>
-          When it is safe to work or be active outside, hour by hour, counting both heat stress and smog, and how
-          much rest is needed when it is not.
-        </CardDescription>
+        <CardTitle>{t("safeOutdoorHours")}</CardTitle>
+        <CardDescription>{t("safeOutdoorHoursIntro")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <Tabs value={intensity} onValueChange={(v) => setIntensity(v as Intensity)}>
-            <TabsList aria-label="Activity level">
-              {INTENSITIES.map((i) => <TabsTrigger key={i.key} value={i.key}>{i.label}</TabsTrigger>)}
+            <TabsList aria-label={t("activityLevel")}>
+              {INTENSITIES.map((i) => <TabsTrigger key={i.key} value={i.key}>{t(i.labelKey)}</TabsTrigger>)}
             </TabsList>
           </Tabs>
           <Tabs value={day} onValueChange={setDay}>
-            <TabsList aria-label="Day">
+            <TabsList aria-label={t("day")}>
               {days.map((d, i) => (
-                <TabsTrigger key={d} value={d}>{["Today", "Tomorrow"][i] ?? formatDay(d)}</TabsTrigger>
+                <TabsTrigger key={d} value={d}>{i === 0 ? t("today") : i === 1 ? t("tomorrow") : date(d)}</TabsTrigger>
               ))}
             </TabsList>
           </Tabs>
         </div>
         <p className="text-xs text-muted-foreground">
-          {activity.label} activity: {activity.examples}.
+          {t("activityExamples", { level: t(activity.labelKey), examples: t(activity.examplesKey) })}
         </p>
 
         <div className="rounded-lg border bg-muted/40 p-4">
           <p className="text-lg font-semibold">{headline}</p>
           {avoid.length > 0 && (
             <p className="mt-1 text-sm">
-              <span className="font-semibold" style={{ color: "#b91c1c" }}>Avoid: {list(avoid)}.</span>{" "}
-              Move this activity to the safe hours or indoors.
+              <span className="font-semibold" style={{ color: "#b91c1c" }}>{t("avoidRanges", { ranges: list(avoid) })}</span>{" "}
+              {t("moveToSafeHours")}
             </p>
           )}
         </div>
 
-        <div role="img" aria-label={`Hour-by-hour plan for ${formatDay(day)}: ${headline}`}>
+        <div role="img" dir="ltr" aria-label={`${t("hourByHourPlan", { day: date(day) })}: ${headline}`}>
           <div className="flex items-center gap-2">
-            <span className="w-10 shrink-0 text-xs text-muted-foreground">Heat</span>
+            <span className="w-10 shrink-0 text-xs text-muted-foreground">{t("heatShort")}</span>
             <div className="flex flex-1 gap-px">
               {hours.map((h) => (
                 <div
                   key={h.time}
-                  title={`${h.time.slice(11, 16)} · WBGT ${h.wbgt.toFixed(1)} °C · ${h.regimen.label}`}
+                  title={`${h.time.slice(11, 16)} · WBGT ${h.wbgt.toFixed(1)} °C · ${t(h.regimen.key)}`}
                   className={`h-9 ${cell(h)}`}
                   style={{ backgroundColor: h.regimen.color }}
                 />
@@ -127,15 +122,15 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate", ctx }:
           </div>
           {hasAir && (
             <div className="mt-1.5 flex items-center gap-2">
-              <span className="w-10 shrink-0 text-xs text-muted-foreground">Air</span>
+              <span className="w-10 shrink-0 text-xs text-muted-foreground">{t("airShort")}</span>
               <div className="flex flex-1 gap-px">
                 {hours.map((h) => (
                   <div
                     key={h.time}
                     title={
                       h.aqi == null
-                        ? `${h.time.slice(11, 16)} · no air-quality data`
-                        : `${h.time.slice(11, 16)} · AQI ${formatAqi(h.aqi)} · ${aqiBand(h.aqi).label}`
+                        ? `${h.time.slice(11, 16)} · ${t("noAirData")}`
+                        : `${h.time.slice(11, 16)} · AQI ${formatAqi(h.aqi)} · ${t(aqiBand(h.aqi).key)}`
                     }
                     className={`h-5 ${cell(h)}`}
                     style={{ backgroundColor: h.aqi == null ? "hsl(var(--muted))" : aqiBand(h.aqi).color }}
@@ -153,27 +148,27 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate", ctx }:
           {[
             ...REGIMENS.map((r) => ({
               // In this list the row is about heat only; smog has its own rows below.
-              label: r.workMin === 60 ? "No heat limit" : r.label,
+              label: r.workMin === 60 ? t("noHeatLimit") : t(r.key),
               color: r.color,
               ranges: hourRanges(hours, (h) => h.regimen === r),
             })),
             {
-              label: "Air fine (AQI 100 or below)",
+              label: t("airFine"),
               color: aqiBand(50).color,
               ranges: hasAir ? hourRanges(hours, (h) => h.aqi != null && h.aqi <= 100) : [],
             },
             {
-              label: "Air unhealthy for sensitive groups. They should limit exertion",
+              label: t("airSensitiveRow"),
               color: aqiBand(120).color,
               ranges: sensitiveRanges,
             },
             {
-              label: "Unhealthy air. Wear an N95 mask and take it easy",
+              label: t("airUnhealthyRow"),
               color: aqiBand(UNHEALTHY_AQI).color,
               ranges: hourRanges(hours, (h) => badAir(h) && !worstAir(h)),
             },
             {
-              label: "Very unhealthy air. Stay indoors if you can",
+              label: t("airVeryUnhealthyRow"),
               color: aqiBand(VERY_UNHEALTHY_AQI).color,
               ranges: hourRanges(hours, worstAir),
             },
@@ -184,7 +179,7 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate", ctx }:
                 <span className="h-2.5 w-2.5 shrink-0 translate-y-px rounded-sm" style={{ backgroundColor: row.color }} />
                 <span>
                   <span className="font-medium">{row.label}:</span>{" "}
-                  <span className="tabular-nums text-muted-foreground">{list(row.ranges)}</span>
+                  <span className="tabular-nums text-muted-foreground" dir="ltr">{list(row.ranges)}</span>
                 </span>
               </li>
             ))}
@@ -193,19 +188,11 @@ export function WorkPlanner({ hourly, now, initialIntensity = "moderate", ctx }:
         {heatLimited && (
           <p className="flex items-start gap-2 rounded-lg border p-3 text-sm">
             <Droplets className="mt-0.5 h-4 w-4 shrink-0 text-sky-500" />
-            <span>
-              In the heat-restricted hours, drink one cup of water (about 250 ml) every 15–20 minutes, roughly
-              1 litre an hour, even if you are not thirsty. Rest in shade, not in the sun.
-            </span>
+            <span>{t("waterInHeatHours")}</span>
           </p>
         )}
 
-        <p className="text-xs text-muted-foreground">
-          Heat limits follow the ACGIH work/rest values published in the OSHA Technical Manual, for healthy adults
-          who are used to the heat and wearing normal work clothing. Air limits follow US EPA guidance (AQI above
-          150 is unhealthy for everyone). People new to the heat, older adults, children, pregnant women and anyone
-          fasting or unwell need more rest than shown. Past hours are dimmed.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("workPlannerSource")}</p>
       </CardContent>
     </Card>
   );
