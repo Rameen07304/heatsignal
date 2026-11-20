@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --experimental-strip-types --import ./scripts/ts-resolve.mjs lib/wbgt.test.ts"
+    "test": "node --experimental-strip-types --import ./scripts/ts-resolve.mjs lib/wbgt.test.ts && node --experimental-strip-types --import ./scripts/ts-resolve.mjs lib/i18n.test.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
