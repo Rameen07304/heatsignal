@@ -12,6 +12,10 @@ export interface HeatAlert {
   /** null when translation was not available (e.g. the AI service was down). */
   ur: AlertText | null;
   ar: AlertText | null;
+  /** Written only when the reader's language is Japanese, Hindi or Spanish. */
+  ja?: AlertText | null;
+  hi?: AlertText | null;
+  es?: AlertText | null;
   /** "ai" = written by Gemini; "rules" = HeatSignal's built-in guidance, used when the AI fails. */
   source: "ai" | "rules";
 }

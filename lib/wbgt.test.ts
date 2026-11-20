@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { wbgt, wetBulb } from "./wbgt.ts";
 import { classifyRisk, compoundBand, compoundRiskScore } from "./risk.ts";
 import { workerStatus } from "./worker-status.ts";
+import { translate } from "./i18n/index.ts";
 import { nextBreak, rotation } from "./crew.ts";
 import { hotStreak, nextFlagChange, tomorrowPeak } from "./lead-time.ts";
 import { DEFAULT_CONTEXT, effectiveWbgt, hourRanges, workRegimen, type Intensity } from "./work-rest.ts";
@@ -103,6 +104,15 @@ const worst = ruleAlert({
 });
 assert.ok(worst.actions.length <= 6, `${worst.actions.length} actions`);
 assert.ok(worst.actions.at(-1)!.startsWith("Seek urgent care"), "urgent-care advice is never dropped");
+// The same alert in Urdu: same structure, translated text, city and numbers kept.
+const worstUr = ruleAlert({
+  city: "Jacobabad", lat: 28.3, lon: 68.4, temperature: 46, humidity: 35, wbgt: 34, heatRisk: "Extreme",
+  air: { aqi: 220, pm25: 120, uv: 10 }, score: 92, level: "Emergency",
+}, "ur");
+assert.equal(worstUr.actions.length, worst.actions.length);
+assert.equal(worstUr.actions.at(-1), translate("ur", "actUrgentCare"));
+assert.ok(worstUr.risk_assessment.includes("Jacobabad") && worstUr.risk_assessment.includes("34.0"));
+assert.ok(!/Seek|Drink/.test(worstUr.actions.join(" ")), "no English left in the Urdu alert");
 
 // 48-hour early warning: a city that peaks at 40 today and reaches 80 in ten hours is flagged Critical.
 const hours = Array.from({ length: 49 }, (_, i) => ({ time: `h${i}`, score: i === 10 ? 80 : 30, level: i === 10 ? "Critical" : "Moderate" }));

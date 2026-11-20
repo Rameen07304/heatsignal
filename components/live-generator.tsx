@@ -16,6 +16,9 @@ import { compoundBand, isCompoundEvent, uvBand } from "@/lib/risk";
 import { useCities } from "@/lib/use-cities";
 import { fetchForecast } from "@/lib/weather";
 import { workRegimen } from "@/lib/work-rest";
+import { hourToInput } from "@/lib/alert-client";
+import { useT, type Key } from "@/lib/i18n";
+import { ruleAlert } from "@/lib/rule-alert";
 
 interface StepState {
   status: StageStatus;
@@ -32,13 +35,13 @@ const ICON: Record<StageStatus, React.ReactNode> = {
   error: <AlertTriangle className="h-4 w-4 text-red-500" />,
 };
 
-const RUNNING_TEXT: Record<StageId, (city: string) => string> = {
-  data: (c) => `Fetching weather and air quality for ${c}…`,
-  analyze: (c) => `Analyzing risk for ${c}…`,
-  compose: () => "Composing alert…",
-  recommend: () => "Generating recommendations…",
-  translate: () => "Translating to Urdu and Arabic…",
-  deliver: () => "Saving to alert history…",
+const RUNNING_TEXT: Record<StageId, Key> = {
+  data: "runData",
+  analyze: "runAnalyze",
+  compose: "runCompose",
+  recommend: "runRecommend",
+  translate: "runTranslate",
+  deliver: "runDeliver",
 };
 
 /** The Risk Analyzer's output: every number the later agents are allowed to use. */
@@ -66,6 +69,7 @@ function Output({ value }: { value: unknown }) {
 
 export function LiveGenerator() {
   const { cities } = useCities();
+  const { t, lang, time } = useT();
   const options = [...cities].sort((a, b) => a.name.localeCompare(b.name));
   const [key, setKey] = useState(cityKey(WORLD_CITIES.find((c) => c.name === "Lahore")!));
   const [steps, setSteps] = useState<Partial<Record<StageId, StepState>>>({});
@@ -79,23 +83,23 @@ export function LiveGenerator() {
   /** Run one stage, recording its status, duration and output. */
   async function stage<T>(id: StageId, fn: () => Promise<T>, show: (r: T) => unknown, fallback?: (r: T) => boolean) {
     set(id, { status: "running" });
-    const t = performance.now();
+    const started = performance.now();
     try {
       const r = await fn();
       const fb = fallback?.(r) ?? false;
       set(id, {
         status: fb ? "fallback" : "done",
-        ms: Math.round(performance.now() - t),
+        ms: Math.round(performance.now() - started),
         output: show(r),
         note: fb
           ? id === "translate"
-            ? "One translation failed; the alert goes out in the languages that succeeded."
-            : "AI unavailable, so HeatSignal’s built-in rules wrote this alert."
+            ? t("translationFailedNote")
+            : t("rulesWroteNote")
           : undefined,
       });
       return r;
     } catch (e) {
-      set(id, { status: "error", ms: Math.round(performance.now() - t), note: e instanceof Error ? e.message : String(e) });
+      set(id, { status: "error", ms: Math.round(performance.now() - started), note: e instanceof Error ? e.message : String(e) });
       throw e;
     }
   }
@@ -140,18 +144,22 @@ export function LiveGenerator() {
       // A failed translation doesn't stop the alert: it goes out in English.
       const translated = await stage(
         "translate",
-        () => postAlert<{ ur: AlertText | null; ar: AlertText | null }>({ stage: "translate", en }),
-        (r) => ({ ur: r.ur?.risk_assessment ?? "(failed)", ar: r.ar?.risk_assessment ?? "(failed)" }),
-        (r) => !r.ur || !r.ar,
+        () => postAlert<Partial<Record<"ur" | "ar" | "ja" | "hi" | "es", AlertText | null>>>({ stage: "translate", en, lang }),
+        (r) => Object.fromEntries(Object.entries(r).filter(([k]) => k !== "source").map(([k, v]) => [k, (v as AlertText | null)?.risk_assessment ?? "(failed)"])),
+        (r) => !r.ur || !r.ar || (lang !== "en" && !r[lang]),
       ).catch(() => null);
 
+      const source = composed.source === "ai" && recommended.source === "ai" ? "ai" : "rules";
+      // When the AI wrote nothing, the built-in rules give the alert in every language.
+      const rules = source === "rules" ? (l: "ur" | "ar" | "ja" | "hi" | "es") => ruleAlert(hourToInput(city, hour), l) : () => null;
       const alert: HeatAlert = {
         en,
-        ur: translated?.ur ?? null,
-        ar: translated?.ar ?? null,
-        source: composed.source === "ai" && recommended.source === "ai" ? "ai" : "rules",
+        ur: translated?.ur ?? rules("ur"),
+        ar: translated?.ar ?? rules("ar"),
+        source,
       };
-      await stage("deliver", async () => saveToHistory(city, hour, alert, "pipeline"), (e) => `Saved to history at ${new Date(e.at).toLocaleTimeString()}.`);
+      if (lang !== "en" && lang !== "ur" && lang !== "ar") alert[lang] = translated?.[lang] ?? rules(lang);
+      await stage("deliver", async () => saveToHistory(city, hour, alert, "pipeline"), (e) => t("savedToHistory", { time: time(new Date(e.at)) }));
       setResult({ alert, city, hour });
     } catch {
       // The failing step already shows its error.
@@ -169,12 +177,12 @@ export function LiveGenerator() {
       <Card>
         <CardHeader className="flex-row flex-wrap items-end justify-between gap-3 space-y-0">
           <div>
-            <CardTitle>Live multi-agent alert</CardTitle>
-            <CardDescription>Pick a city and watch each agent do its part.</CardDescription>
+            <CardTitle>{t("liveAlertTitle")}</CardTitle>
+            <CardDescription>{t("liveAlertIntro")}</CardDescription>
           </div>
           <div className="flex flex-wrap items-end gap-2">
             <select
-              aria-label="City"
+              aria-label={t("city")}
               className="h-9 w-56 rounded-md border bg-card px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               value={selected ? cityKey(selected) : ""}
               onChange={(e) => setKey(e.target.value)}
@@ -183,7 +191,7 @@ export function LiveGenerator() {
               {options.map((o) => <option key={cityKey(o)} value={cityKey(o)}>{o.name}, {o.country}</option>)}
             </select>
             <Button onClick={run} disabled={running || !selected}>
-              {running ? <Loader2 className="animate-spin" /> : <Play />} Generate Multi-Agent Alert
+              {running ? <Loader2 className="animate-spin" /> : <Play />} {t("generateMultiAgent")}
             </Button>
           </div>
         </CardHeader>
@@ -197,9 +205,9 @@ export function LiveGenerator() {
                   <li key={s.id} className="rounded-lg border p-3">
                     <div className="flex flex-wrap items-center gap-2">
                       {ICON[st.status]}
-                      <span className="text-sm font-semibold">{i + 1}. {s.name}</span>
+                      <span className="text-sm font-semibold">{i + 1}. {t(s.name)}</span>
                       <span className="text-xs text-muted-foreground">
-                        {st.status === "running" ? RUNNING_TEXT[s.id](selected?.name ?? "") : st.ms != null ? `${st.ms} ms` : ""}
+                        {st.status === "running" ? t(RUNNING_TEXT[s.id], { city: selected?.name ?? "" }) : st.ms != null ? `${st.ms} ms` : ""}
                       </span>
                       {s.ai && st.status === "done" && <span className="rounded bg-primary/15 px-1.5 py-0.5 text-xs font-semibold text-primary">Gemini</span>}
                     </div>
@@ -216,16 +224,16 @@ export function LiveGenerator() {
       {result && (
         <Card >
           <CardHeader>
-            <CardTitle>Final alert: {result.city.name}</CardTitle>
-            <CardDescription>Combined output of all agents.</CardDescription>
+            <CardTitle>{t("finalAlertFor", { city: result.city.name })}</CardTitle>
+            <CardDescription>{t("finalAlertIntro")}</CardDescription>
           </CardHeader>
           <CardContent>
             <AlertView
               alert={result.alert}
-              note={result.alert.ur && result.alert.ar ? undefined : "A translation was not available, so some languages are missing."}
-              title={`Health alert: ${result.city.name}`}
+              note={result.alert.source === "rules" ? t("rulesNote") : result.alert.ur && result.alert.ar ? undefined : t("translationMissingNote")}
+              title={t("healthAlertFor", { city: result.city.name })}
               path={cityHref(result.city)}
-              subtitle={`WBGT ${result.hour.wbgt.toFixed(1)} °C${result.hour.air ? ` · AQI ${formatAqi(result.hour.air.aqi)}` : ""}${result.hour.score != null ? ` · compound ${result.hour.score}/100` : ""}`}
+              subtitle={`WBGT ${result.hour.wbgt.toFixed(1)} °C${result.hour.air ? ` · AQI ${formatAqi(result.hour.air.aqi)}` : ""}${result.hour.score != null ? ` · ${t("compoundShort")} ${result.hour.score}/100` : ""}`}
             />
           </CardContent>
         </Card>

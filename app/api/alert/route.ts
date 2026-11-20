@@ -13,6 +13,7 @@ import {
 } from "@/lib/gemini";
 import { classifyRisk, compoundBand, compoundRiskScore } from "@/lib/risk";
 import { ruleAlert } from "@/lib/rule-alert";
+import { isLang, type Lang } from "@/lib/i18n/index";
 import { wbgt } from "@/lib/wbgt";
 
 // Two model attempts at up to 25 s each; Vercel's default limit is shorter.
@@ -135,6 +136,8 @@ export async function POST(req: Request) {
   }
 
   const stage = body.stage ?? "full";
+  // The reader's language: the alert is also written in it (and the rule-based fallback too).
+  const lang: Lang = isLang(body.lang) ? body.lang : "en";
   if (typeof stage !== "string" || !STAGES.includes(stage)) {
     return NextResponse.json({ error: `stage must be one of ${STAGES.join(", ")}` }, { status: 400 });
   }
@@ -144,8 +147,8 @@ export async function POST(req: Request) {
     const en = parseAlertText(body.en);
     if (!en) return NextResponse.json({ error: "Expected { stage: 'translate', en: AlertText }" }, { status: 400 });
     try {
-      const t = await translateAlert(en);
-      if (!t.ur && !t.ar) throw new Error("Both translations failed");
+      const t = await translateAlert(en, lang);
+      if (!Object.values(t).some(Boolean)) throw new Error("Every translation failed");
       return NextResponse.json({ ...t, source: "ai" });
     } catch (e) {
       return NextResponse.json({ error: `${aiUnavailable(e)} Translation is not available.` }, { status: 502 });
@@ -199,7 +202,8 @@ export async function POST(req: Request) {
   }
 
   // If the AI fails, every stage falls back to HeatSignal's rule-based guidance, so an alert always goes out.
-  const rules = () => ruleAlert(input);
+  // Pipeline stages build the English text; the full alert adds every language.
+  const rules = () => ruleAlert(input, "en");
   try {
     if (stage === "compose") {
       return NextResponse.json({ ...(await composeAlert(input)), source: "ai" });
@@ -209,7 +213,7 @@ export async function POST(req: Request) {
       if (!composed) return NextResponse.json({ error: "Expected composed: { risk_assessment, vulnerable_groups }" }, { status: 400 });
       return NextResponse.json({ ...(await recommendActions(input, composed)), source: "ai" });
     }
-    const alert = await generateAlert(input);
+    const alert = await generateAlert(input, lang);
     return NextResponse.json({ ...alert, source: "ai" } satisfies HeatAlert);
   } catch (e) {
     const note = `${aiUnavailable(e)} Showing HeatSignal's built-in guidance instead.`;
@@ -220,6 +224,9 @@ export async function POST(req: Request) {
     if (stage === "recommend") {
       return NextResponse.json({ actions: r.actions, worker_safety: r.worker_safety, source: "rules", note });
     }
-    return NextResponse.json({ en: r, ur: null, ar: null, source: "rules", note } satisfies HeatAlert & { note: string });
+    // Built-in rules exist in every language, so the reader's own language never goes missing.
+    const out: HeatAlert = { en: ruleAlert(input, "en"), ur: ruleAlert(input, "ur"), ar: ruleAlert(input, "ar"), source: "rules" };
+    if (lang !== "en" && lang !== "ur" && lang !== "ar") out[lang] = ruleAlert(input, lang);
+    return NextResponse.json({ ...out, note });
   }
 }

@@ -2,6 +2,7 @@ import type { AlertInput, AlertText, HeatAlert } from "./alert-types";
 import type { City } from "./cities";
 import type { CombinedHour } from "./conditions";
 import type { CompoundLevel, RiskLevel } from "./risk";
+import { LANGUAGES, translate } from "./i18n/index";
 
 /** Request body for /api/alert from one hour of conditions. */
 export function alertBody(city: City, h: CombinedHour, extra: Record<string, unknown> = {}) {
@@ -108,25 +109,24 @@ export function clearHistory() {
   } catch {}
 }
 
-/** Plain-text version of an alert, for copying into WhatsApp, SMS or email. */
-export function alertToText(title: string, alert: HeatAlert): string {
-  const block = (t: AlertText, h: readonly string[]) =>
-    [
-      t.risk_assessment,
-      `\n${h[0]}:`,
-      ...t.vulnerable_groups.map((g) => `• ${g}`),
-      `\n${h[1]}:`,
-      ...t.actions.map((a) => `• ${a}`),
-      `\n${h[2]}:`,
-      ...t.worker_safety.map((a) => `• ${a}`),
-    ].join("\n");
-  return [
-    title,
-    "",
-    block(alert.en, ["Who is at risk", "What to do", "Worker safety"]),
-    ...(alert.ur ? ["", "اردو", block(alert.ur, ["کون زیادہ خطرے میں ہے", "کیا کریں", "مزدوروں کی حفاظت"])] : []),
-    ...(alert.ar ? ["", "العربية", block(alert.ar, ["الفئات الأكثر عرضة", "ماذا تفعل", "سلامة العمال"])] : []),
-    "",
-    "Sent from HeatSignal",
+const block = (t: AlertText, h: readonly string[]) =>
+  [
+    t.risk_assessment,
+    `\n${h[0]}:`,
+    ...t.vulnerable_groups.map((g) => `• ${g}`),
+    `\n${h[1]}:`,
+    ...t.actions.map((a) => `• ${a}`),
+    `\n${h[2]}:`,
+    ...t.worker_safety.map((a) => `• ${a}`),
   ].join("\n");
+
+/** Plain-text version of an alert in every language it has, for copying into WhatsApp, SMS or email. */
+export function alertToText(title: string, alert: HeatAlert): string {
+  const blocks = LANGUAGES.flatMap((l) => {
+    const t = alert[l.code];
+    if (!t) return [];
+    const h = (["alertHWho", "whatToDo", "alertHWorkers"] as const).map((k) => translate(l.code, k));
+    return l.code === "en" ? ["", block(t, h)] : ["", l.label, block(t, h)];
+  });
+  return [title, ...blocks, "", "Sent from HeatSignal"].join("\n");
 }

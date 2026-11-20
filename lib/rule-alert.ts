@@ -1,13 +1,18 @@
 import { aqiBand, formatAqi } from "./air";
 import type { AlertInput, AlertText } from "./alert-types";
+import { translate, type Key, type Lang, type Vars } from "./i18n/index";
 import { isCompoundEvent, uvBand } from "./risk";
 import { workRegimen } from "./work-rest";
 
+const UV_KEY: Record<string, Key> = { Low: "low", Moderate: "moderate", High: "high", "Very high": "uvVeryHigh", Extreme: "extreme" };
+
 /**
- * HeatSignal's built-in alert, written from fixed rules. Used when the AI service is unavailable,
- * so a warning always goes out. English only.
+ * HeatSignal's built-in alert, written from fixed rules in any of the app's languages. Used when the AI
+ * service is unavailable, so a warning always goes out.
  */
-export function ruleAlert(i: AlertInput): AlertText {
+export function ruleAlert(i: AlertInput, lang: Lang = "en"): AlertText {
+  const t = (key: Key, vars?: Vars) => translate(lang, key, vars);
+  const lower = (key: Key) => t(key).toLocaleLowerCase(lang);
   const regimen = workRegimen(i.wbgt, "moderate");
   const heavy = workRegimen(i.wbgt, "heavy");
   const band = i.air ? aqiBand(i.air.aqi) : null;
@@ -17,42 +22,42 @@ export function ruleAlert(i: AlertInput): AlertText {
   const compound = i.air != null && isCompoundEvent(i.wbgt, i.air.aqi);
 
   const parts = [
-    `${i.city} is at ${i.heatRisk.toLowerCase()} heat risk: WBGT ${i.wbgt.toFixed(1)} °C with an air temperature of ${i.temperature.toFixed(1)} °C and ${i.humidity.toFixed(0)} % humidity.`,
+    t("raHeat", {
+      city: i.city,
+      level: lower(i.heatRisk.toLowerCase() as Key),
+      wbgt: i.wbgt.toFixed(1),
+      temp: i.temperature.toFixed(1),
+      rh: i.humidity.toFixed(0),
+    }),
   ];
-  if (i.air && band) {
-    parts.push(`Air quality is ${band.label.toLowerCase()} (US AQI ${formatAqi(i.air.aqi)}, PM2.5 ${i.air.pm25.toFixed(0)} µg/m³).`);
-  }
-  if (compound) parts.push("Heat and polluted air are occurring together, which strains the heart and lungs more than either alone.");
-  if (i.score != null && i.level) parts.push(`Compound risk score: ${i.score}/100 (${i.level}).`);
+  if (i.air && band) parts.push(t("raAir", { band: lower(band.key as Key), aqi: formatAqi(i.air.aqi), pm25: i.air.pm25.toFixed(0) }));
+  if (compound) parts.push(t("raCompound"));
+  if (i.score != null && i.level) parts.push(t("raScore", { score: i.score, level: t(i.level.toLowerCase() as Key) }));
 
-  const groups = ["Outdoor workers", "Older adults (65+)"];
-  if (i.heatRisk !== "Low" || (i.score ?? 0) > 50) groups.push("Young children", "Pregnant women");
-  if (badAir) groups.push("People with asthma, COPD or other lung conditions");
-  if (i.heatRisk === "High" || i.heatRisk === "Extreme" || compound) groups.push("People with heart disease");
+  const groups = [t("grpOutdoorWorkers"), t("grpOlder")];
+  if (i.heatRisk !== "Low" || (i.score ?? 0) > 50) groups.push(t("grpChildren"), t("grpPregnant"));
+  if (badAir) groups.push(t("grpLung"));
+  if (i.heatRisk === "High" || i.heatRisk === "Extreme" || compound) groups.push(t("grpHeart"));
 
   const actions: string[] = [];
   if (i.heatRisk !== "Low") {
-    actions.push("Drink about one cup of water every 15–20 minutes when active outdoors, even if not thirsty.");
-    actions.push("Stay in shade or air-conditioned spaces during the hottest hours, usually 11:00–16:00.");
-    actions.push("Check on older neighbours and relatives at least twice a day.");
+    actions.push(t("actWater"), t("actShade"), t("actNeighbours"));
   } else {
-    actions.push("Heat stress is low; normal outdoor activity is fine with ordinary hydration.");
+    actions.push(t("actLowHeat"));
   }
-  if (badAir) actions.push("Wear a well-fitted N95 mask outdoors and keep windows closed while air quality is poor.");
-  if (veryBadAir) actions.push("Move exercise and children's outdoor play indoors until the air improves.");
-  if (highUv) actions.push(`UV is ${uvBand(i.air!.uv).label.toLowerCase()} (${i.air!.uv.toFixed(0)}): wear a hat and sunglasses and use SPF 30+ sunscreen.`);
+  if (badAir) actions.push(t("actMask"));
+  if (veryBadAir) actions.push(t("actIndoorsPlay"));
+  if (highUv) actions.push(t("actUv", { band: lower(UV_KEY[uvBand(i.air!.uv).label]), uv: i.air!.uv.toFixed(0) }));
   // Trim the others, never this one: the worst conditions produce the most actions.
   actions.splice(5);
-  actions.push("Seek urgent care for confusion, fainting, hot dry skin or difficulty breathing.");
+  actions.push(t("actUrgentCare"));
 
   const worker = [
-    `Moderate work (e.g. carrying loads): ${regimen.label.toLowerCase()}. Heavy work (e.g. digging): ${heavy.label.toLowerCase()}.`,
-    regimen.workMin < 60
-      ? "Provide shaded rest areas and cool water at the work site; rest breaks must be taken, not skipped."
-      : "No heat-related limits on work hours right now; keep water available.",
+    t("wkRegimens", { moderate: lower(regimen.key), heavy: lower(heavy.key) }),
+    regimen.workMin < 60 ? t("wkShadeWater") : t("wkNoLimits"),
   ];
-  if (veryBadAir) worker.push("Issue N95 masks to everyone working outdoors and reduce heavy exertion.");
-  worker.push("Use a buddy system so workers can spot signs of heat illness in each other.");
+  if (veryBadAir) worker.push(t("wkMasks"));
+  worker.push(t("wkBuddy"));
 
   return { risk_assessment: parts.join(" "), vulnerable_groups: groups, actions, worker_safety: worker };
 }

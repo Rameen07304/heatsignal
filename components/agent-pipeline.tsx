@@ -1,16 +1,19 @@
 import { Brain, CloudSun, Languages, ListChecks, Send, Sparkles } from "lucide-react";
+"use client";
+
+import { useT, type Key } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export type StageId = "data" | "analyze" | "compose" | "recommend" | "translate" | "deliver";
 export type StageStatus = "idle" | "running" | "done" | "fallback" | "error";
 
-export const STAGES: { id: StageId; name: string; role: string; icon: typeof Brain; ai: boolean }[] = [
-  { id: "data", name: "Weather + air data", role: "Open-Meteo forecast, air quality, UV", icon: CloudSun, ai: false },
-  { id: "analyze", name: "Risk Analyzer", role: "WBGT, AQI, UV → compound score (rules engine)", icon: Brain, ai: false },
-  { id: "compose", name: "Alert Composer", role: "Writes the assessment and who is at risk", icon: Sparkles, ai: true },
-  { id: "recommend", name: "Action Recommender", role: "Public actions + worker safety plan", icon: ListChecks, ai: true },
-  { id: "translate", name: "Translator", role: "Urdu and Arabic versions", icon: Languages, ai: true },
-  { id: "deliver", name: "Delivery", role: "Copy, PDF, history", icon: Send, ai: false },
+export const STAGES: { id: StageId; name: Key; role: Key; icon: typeof Brain; ai: boolean }[] = [
+  { id: "data", name: "stgData", role: "stgDataRole", icon: CloudSun, ai: false },
+  { id: "analyze", name: "stgAnalyze", role: "stgAnalyzeRole", icon: Brain, ai: false },
+  { id: "compose", name: "stgCompose", role: "stgComposeRole", icon: Sparkles, ai: true },
+  { id: "recommend", name: "stgRecommend", role: "stgRecommendRole", icon: ListChecks, ai: true },
+  { id: "translate", name: "stgTranslate", role: "stgTranslateRole", icon: Languages, ai: true },
+  { id: "deliver", name: "stgDeliver", role: "stgDeliverRole", icon: Send, ai: false },
 ];
 
 const RING: Record<StageStatus, string> = {
@@ -23,6 +26,7 @@ const RING: Record<StageStatus, string> = {
 
 function Node({ stage, status }: { stage: (typeof STAGES)[number]; status: StageStatus }) {
   const Icon = stage.icon;
+  const { t } = useT();
   return (
     <div className={cn("glass relative rounded-lg border-2 p-3 transition-all duration-300", RING[status])}>
       <div className="flex items-center gap-2">
@@ -30,11 +34,11 @@ function Node({ stage, status }: { stage: (typeof STAGES)[number]; status: Stage
           <Icon className="h-4 w-4" />
         </span>
         <div className="min-w-0">
-          <div className="truncate text-sm font-semibold">{stage.name}</div>
-          <div className="text-xs text-muted-foreground">{stage.ai ? "Gemini agent" : "Deterministic"}</div>
+          <div className="truncate text-sm font-semibold">{t(stage.name)}</div>
+          <div className="text-xs text-muted-foreground">{stage.ai ? t("aiAgent") : t("deterministic")}</div>
         </div>
       </div>
-      <p className="mt-2 text-xs text-muted-foreground">{stage.role}</p>
+      <p className="mt-2 text-xs text-muted-foreground">{t(stage.role)}</p>
     </div>
   );
 }
