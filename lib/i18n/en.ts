@@ -680,6 +680,20 @@ export const en = {
   airNow: "Air now",
   dataUnavailable: "Data unavailable",
   detailsSafeHours: "Details and safe hours",
+  heatRisk: "Heat risk",
+  airRisk: "Air risk",
+  trend: "Trend",
+  trendTitle: "Compound score now vs. 6 hours ago",
+  trendUp: "rising",
+  trendDown: "falling",
+  trendFlat: "steady",
+  allCities: "All cities",
+  criticalOnly: "Critical only",
+  worsening: "Worsening",
+  filterCityCountry: "Filter by city or country",
+  cityOrCountry: "City or country…",
+  noCitiesMatch: "No cities match.",
+  leaderboardNote: "Values are for the current hour at each city. Trend compares the compound score with 6 hours ago (±5 points); “Worsening” means the next 48 hours will peak at least 5 points above today’s peak.",
 } as const;
 
 export type Key = keyof typeof en;

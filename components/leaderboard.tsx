@@ -15,6 +15,7 @@ import type { Conditions } from "@/lib/conditions";
 import { CRITICAL_SCORE, isRising, sixHourTrend, type Trend } from "@/lib/risk-forecast";
 import { cn } from "@/lib/utils";
 import { isCompoundEvent, uvBand } from "@/lib/risk";
+import { useT } from "@/lib/i18n";
 
 type Row = { city: City; c: Conditions };
 
@@ -32,13 +33,13 @@ export function whyDangerous({ c }: Row): string {
 }
 
 const COLUMNS = [
-  { key: "city", label: "City", value: (r: Row) => r.city.name },
-  { key: "country", label: "Country", value: (r: Row) => r.city.country },
-  { key: "temp", label: "Temp", value: (r: Row) => r.c.now.temp },
-  { key: "wbgt", label: "WBGT", value: (r: Row) => r.c.now.wbgt },
-  { key: "aqi", label: "AQI", value: (r: Row) => r.c.now.air?.aqi ?? -1 },
-  { key: "pm25", label: "PM2.5", value: (r: Row) => r.c.now.air?.pm25 ?? -1 },
-  { key: "score", label: "Compound", value: (r: Row) => r.c.now.score ?? -1 },
+  { key: "city", value: (r: Row) => r.city.name },
+  { key: "country", value: (r: Row) => r.city.country },
+  { key: "temp", value: (r: Row) => r.c.now.temp },
+  { key: "wbgt", value: (r: Row) => r.c.now.wbgt },
+  { key: "aqi", value: (r: Row) => r.c.now.air?.aqi ?? -1 },
+  { key: "pm25", value: (r: Row) => r.c.now.air?.pm25 ?? -1 },
+  { key: "score", value: (r: Row) => r.c.now.score ?? -1 },
 ] as const;
 type SortKey = (typeof COLUMNS)[number]["key"];
 
@@ -47,6 +48,7 @@ const TREND_COLOR = { up: "text-red-600", flat: "text-muted-foreground", down: "
 const TrendIcon = ({ trend }: { trend: Trend }) => { const I = TREND_ICON[trend]; return <I className={cn("h-4 w-4", TREND_COLOR[trend])} />; };
 
 export function Leaderboard({ rows }: { rows: Row[] }) {
+  const { t } = useT();
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({ key: "score", desc: true });
   const [filter, setFilter] = useState<"all" | "critical" | "rising">("all");
   const [q, setQ] = useState("");
@@ -66,7 +68,7 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
   const page = all || query || filter !== "all" ? shown : shown.slice(0, 15);
 
   const header = (key: SortKey, label: string, right?: boolean, hide?: boolean) => (
-    <TableHead className={cn(right && "text-right", hide && "hidden sm:table-cell")} aria-sort={sort.key === key ? (sort.desc ? "descending" : "ascending") : "none"}>
+    <TableHead className={cn(right && "text-end", hide && "hidden sm:table-cell")} aria-sort={sort.key === key ? (sort.desc ? "descending" : "ascending") : "none"}>
       <button
         type="button"
         className="inline-flex items-center gap-1 hover:text-foreground"
@@ -83,19 +85,19 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
           <TabsList>
-            <TabsTrigger value="all">All cities</TabsTrigger>
-            <TabsTrigger value="critical">Critical only</TabsTrigger>
-            <TabsTrigger value="rising">Worsening</TabsTrigger>
+            <TabsTrigger value="all">{t("allCities")}</TabsTrigger>
+            <TabsTrigger value="critical">{t("criticalOnly")}</TabsTrigger>
+            <TabsTrigger value="rising">{t("worsening")}</TabsTrigger>
           </TabsList>
         </Tabs>
         <div className="relative w-full sm:w-64">
           <Search className="pointer-events-none absolute start-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input type="search" aria-label="Filter by city or country" placeholder="City or country…" className="ps-9" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input type="search" aria-label={t("filterCityCountry")} placeholder={t("cityOrCountry")} className="ps-9" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
       </div>
 
       {shown.length === 0 ? (
-        <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">No cities match.</p>
+        <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">{t("noCitiesMatch")}</p>
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -103,16 +105,16 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
               <TableHeader>
                 <TableRow>
                   <TableHead className="hidden w-10 sm:table-cell">#</TableHead>
-                  {header("city", "City")}
-                  {header("country", "Country", false, true)}
-                  {header("temp", "Temp", true, true)}
+                  {header("city", t("city"))}
+                  {header("country", t("country"), false, true)}
+                  {header("temp", t("tempShort"), true, true)}
                   {header("wbgt", "WBGT", true)}
-                  <TableHead className="hidden sm:table-cell">Heat risk</TableHead>
+                  <TableHead className="hidden sm:table-cell">{t("heatRisk")}</TableHead>
                   {header("aqi", "AQI", true)}
-                  <TableHead className="hidden sm:table-cell">Air risk</TableHead>
+                  <TableHead className="hidden sm:table-cell">{t("airRisk")}</TableHead>
                   {header("pm25", "PM2.5", true, true)}
-                  {header("score", "Compound")}
-                  <TableHead className="hidden sm:table-cell" title="Compound score now vs. 6 hours ago">Trend</TableHead>
+                  {header("score", t("compoundShort"))}
+                  <TableHead className="hidden sm:table-cell" title={t("trendTitle")}>{t("trend")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -124,14 +126,14 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
                       <TableCell className="hidden text-muted-foreground sm:table-cell">{i + 1}</TableCell>
                       <TableCell><Link href={cityHref(r.city)} className="font-medium hover:underline">{r.city.name}</Link></TableCell>
                       <TableCell className="hidden text-muted-foreground sm:table-cell">{r.city.country}</TableCell>
-                      <TableCell className="hidden text-right sm:table-cell">{n.temp.toFixed(1)}°</TableCell>
-                      <TableCell className="text-right font-medium">{n.wbgt.toFixed(1)}°</TableCell>
+                      <TableCell className="hidden text-end sm:table-cell">{n.temp.toFixed(1)}°</TableCell>
+                      <TableCell className="text-end font-medium">{n.wbgt.toFixed(1)}°</TableCell>
                       <TableCell className="hidden sm:table-cell"><RiskBadge level={n.risk} /></TableCell>
-                      <TableCell className="text-right">{n.air ? formatAqi(n.air.aqi) : "–"}</TableCell>
+                      <TableCell className="text-end">{n.air ? formatAqi(n.air.aqi) : "–"}</TableCell>
                       <TableCell className="hidden sm:table-cell">{n.air ? <AqiBadge aqi={n.air.aqi} short /> : "–"}</TableCell>
-                      <TableCell className="hidden text-right sm:table-cell">{n.air ? n.air.pm25.toFixed(0) : "–"}</TableCell>
+                      <TableCell className="hidden text-end sm:table-cell">{n.air ? n.air.pm25.toFixed(0) : "–"}</TableCell>
                       <TableCell>{n.score != null ? <CompoundBadge score={n.score} /> : "–"}</TableCell>
-                      <TableCell className="hidden sm:table-cell" aria-label={`Trend ${trend}`}><TrendIcon trend={trend} /></TableCell>
+                      <TableCell className="hidden sm:table-cell" aria-label={`${t("trend")}: ${t(trend === "up" ? "trendUp" : trend === "down" ? "trendDown" : "trendFlat")}`}><TrendIcon trend={trend} /></TableCell>
                     </TableRow>
                   );
                 })}
@@ -141,11 +143,10 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
         </Card>
       )}
       {shown.length > 15 && !query && filter === "all" && (
-        <Button variant="outline" size="sm" onClick={() => setAll(!all)}>{all ? "Show top 15" : `Show all ${shown.length} cities`}</Button>
+        <Button variant="outline" size="sm" onClick={() => setAll(!all)}>{all ? t("showTop", { n: 15 }) : t("showAllCities", { n: shown.length })}</Button>
       )}
       <p className="text-xs text-muted-foreground">
-        Values are for the current hour at each city. Trend compares the compound score with 6 hours ago (±5 points);
-        “Worsening” means the next 48 hours will peak at least 5 points above today’s peak.
+        {t("leaderboardNote")}
       </p>
     </div>
   );

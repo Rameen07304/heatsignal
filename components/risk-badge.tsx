@@ -29,9 +29,11 @@ export function RiskBadge({ level, className }: { level: RiskLevel; className?: 
 /** `short` shows just the number; the full form adds the EPA category name. */
 export function AqiBadge({ aqi, short, className }: { aqi: number; short?: boolean; className?: string }) {
   const band = aqiBand(aqi);
+  const { t } = useT();
+  const label = t(band.key);
   return (
-    <Pill color={band.color} className={className} title={`US AQI ${formatAqi(aqi)}, ${band.label}`}>
-      {short ? band.label.replace(" for sensitive groups", " (sensitive)") : `AQI ${formatAqi(aqi)} · ${band.label}`}
+    <Pill color={band.color} className={className} title={`US AQI ${formatAqi(aqi)}, ${label}`}>
+      {short ? label : `AQI ${formatAqi(aqi)} · ${label}`}
     </Pill>
   );
 }
