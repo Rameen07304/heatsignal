@@ -24,7 +24,7 @@ import type { MapMode } from "@/components/weather-map";
 import { AQI_BANDS, aqiBand, formatAqi } from "@/lib/air";
 import { WORLD_CITIES, cityHref, cityKey, type City } from "@/lib/cities";
 import type { Conditions } from "@/lib/conditions";
-import { useT } from "@/lib/i18n";
+import { levelKey, useT, type Key } from "@/lib/i18n";
 import { COMPOUND_BANDS, RISK_BANDS } from "@/lib/risk";
 import { CRITICAL_SCORE } from "@/lib/risk-forecast";
 import { useUpcoming } from "@/components/early-warning-banner";
@@ -43,20 +43,20 @@ const NONE = new Set<string>();
 const lahore = WORLD_CITIES.find((c) => c.name === "Lahore")!;
 const abuDhabi = WORLD_CITIES.find((c) => c.name === "Abu Dhabi")!;
 
-const TASKS = [
-  { href: "/risk-assessment", icon: UserRound, title: "Check my own risk", text: "Based on your age, health and plans" },
-  { href: "/safety-advisor", icon: ClipboardCheck, title: "Plan an outdoor event", text: "Go, adjust or postpone, up to a week ahead" },
-  { href: "/worker-safety", icon: HardHat, title: "Keep workers safe", text: "Work and rest times, water, site notice" },
-  { href: "/health-advisor", icon: Pill, title: "Food and supplements", text: "Vitamin D, water and protection for today" },
-  { href: compareHref(lahore, abuDhabi), icon: GitCompare, title: "Compare two cities", text: "Side by side, next 3 days" },
+const TASKS: { href: string; icon: typeof HardHat; title: Key; text: Key }[] = [
+  { href: "/risk-assessment", icon: UserRound, title: "taskOwnRisk", text: "taskOwnRiskText" },
+  { href: "/safety-advisor", icon: ClipboardCheck, title: "taskEvent", text: "taskEventText" },
+  { href: "/worker-safety", icon: HardHat, title: "taskWorkers", text: "taskWorkersText" },
+  { href: "/health-advisor", icon: Pill, title: "taskFood", text: "taskFoodText" },
+  { href: compareHref(lahore, abuDhabi), icon: GitCompare, title: "taskCompare", text: "taskCompareText" },
 ];
 
-const SORTS = {
-  compound: { label: "Combined risk", value: (c: Conditions) => c.days[0].maxScore ?? -1 },
-  heat: { label: "Heat", value: (c: Conditions) => c.days[0].maxWbgt },
-  air: { label: "Air quality", value: (c: Conditions) => c.now.air?.aqi ?? -1 },
+const SORTS: Record<string, { label: Key; value: (c: Conditions) => number }> = {
+  compound: { label: "combinedRisk", value: (c) => c.days[0].maxScore ?? -1 },
+  heat: { label: "heatShort", value: (c) => c.days[0].maxWbgt },
+  air: { label: "airQuality", value: (c) => c.now.air?.aqi ?? -1 },
 };
-type Sort = keyof typeof SORTS;
+type Sort = "compound" | "heat" | "air";
 
 function Kpi({ label, children, sub }: { label: string; children: React.ReactNode; sub?: string }) {
   return (
@@ -72,17 +72,18 @@ function Kpi({ label, children, sub }: { label: string; children: React.ReactNod
 
 const people = (list: { city: City }[]) => Math.round(list.reduce((s, { city }) => s + (city.pop ?? 0), 0));
 
-const LEGENDS: Record<MapMode, { label: string; color: string }[]> = {
-  compound: COMPOUND_BANDS.map((b) => ({ label: b.level, color: b.color })),
-  heat: RISK_BANDS.map((b) => ({ label: b.level, color: b.color })),
-  air: AQI_BANDS.map((b) => ({ label: b.label.replace(" for sensitive groups", " (sensitive)"), color: b.color })),
+const LEGENDS: Record<MapMode, { label: Key; color: string }[]> = {
+  compound: COMPOUND_BANDS.map((b) => ({ label: levelKey(b.level), color: b.color })),
+  heat: RISK_BANDS.map((b) => ({ label: levelKey(b.level), color: b.color })),
+  air: AQI_BANDS.map((b) => ({ label: b.key as Key, color: b.color })),
   vitd: [], // Health Advisor only
   work: [], // Workforce Risk only
 };
 
 export default function Dashboard() {
-  const { t } = useT();
+  const { t, n } = useT();
   const router = useRouter();
+  const millions = (list: { city: City }[]) => t("millionPeople", { n: n(people(list)) });
   const { cities, add, remove, reset, data, airFailed, retry } = useCities();
   const [mapMode, setMapMode] = useState<MapMode>("compound");
   const [sort, setSort] = useState<Sort>("compound");
@@ -132,17 +133,14 @@ export default function Dashboard() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("isItSafe")}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Live heat, air pollution and UV risk for {cities.length} cities worldwide. Find your city to see how risky it is
-            outside today, and what to do about it.
-          </p>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("dashIntro", { n: cities.length })}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <AddCityDialog
             onAdd={(c) => router.push(cityHref(c))}
             monitored={NONE}
-            label="Check your city"
-            title="Find your city"
+            label={t("checkYourCity")}
+            title={t("findYourCity")}
             icon={<Search />}
           />
           <AddCityDialog onAdd={add} monitored={monitored} variant="outline" />
@@ -150,37 +148,37 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <nav aria-label="What do you want to do?" className="grid grid-cols-2 gap-3 lg:grid-cols-5 [&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1">
+      <nav aria-label={t("whatToDoNav")} className="grid grid-cols-2 gap-3 lg:grid-cols-5 [&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1">
         {TASKS.map(({ href, icon: Icon, title, text }) => (
           <Link key={href} href={href} className="group rounded-lg border bg-card p-4 transition-colors hover:border-primary/50 hover:bg-muted/40">
             <Icon className="h-5 w-5 text-primary" />
-            <div className="mt-2 text-sm font-medium group-hover:text-primary">{title}</div>
-            <div className="mt-0.5 text-xs text-muted-foreground">{text}</div>
+            <div className="mt-2 text-sm font-medium group-hover:text-primary">{t(title)}</div>
+            <div className="mt-0.5 text-xs text-muted-foreground">{t(text)}</div>
           </Link>
         ))}
       </nav>
 
       {failed ? (
-        <ErrorState message="Couldn’t load weather data. Check your connection and try again." onRetry={retry} />
+        <ErrorState message={t("weatherLoadError")} onRetry={retry} />
       ) : (
         <>
-          <section aria-label="Summary" className="grid grid-cols-2 [&>*]:min-w-0 gap-3 md:grid-cols-3 xl:grid-cols-5">
-            <Kpi label={t("citiesMonitored")} sub={pending ? "Loading…" : `${loaded.length} with live data`}>
+          <section aria-label={t("summary")} className="grid grid-cols-2 [&>*]:min-w-0 gap-3 md:grid-cols-3 xl:grid-cols-5">
+            <Kpi label={t("citiesMonitored")} sub={pending ? t("loading") : t("withLiveData", { n: loaded.length })}>
               <CountUp value={cities.length} />
             </Kpi>
-            <Kpi label={t("atCritical")} sub={pending ? "Loading…" : `≈ ${people(critical).toLocaleString("en")} million people`}>
+            <Kpi label={t("atCritical")} sub={pending ? t("loading") : millions(critical)}>
               {pending || airFailed ? "–" : <CountUp value={critical.length} />}
             </Kpi>
-            <Kpi label={t("highestWbgt")} sub={hottest ? `WBGT · ${hottest.city.name}, ${hottest.city.country}` : "Loading…"}>
+            <Kpi label={t("highestWbgt")} sub={hottest ? `WBGT · ${hottest.city.name}, ${hottest.city.country}` : t("loading")}>
               {hottest ? <><CountUp value={hottest.c.days[0].maxWbgt} decimals={1} /> °C</> : "–"}
             </Kpi>
             <Kpi
               label={t("worstAqi")}
-              sub={worstAir ? `${worstAir.city.name} · ${aqiBand(worstAir.c.now.air!.aqi).label}` : airFailed ? "Air-quality feed unavailable" : "Loading…"}
+              sub={worstAir ? `${worstAir.city.name} · ${t(aqiBand(worstAir.c.now.air!.aqi).key)}` : airFailed ? t("airFeedUnavailable") : t("loading")}
             >
               {worstAir ? formatAqi(worstAir.c.now.air!.aqi) : "–"}
             </Kpi>
-            <Kpi label={t("risingRisks")} sub="High or worse in 48 h">
+            <Kpi label={t("risingRisks")} sub={t("highIn48h")}>
               {pending || airFailed ? "–" : <CountUp value={upcoming.length} />}
             </Kpi>
           </section>
@@ -189,17 +187,14 @@ export default function Dashboard() {
             <Card className="flex min-w-0 flex-col xl:col-span-2">
               <CardHeader className="flex-row flex-wrap items-center justify-between gap-3 space-y-0 pb-3">
                 <div>
-                  <CardTitle className="text-base">Risk map</CardTitle>
-                  <CardDescription>
-                    {mapMode === "air" ? "Air quality right now." : "Today’s peak at each city. Larger dots are higher risk."} Click a
-                    dot for details.
-                  </CardDescription>
+                  <CardTitle className="text-base">{t("riskMap")}</CardTitle>
+                  <CardDescription>{t(mapMode === "air" ? "mapAirNow" : "mapPeakToday")} {t("clickDot")}</CardDescription>
                 </div>
                 <Tabs value={mapMode} onValueChange={(v) => setMapMode(v as MapMode)}>
-                  <TabsList aria-label="Map layer">
-                    <TabsTrigger value="compound">Combined</TabsTrigger>
-                    <TabsTrigger value="heat">Heat</TabsTrigger>
-                    <TabsTrigger value="air">Air</TabsTrigger>
+                  <TabsList aria-label={t("mapLayer")}>
+                    <TabsTrigger value="compound">{t("combined")}</TabsTrigger>
+                    <TabsTrigger value="heat">{t("heatShort")}</TabsTrigger>
+                    <TabsTrigger value="air">{t("airShort")}</TabsTrigger>
                   </TabsList>
                 </Tabs>
               </CardHeader>
@@ -207,11 +202,11 @@ export default function Dashboard() {
                 <div className="min-h-[320px] flex-1 sm:min-h-[420px]">
                   <WeatherMap cities={cities} data={data} mode={mapMode} />
                 </div>
-                <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-label="Map legend">
+                <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-label={t("mapLegend")}>
                   {LEGENDS[mapMode].map((l) => (
                     <li key={l.label} className="flex items-center gap-1.5">
                       <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: l.color }} />
-                      {l.label}
+                      {t(l.label)}
                     </li>
                   ))}
                 </ul>
@@ -220,8 +215,8 @@ export default function Dashboard() {
 
             <Card className="min-w-0">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">Highest risk today</CardTitle>
-                <CardDescription>Each city’s worst hour today, with its heat and air at that hour.</CardDescription>
+                <CardTitle className="text-base">{t("highestRiskToday")}</CardTitle>
+                <CardDescription>{t("highestRiskTodayIntro")}</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {pending ? (
@@ -230,8 +225,8 @@ export default function Dashboard() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="ps-4">City · at peak hour</TableHead>
-                        <TableHead className="pe-4 text-right">Score</TableHead>
+                        <TableHead className="ps-4">{t("cityAtPeak")}</TableHead>
+                        <TableHead className="pe-4 text-end">{t("score")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -239,14 +234,14 @@ export default function Dashboard() {
                         <TableRow key={cityKey(city)}>
                           <TableCell className="ps-4">
                             <Link href={cityHref(city)} className="font-medium hover:underline">{city.name}</Link>
-                            <div className="text-xs text-muted-foreground">{city.country} · peak {peak.time.slice(11, 16)}</div>
+                            <div className="text-xs text-muted-foreground">{city.country} · {t("peakAt", { time: peak.time.slice(11, 16) })}</div>
                             <div className="flex flex-wrap gap-x-2 text-xs text-muted-foreground">
-                              <span className="whitespace-nowrap" title="Heat stress (WBGT)">Heat {peak.wbgt.toFixed(1)}°</span>
+                              <span className="whitespace-nowrap" title="WBGT">{t("heatShort")} {peak.wbgt.toFixed(1)}°</span>
                               {peak.air && <span className="whitespace-nowrap">AQI {formatAqi(peak.air.aqi)}</span>}
-                              {peak.air && peak.air.dust > 100 && <span className="whitespace-nowrap">dust</span>}
+                              {peak.air && peak.air.dust > 100 && <span className="whitespace-nowrap">{t("dustWord")}</span>}
                             </div>
                           </TableCell>
-                          <TableCell className="pe-4 text-right">{c.days[0].maxScore != null ? <CompoundBadge score={c.days[0].maxScore} /> : "–"}</TableCell>
+                          <TableCell className="pe-4 text-end">{c.days[0].maxScore != null ? <CompoundBadge score={c.days[0].maxScore} /> : "–"}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -259,16 +254,16 @@ export default function Dashboard() {
           <section className="rounded-lg border bg-card p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="flex items-center gap-2 text-base font-semibold"><HardHat className="h-5 w-5 text-primary" /> Workforce impact today</h2>
-                <p className="text-sm text-muted-foreground">Heavy outdoor work (construction, farming, sanitation) at each city’s hottest hour.</p>
+                <h2 className="flex items-center gap-2 text-base font-semibold"><HardHat className="h-5 w-5 text-primary" /> {t("workforceImpact")}</h2>
+                <p className="text-sm text-muted-foreground">{t("workforceImpactIntro")}</p>
               </div>
-              <Button asChild variant="outline" size="sm"><Link href="/workforce-risk">Plan by industry</Link></Button>
+              <Button asChild variant="outline" size="sm"><Link href="/workforce-risk">{t("planByIndustry")}</Link></Button>
             </div>
             <dl className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
-                ["Must stop outdoor work", pending ? "–" : `${work.stop.length} of ${work.total}`, pending ? "" : `≈ ${people(work.stop).toLocaleString("en")} million people live in these cities`],
-                ["Need break schedules", pending ? "–" : `${work.breaks.length} of ${work.total}`, pending ? "" : `≈ ${people(work.breaks).toLocaleString("en")} million people`],
-                ["Normal work all day", pending ? "–" : `${work.total - work.stop.length - work.breaks.length} of ${work.total}`, "cities"],
+                [t("mustStopOutdoor"), pending ? "–" : t("nOfTotal", { n: work.stop.length, total: work.total }), pending ? "" : t("liveInTheseCities", { people: millions(work.stop) })],
+                [t("needBreakSchedules"), pending ? "–" : t("nOfTotal", { n: work.breaks.length, total: work.total }), pending ? "" : millions(work.breaks)],
+                [t("normalWorkAllDay"), pending ? "–" : t("nOfTotal", { n: work.total - work.stop.length - work.breaks.length, total: work.total }), t("citiesWord")],
               ].map(([k, v, s]) => (
                 <div key={k} className="rounded-md bg-muted/40 p-3">
                   <dt className="text-xs text-muted-foreground">{k}</dt>
@@ -284,7 +279,7 @@ export default function Dashboard() {
           <section className="space-y-3">
             <div>
               <h2 className="text-lg font-semibold tracking-tight">{t("globalRankings")}</h2>
-              <p className="text-sm text-muted-foreground">Every monitored city, this hour. Click a column to sort.</p>
+              <p className="text-sm text-muted-foreground">{t("rankingsIntro")}</p>
             </div>
             {pending ? <Skeleton className="h-96 w-full" /> : <Leaderboard rows={loaded} />}
           </section>
@@ -295,31 +290,31 @@ export default function Dashboard() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold tracking-tight">{t("monitoredCities")}</h2>
-            <p className="text-sm text-muted-foreground">Heat, air and combined risk now, with the next 24 hours.</p>
+            <p className="text-sm text-muted-foreground">{t("monitoredIntro")}</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Tabs value={sort} onValueChange={(v) => setSort(v as Sort)}>
-              <TabsList aria-label="Sort cities by">
-                {Object.entries(SORTS).map(([k, s]) => <TabsTrigger key={k} value={k}>{s.label}</TabsTrigger>)}
+              <TabsList aria-label={t("sortBy")}>
+                {Object.entries(SORTS).map(([k, s]) => <TabsTrigger key={k} value={k}>{t(s.label)}</TabsTrigger>)}
               </TabsList>
             </Tabs>
             <div className="relative w-full sm:w-56">
               <Search className="pointer-events-none absolute start-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input type="search" aria-label="Filter monitored cities" placeholder="Filter cities…" className="ps-9" value={filter} onChange={(e) => setFilter(e.target.value)} />
+              <Input type="search" aria-label={t("filterCities")} placeholder={t("filterCitiesPlaceholder")} className="ps-9" value={filter} onChange={(e) => setFilter(e.target.value)} />
             </div>
           </div>
         </div>
 
         {cities.length === 0 ? (
           <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            <p>No cities monitored.</p>
+            <p>{t("noCitiesMonitored")}</p>
             <Button variant="outline" size="sm" className="mt-3" onClick={reset}>
-              Restore the {WORLD_CITIES.length} default cities
+              {t("restoreDefaults", { n: WORLD_CITIES.length })}
             </Button>
           </div>
         ) : visible.length === 0 ? (
           <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No monitored city matches “{filter}”. Use {t("addCity")} to search the whole world.
+            {t("noCityMatches", { filter, add: t("addCity") })}
           </p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -332,12 +327,12 @@ export default function Dashboard() {
         <div className="flex flex-wrap items-center gap-3">
           {!q && sorted.length > PAGE && (
             <Button variant="outline" onClick={() => setShowAll(!showAll)}>
-              {showAll ? `Show top ${PAGE}` : `Show all ${sorted.length} cities`}
+              {showAll ? t("showTop", { n: PAGE }) : t("showAllCities", { n: sorted.length })}
             </Button>
           )}
           {!isDefaultList && (
             <Button variant="ghost" size="sm" onClick={reset}>
-              Reset to the {WORLD_CITIES.length} default cities
+              {t("resetDefaults", { n: WORLD_CITIES.length })}
             </Button>
           )}
         </div>

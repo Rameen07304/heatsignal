@@ -9,13 +9,12 @@ import { useUpcoming } from "@/components/early-warning-banner";
 import { cityHref, cityKey } from "@/lib/cities";
 import { useT } from "@/lib/i18n";
 import { compoundBand } from "@/lib/risk";
-import { formatDay } from "@/lib/utils";
 
 const PAGE = 6;
 
 /** Cities whose compound risk is forecast to cross into High or Critical within 48 hours, soonest first. */
 export function UpcomingRisks() {
-  const { t } = useT();
+  const { t, date } = useT();
   const [all, setAll] = useState(false);
   const list = [...useUpcoming()].sort((a, b) => a.u.hoursUntil - b.u.hoursUntil);
   if (!list.length) return null;
@@ -53,8 +52,8 @@ export function UpcomingRisks() {
                   <span className="text-sm font-medium text-muted-foreground">{t(peak.level.toLowerCase() as "low")}</span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Crosses {u.severity === "critical" ? "Critical" : "High"} in <b className="text-foreground">{u.hoursUntil} h</b> · peaks{" "}
-                  {formatDay(u.peakTime)} {u.peakTime.slice(11, 16)} local time
+                  {t("crossesIn", { level: t(u.severity === "critical" ? "critical" : "high"), hours: u.hoursUntil })} ·{" "}
+                  {t("peaksAt", { day: date(u.peakTime), time: u.peakTime.slice(11, 16) })}
                 </p>
               </CardContent>
             </Card>
@@ -63,7 +62,7 @@ export function UpcomingRisks() {
       </div>
       {list.length > PAGE && (
         <Button variant="outline" size="sm" onClick={() => setAll(!all)}>
-          {all ? "Show fewer" : `Show all ${list.length}`}
+          {all ? t("showFewer") : t("showAllN", { n: list.length })}
         </Button>
       )}
     </section>

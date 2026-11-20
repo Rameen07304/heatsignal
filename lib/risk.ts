@@ -1,4 +1,5 @@
 export type RiskLevel = "Low" | "Moderate" | "High" | "Extreme";
+import type { Key } from "./i18n/en";
 
 /** Lower WBGT bound (°C) of each level, ascending. */
 export const RISK_BANDS: { level: RiskLevel; min: number; color: string }[] = [
@@ -30,12 +31,12 @@ export const isElevated = (level: RiskLevel) =>
 
 export type CompoundLevel = "Low" | "Moderate" | "High" | "Critical" | "Emergency";
 
-export const COMPOUND_BANDS: { level: CompoundLevel; max: number; color: string; description: string }[] = [
-  { level: "Low", max: 25, color: "#22c55e", description: "Safe for normal outdoor activity" },
-  { level: "Moderate", max: 50, color: "#eab308", description: "Fine for most. Children, older and sick people take breaks" },
-  { level: "High", max: 75, color: "#f97316", description: "Cut outdoor time, rest in shade, drink extra water" },
-  { level: "Critical", max: 90, color: "#ef4444", description: "Dangerous. Keep outdoor work short, with long breaks" },
-  { level: "Emergency", max: 100, color: "#991b1b", description: "Life-threatening. Stay indoors" },
+export const COMPOUND_BANDS: { level: CompoundLevel; max: number; color: string; description: string; key: Key }[] = [
+  { level: "Low", max: 25, color: "#22c55e", description: "Safe for normal outdoor activity", key: "descLow" },
+  { level: "Moderate", max: 50, color: "#eab308", description: "Fine for most. Children, older and sick people take breaks", key: "descModerate" },
+  { level: "High", max: 75, color: "#f97316", description: "Cut outdoor time, rest in shade, drink extra water", key: "descHigh" },
+  { level: "Critical", max: 90, color: "#ef4444", description: "Dangerous. Keep outdoor work short, with long breaks", key: "descCritical" },
+  { level: "Emergency", max: 100, color: "#991b1b", description: "Life-threatening. Stay indoors", key: "descEmergency" },
 ];
 
 export function compoundRiskScore(wbgt: number, aqi: number, uv: number): number {

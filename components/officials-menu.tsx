@@ -7,9 +7,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import type { City } from "@/lib/cities";
 import type { Conditions } from "@/lib/conditions";
 import { globalCsv, globalReport } from "@/lib/report";
+import { useT } from "@/lib/i18n";
 
 /** Exports for public-health teams: a printable summary, raw data for Excel or GIS, and a link to share. */
 export function OfficialsMenu({ rows }: { rows: { city: City; c: Conditions }[] }) {
+  const { t } = useT();
   const [copied, setCopied] = useState(false);
   const ready = rows.length > 0;
 
@@ -30,7 +32,7 @@ export function OfficialsMenu({ rows }: { rows: { city: City; c: Conditions }[] 
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>For health officials</DialogTitle>
+          <DialogTitle>{t("forHealthOfficials")}</DialogTitle>
           <DialogDescription>
             Today’s conditions for all {rows.length || ""} monitored cities, ready for a briefing or your own tools.
           </DialogDescription>
@@ -39,26 +41,26 @@ export function OfficialsMenu({ rows }: { rows: { city: City; c: Conditions }[] 
           <Button variant="outline" className="h-auto justify-start py-3 text-left" disabled={!ready} onClick={() => globalReport(rows)}>
             <FileDown />
             <span>
-              <span className="block font-medium">PDF report</span>
-              <span className="block text-xs font-normal text-muted-foreground">Ranked cities, 48-hour outlook and a response guide by risk level</span>
+              <span className="block font-medium">{t("pdfReport")}</span>
+              <span className="block text-xs font-normal text-muted-foreground">{t("pdfReportIntro")}</span>
             </span>
           </Button>
           <Button variant="outline" className="h-auto justify-start py-3 text-left" disabled={!ready} onClick={() => globalCsv(rows)}>
             <Sheet />
             <span>
-              <span className="block font-medium">CSV data</span>
-              <span className="block text-xs font-normal text-muted-foreground">Every city’s readings, for Excel or GIS</span>
+              <span className="block font-medium">{t("csvData")}</span>
+              <span className="block text-xs font-normal text-muted-foreground">{t("csvDataIntro")}</span>
             </span>
           </Button>
           <Button variant="outline" className="h-auto justify-start py-3 text-left" onClick={copyLink}>
             {copied ? <Check /> : <Link2 />}
             <span>
-              <span className="block font-medium">{copied ? "Link copied" : "Copy dashboard link"}</span>
-              <span className="block text-xs font-normal text-muted-foreground">Send the live dashboard to your team</span>
+              <span className="block font-medium">{copied ? t("linkCopied") : t("copyDashboardLink")}</span>
+              <span className="block text-xs font-normal text-muted-foreground">{t("copyDashboardLinkIntro")}</span>
             </span>
           </Button>
         </div>
-        {!ready && <p className="text-xs text-muted-foreground">Exports unlock once the live data has loaded.</p>}
+        {!ready && <p className="text-xs text-muted-foreground">{t("exportsUnlock")}</p>}
       </DialogContent>
     </Dialog>
   );

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { MapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useT } from "@/lib/i18n";
+import { levelKey, useT } from "@/lib/i18n";
 import { useFieldMode } from "@/lib/use-field-mode";
 import { useTheme } from "next-themes";
 import { CircleMarker, MapContainer, Popup, TileLayer } from "react-leaflet";
@@ -108,7 +108,7 @@ export default function WeatherMap({ cities, data, mode, work = "heavy", ctx }: 
                 <br />
                 {regimen && today ? (
                   <>
-                    At today’s peak (WBGT {today.maxWbgt.toFixed(1)} °C): <strong>{regimen.label}</strong>
+                    {t("atTodaysPeak", { wbgt: today.maxWbgt.toFixed(1) })}: <strong>{t(regimen.key)}</strong>
                   </>
                 ) : sun ? (
                   <>
@@ -120,25 +120,25 @@ export default function WeatherMap({ cities, data, mode, work = "heavy", ctx }: 
                   <>
                     {today.maxScore != null && (
                       <>
-                        Compound risk today: <strong>{today.maxScore}/100</strong> ({today.level})
+                        {t("compoundToday")}: <strong>{today.maxScore}/100</strong> ({today.level ? t(levelKey(today.level)) : ""})
                         <br />
                       </>
                     )}
-                    Peak WBGT today: {today.maxWbgt.toFixed(1)} °C ({today.risk})
+                    {t("peakWbgtTodayLabel")}: {today.maxWbgt.toFixed(1)} °C ({t(levelKey(today.risk))})
                     {air && (
                       <>
                         <br />
-                        Air now: AQI {formatAqi(air.aqi)}, {aqiBand(air.aqi).label}
+                        {t("airNow")}: AQI {formatAqi(air.aqi)}, {t(aqiBand(air.aqi).key)}
                       </>
                     )}
                   </>
                 ) : s ? (
-                  "Data unavailable"
+                  t("dataUnavailable")
                 ) : (
-                  "Loading…"
+                  t("loading")
                 )}
                 <br />
-                <Link href={cityHref(city)}>Details and safe hours →</Link>
+                <Link href={cityHref(city)}>{t("detailsSafeHours")} →</Link>
               </Popup>
             </CircleMarker>
           );

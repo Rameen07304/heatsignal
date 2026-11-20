@@ -95,7 +95,7 @@ export function EarlyWarningBanner() {
               onClick={() => setExpanded(!expanded)}
               className={cn("mt-1.5 items-center gap-1 text-sm font-medium text-primary hover:underline", list.length > VISIBLE ? "inline-flex" : "inline-flex sm:hidden")}
             >
-              {expanded ? "Show fewer" : (
+              {expanded ? t("showFewer") : (
                 <>
                   <span className="sm:hidden">{t("moreWarnings", { n: list.length - 1 })}</span>
                   <span className="hidden sm:inline">{t("moreWarnings", { n: list.length - VISIBLE })}</span>

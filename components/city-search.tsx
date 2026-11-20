@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { cityKey, type City } from "@/lib/cities";
 import { searchCities, type CityResult } from "@/lib/weather";
+import { useT } from "@/lib/i18n";
 
 const formatPop = (m?: number) =>
   m == null ? null : m >= 1 ? `${m.toFixed(1)} M people` : `${Math.round(m * 1000).toLocaleString("en")} k people`;
@@ -15,8 +16,8 @@ const formatPop = (m?: number) =>
 export function AddCityDialog({
   onAdd,
   monitored,
-  label = "Add City",
-  title = "Add a city to monitor",
+  label,
+  title,
   variant,
   icon = <Plus />,
 }: {
@@ -27,6 +28,9 @@ export function AddCityDialog({
   variant?: "outline";
   icon?: React.ReactNode;
 }) {
+  const { t } = useT();
+  label ??= t("addCity");
+  title ??= t("addCityTitle");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<CityResult[] | null>(null);
@@ -71,15 +75,15 @@ export function AddCityDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>Any town or city worldwide.</DialogDescription>
+          <DialogDescription>{t("anyTownWorldwide")}</DialogDescription>
         </DialogHeader>
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             autoFocus
             type="search"
-            aria-label="City name"
-            placeholder="e.g. Multan, Al Ain, Hyderabad…"
+            aria-label={t("cityName")}
+            placeholder={t("citySearchPlaceholder")}
             className="pl-9"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -90,8 +94,8 @@ export function AddCityDialog({
           {loading && <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" />}
         </div>
         <ul className="max-h-80 overflow-y-auto" aria-live="polite">
-          {error && <li className="px-1 py-2 text-sm text-destructive">Search failed. Check your connection.</li>}
-          {results?.length === 0 && <li className="px-1 py-2 text-sm text-muted-foreground">No places found.</li>}
+          {error && <li className="px-1 py-2 text-sm text-destructive">{t("searchFailed")}</li>}
+          {results?.length === 0 && <li className="px-1 py-2 text-sm text-muted-foreground">{t("noPlacesFound")}</li>}
           {results?.map((r) => {
             const already = monitored.has(cityKey(r));
             return (
@@ -109,7 +113,7 @@ export function AddCityDialog({
                     </span>
                   </span>
                   <span className="shrink-0 text-right text-xs text-muted-foreground">
-                    {already ? "Already monitored" : formatPop(r.pop) ?? ""}
+                    {already ? t("alreadyMonitored") : formatPop(r.pop) ?? ""}
                   </span>
                 </button>
               </li>

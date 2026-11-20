@@ -13,20 +13,24 @@ import { cityHref, type City } from "@/lib/cities";
 import { nextHours, type Conditions } from "@/lib/conditions";
 import { compoundBand, RISK_COLORS, uvBand } from "@/lib/risk";
 import type { CityState } from "@/lib/use-cities";
+import { levelKey, useT, type Key } from "@/lib/i18n";
+
+const UV_KEY: Record<string, Key> = { Low: "low", Moderate: "moderate", High: "high", "Very high": "uvVeryHigh", Extreme: "extreme" };
 
 /** Next 24 hours as bars: height and colour = compound score (heat risk where air data is missing). */
 function Sparkline24h({ c }: { c: Conditions }) {
   const hours = nextHours(c, 24);
+  const { t } = useT();
   return (
     <div>
-      <div className="flex h-9 items-end gap-px" role="img" aria-label="Compound risk over the next 24 hours">
+      <div className="flex h-9 items-end gap-px" role="img" aria-label={t("compoundNext24")} dir="ltr">
         {hours.map((h) => {
           const color = h.score != null ? compoundBand(h.score).color : RISK_COLORS[h.risk];
           const height = h.score != null ? h.score : (h.wbgt / 40) * 100;
           return (
             <div
               key={h.time}
-              title={`${h.time.slice(11, 16)} · ${h.score != null ? `compound ${h.score}/100 (${h.level})` : `WBGT ${h.wbgt.toFixed(1)} °C`}`}
+              title={`${h.time.slice(11, 16)} · ${h.score != null ? `${h.score}/100 (${t(levelKey(h.level ?? "Low"))})` : `WBGT ${h.wbgt.toFixed(1)} °C`}`}
               className="flex-1 rounded-[2px]"
               style={{ height: `${Math.max(height, 6)}%`, backgroundColor: color }}
             />
@@ -34,8 +38,8 @@ function Sparkline24h({ c }: { c: Conditions }) {
         })}
       </div>
       <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-        <span>Now</span>
-        <span>Compound risk, next 24 h</span>
+        <span>{t("nowShort")}</span>
+        <span>{t("compoundNext24")}</span>
         <span>+24 h</span>
       </div>
     </div>
@@ -59,6 +63,7 @@ interface Props {
 }
 
 export function CityCard({ city, state, onRemove, onRetry }: Props) {
+  const { t } = useT();
   const c = state && !(state instanceof Error) ? state : null;
   const now = c?.now;
   const air = now?.air;
@@ -73,7 +78,7 @@ export function CityCard({ city, state, onRemove, onRetry }: Props) {
         <button
           type="button"
           onClick={onRemove}
-          aria-label={`Stop monitoring ${city.name}`}
+          aria-label={t("stopMonitoring", { city: city.name })}
           className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <X className="h-3.5 w-3.5" />
@@ -93,64 +98,64 @@ export function CityCard({ city, state, onRemove, onRetry }: Props) {
         {state instanceof Error && (
           <div role="alert" className="space-y-2 text-sm">
             <p className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-4 w-4" /> Couldn’t load data.
+              <AlertTriangle className="h-4 w-4" /> {t("couldntLoadData")}
             </p>
-            <Button size="sm" variant="outline" onClick={onRetry}>Retry</Button>
+            <Button size="sm" variant="outline" onClick={onRetry}>{t("retry")}</Button>
           </div>
         )}
         {now && c && (
           <>
             <div className="flex justify-around gap-1">
               <GaugeRing
-                label="Heat"
+                label={t("heatShort")}
                 fraction={now.wbgt / 40}
                 color={RISK_COLORS[now.risk]}
                 value={now.wbgt.toFixed(1)}
                 unit="°C WBGT"
-                sub={now.risk}
+                sub={t(levelKey(now.risk))}
               />
               {air ? (
                 <GaugeRing
-                  label="Air"
+                  label={t("airShort")}
                   fraction={air.aqi / 300}
                   color={aqiBand(air.aqi).color}
                   value={formatAqi(air.aqi)}
                   unit="US AQI"
-                  sub={aqiBand(air.aqi).label.replace(" for sensitive groups", " (sens.)")}
+                  sub={t(aqiBand(air.aqi).key)}
                 />
               ) : (
-                <GaugeRing label="Air" fraction={0} color="#64748b" value="–" sub="No data" />
+                <GaugeRing label={t("airShort")} fraction={0} color="#64748b" value="–" sub={t("noData")} />
               )}
               {now.score != null ? (
                 <GaugeRing
-                  label="Combined"
+                  label={t("combined")}
                   fraction={now.score / 100}
                   color={compoundBand(now.score).color}
                   value={String(now.score)}
                   unit="/ 100"
-                  sub={now.level ?? undefined}
+                  sub={now.level ? t(levelKey(now.level)) : undefined}
                 />
               ) : (
-                <GaugeRing label="Combined" fraction={0} color="#64748b" value="–" sub="No air data" />
+                <GaugeRing label={t("combined")} fraction={0} color="#64748b" value="–" sub={t("noAirDataShort")} />
               )}
             </div>
 
             {now.score != null && (
-              <p className="text-center text-sm font-medium">{compoundBand(now.score).description}</p>
+              <p className="text-center text-sm font-medium">{t(compoundBand(now.score).key)}</p>
             )}
 
             <div className="grid grid-cols-4 gap-2 rounded-lg bg-muted/50 p-2">
-              <Stat label="Temp" value={`${now.temp.toFixed(1)}°`} />
-              <Stat label="Humidity" value={`${now.rh.toFixed(0)}%`} />
-              <Stat label="Wind" value={`${now.wind.toFixed(0)} km/h`} />
-              <Stat label="UV" value={air ? `${air.uv.toFixed(0)} ${uvBand(air.uv).label}` : "–"} />
+              <Stat label={t("tempShort")} value={`${now.temp.toFixed(1)}°`} />
+              <Stat label={t("humidity")} value={`${now.rh.toFixed(0)}%`} />
+              <Stat label={t("wind")} value={`${now.wind.toFixed(0)} km/h`} />
+              <Stat label="UV" value={air ? `${air.uv.toFixed(0)} ${t(UV_KEY[uvBand(air.uv).label] ?? "moderate")}` : "–"} />
             </div>
 
             {air && (
               <div className="flex flex-wrap gap-1.5 text-xs">
                 <span className="rounded-full border px-2 py-0.5 tabular-nums">PM2.5 {air.pm25.toFixed(0)} µg/m³</span>
                 <span className="rounded-full border px-2 py-0.5 tabular-nums">O₃ {air.o3.toFixed(0)} µg/m³</span>
-                {air.dust > 50 && <span className="rounded-full border px-2 py-0.5 tabular-nums">Dust {air.dust.toFixed(0)} µg/m³</span>}
+                {air.dust > 50 && <span className="rounded-full border px-2 py-0.5 tabular-nums">{t("dustWord")} {air.dust.toFixed(0)} µg/m³</span>}
               </div>
             )}
 
@@ -161,7 +166,7 @@ export function CityCard({ city, state, onRemove, onRetry }: Props) {
 
       <CardFooter className="gap-2">
         <Button asChild size="sm" variant="outline" className="flex-1">
-          <Link href={cityHref(city)}>Details</Link>
+          <Link href={cityHref(city)}>{t("details")}</Link>
         </Button>
         {now && <AlertDialog city={city} hour={now} size="sm" className="flex-1" />}
         {now && <ShareDialog iconOnly size="sm" title={`${city.name} health alert`} text={riskMessage(city, now)} path={cityHref(city)} />}

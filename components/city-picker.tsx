@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AddCityDialog } from "@/components/city-search";
 import { WORLD_CITIES, cityKey, type City } from "@/lib/cities";
 import { useCities } from "@/lib/use-cities";
+import { useT } from "@/lib/i18n";
 
 const NONE = new Set<string>();
 
@@ -17,7 +18,9 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
 }
 
 /** Choose a location: monitored cities, a worldwide search, or the browser's own position. */
-export function CityPicker({ value, onChange, label = "Location" }: { value: City; onChange: (c: City) => void; label?: string }) {
+export function CityPicker({ value, onChange, label }: { value: City; onChange: (c: City) => void; label?: string }) {
+  const { t } = useT();
+  label ??= t("location");
   const { cities } = useCities();
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +28,7 @@ export function CityPicker({ value, onChange, label = "Location" }: { value: Cit
   if (!options.some((c) => cityKey(c) === cityKey(value))) options.unshift(value);
 
   function locate() {
-    if (!navigator.geolocation) return setError("This browser can’t share its location.");
+    if (!navigator.geolocation) return setError(t("geoUnsupported"));
     setLocating(true);
     setError(null);
     navigator.geolocation.getCurrentPosition(
@@ -36,13 +39,13 @@ export function CityPicker({ value, onChange, label = "Location" }: { value: Cit
         const d = km(here, near);
         onChange({
           ...here,
-          name: d < 40 ? `${near.name} (your location)` : `Your location (${here.lat}, ${here.lon})`,
+          name: d < 40 ? `${near.name} (${t("yourLocation")})` : `${t("yourLocationCap")} (${here.lat}, ${here.lon})`,
           country: d < 40 ? near.country : "",
         });
         setLocating(false);
       },
       (e) => {
-        setError(e.code === e.PERMISSION_DENIED ? "Location permission was denied." : "Couldn’t get your location.");
+        setError(e.code === e.PERMISSION_DENIED ? t("geoDenied") : t("geoFailed"));
         setLocating(false);
       },
       { timeout: 10_000, maximumAge: 600_000 },
@@ -62,7 +65,7 @@ export function CityPicker({ value, onChange, label = "Location" }: { value: Cit
             {options.map((o) => <option key={cityKey(o)} value={cityKey(o)}>{o.name}{o.country ? `, ${o.country}` : ""}</option>)}
           </select>
         </label>
-        <AddCityDialog onAdd={onChange} monitored={NONE} label="Search" title="Find a place" variant="outline" />
+        <AddCityDialog onAdd={onChange} monitored={NONE} label={t("search")} title={t("findPlace")} variant="outline" />
         <Button variant="outline" onClick={locate} disabled={locating}>
           {locating ? <Loader2 className="animate-spin" /> : <LocateFixed />} Use my location
         </Button>

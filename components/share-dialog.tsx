@@ -8,6 +8,7 @@ import { aqiBand, formatAqi } from "@/lib/air";
 import type { City } from "@/lib/cities";
 import type { CombinedHour } from "@/lib/conditions";
 import { compoundBand } from "@/lib/risk";
+import { useT } from "@/lib/i18n";
 
 /** The WhatsApp-style message for one city's conditions. */
 export function riskMessage(city: City, h: CombinedHour) {
@@ -32,7 +33,7 @@ export function ShareDialog({
   title,
   text,
   path,
-  label = "Share",
+  label,
   size = "sm",
   variant = "outline",
   iconOnly = false,
@@ -47,6 +48,8 @@ export function ShareDialog({
   iconOnly?: boolean;
   className?: string;
 }) {
+  const { t } = useT();
+  label ??= t("share");
   const [copied, setCopied] = useState(false);
   const url = () => `${location.origin}${path}`;
   const message = () => `${text}\n\nLive conditions: ${url()}`;
@@ -70,8 +73,8 @@ export function ShareDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Share this warning</DialogTitle>
-          <DialogDescription>A warning that gets passed on can protect a whole neighbourhood.</DialogDescription>
+          <DialogTitle>{t("shareThisWarning")}</DialogTitle>
+          <DialogDescription>{t("shareIntro")}</DialogDescription>
         </DialogHeader>
         <pre className="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-md border bg-muted/40 p-3 font-sans text-xs text-muted-foreground">{text}</pre>
         <div className="grid gap-2">
@@ -84,7 +87,7 @@ export function ShareDialog({
           </button>
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" onClick={copy}>
-              {copied ? <Check /> : <Link2 />} {copied ? "Link copied" : "Copy link"}
+              {copied ? <Check /> : <Link2 />} {copied ? t("linkCopied") : t("copyLink")}
             </Button>
             <Button
               variant="outline"

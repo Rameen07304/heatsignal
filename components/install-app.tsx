@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
 
 // Chrome/Edge/Android only; Safari has no install prompt (users add it from the Share menu instead).
 type InstallPrompt = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 
 /** Registers the service worker, and shows "Install app" when the browser offers it. */
 export function InstallApp() {
+  const { t } = useT();
   const [prompt, setPrompt] = useState<InstallPrompt | null>(null);
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export function InstallApp() {
         setPrompt(null);
       }}
     >
-      <Download /> Install app
+      <Download /> {t("installApp")}
     </Button>
   );
 }
