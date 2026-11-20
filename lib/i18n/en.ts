@@ -745,6 +745,11 @@ export const en = {
   tabCrew: "Crew",
   tabSiteTools: "Site tools",
   learnMore: "Learn more",
+  faQuestion: "What do I do right now? Fixed first-aid steps that work offline.",
+  faCallIfTitle: "Call emergency now if the person:",
+  faCallIfSigns: "is confused, has stopped sweating, has collapsed, or is hotter than 40 °C.",
+  faStartCheck: "Start symptom check",
+  faStepsByCondition: "Steps by condition",
 } as const;
 
 export type Key = keyof typeof en;

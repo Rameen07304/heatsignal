@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, RotateCcw } from "lucide-react";
+import { Phone, RotateCcw, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MedicalDisclaimer } from "@/components/medical-disclaimer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import { WORLD_CITIES, type City } from "@/lib/cities";
 import { emergencyNumbers, serviceLabel } from "@/lib/emergency";
 import { useT, type Key } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { PageTop, Section } from "@/components/page-top";
+import { openSos } from "@/components/worker-checkin";
 
 type ResultId = "unconscious" | "heatstroke" | "exhaustion" | "early" | "air" | "mild";
 type StepId = "q1" | "q2" | "q3" | "q4" | "q5";
@@ -61,18 +63,37 @@ export default function FirstAidPage() {
   };
   const r = result ? RESULTS[result] : null;
 
-  return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("firstAid")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t("faIntro")}</p>
-      </div>
+  const startCheck = () => {
+    restart();
+    setTimeout(() => document.getElementById("symptom-check")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  };
 
-      <MedicalDisclaimer>{t("faDisclaimer")}</MedicalDisclaimer>
+  return (
+    <div className="mx-auto max-w-3xl space-y-8">
+      <PageTop
+        title={t("firstAid")}
+        intro={t("faQuestion")}
+        answer={
+          <div className="rounded-lg bg-red-600 p-5 text-white" role="alert">
+            <p className="text-2xl font-black leading-tight sm:text-3xl">{t("faCallIfTitle")}</p>
+            <p className="mt-1 text-base">{t("faCallIfSigns")}</p>
+            {numbers ? (
+              <a href={`tel:${numbers[0].number}`} className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-md bg-white text-lg font-bold text-red-700 sm:w-auto sm:px-6">
+                <Phone className="h-5 w-5" /> {t("callNumberNow", { number: numbers[0].number })}
+              </a>
+            ) : (
+              <button type="button" onClick={openSos} className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-md bg-white text-lg font-bold text-red-700 sm:w-auto sm:px-6">
+                <Phone className="h-5 w-5" /> {t("callEmergency")}
+              </button>
+            )}
+          </div>
+        }
+        actions={<Button onClick={startCheck}><Stethoscope /> {t("faStartCheck")}</Button>}
+      />
 
       <CityPicker value={city} onChange={setCity} label={t("faWhereAreYou")} />
 
-      <div className="flex items-center justify-between">
+      <div id="symptom-check" className="flex scroll-mt-20 items-center justify-between">
         <div className="flex gap-1.5" aria-label={t("stepOf", { n: r ? 5 : path.length, total: 5 })}>
           {[0, 1, 2, 3, 4].map((i) => (
             <span key={i} className={cn("h-2 w-8 rounded-full bg-muted transition-colors", (i < path.length || r) && "bg-primary")} />
@@ -122,6 +143,17 @@ export default function FirstAidPage() {
         </div>
       )}
 
+      <section className="space-y-2">
+        <h2 className="mb-1 text-xl font-semibold tracking-tight">{t("faStepsByCondition")}</h2>
+        {(["heatstroke", "unconscious", "exhaustion", "early", "air", "mild"] as ResultId[]).map((id, i) => (
+          <Section key={id} title={<span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: RESULTS[id].color }} />{t(RESULTS[id].title)}</span>} open={i === 0}>
+            <ol className="list-decimal space-y-1 ps-5 text-sm">
+              {RESULTS[id].steps.map((k) => <li key={k}>{t(k)}</li>)}
+            </ol>
+          </Section>
+        ))}
+      </section>
+
       <section>
         <h2 className="mb-3 text-xl font-semibold tracking-tight">{t("preventingHeatIllness")}</h2>
         <div className="space-y-2">
@@ -136,8 +168,10 @@ export default function FirstAidPage() {
         </div>
       </section>
 
+      <MedicalDisclaimer>{t("faDisclaimer")}</MedicalDisclaimer>
+
       <p className="text-xs text-muted-foreground">
-        {t("faSource")}
+        {t("faSource")} {t("faIntro")}
       </p>
     </div>
   );

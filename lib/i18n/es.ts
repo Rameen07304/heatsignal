@@ -739,4 +739,9 @@ export const es: Dict = {
   tabCrew: "Cuadrilla",
   tabSiteTools: "Herramientas del sitio",
   learnMore: "Más información",
+  faQuestion: "¿Qué hago ahora? Pasos fijos de primeros auxilios que funcionan sin conexión.",
+  faCallIfTitle: "Llame a emergencias ya si la persona:",
+  faCallIfSigns: "está confundida, dejó de sudar, se desplomó o tiene más de 40 °C.",
+  faStartCheck: "Iniciar revisión de síntomas",
+  faStepsByCondition: "Pasos según el caso",
 };

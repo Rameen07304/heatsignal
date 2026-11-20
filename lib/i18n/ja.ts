@@ -739,4 +739,9 @@ export const ja: Dict = {
   tabCrew: "班",
   tabSiteTools: "現場ツール",
   learnMore: "詳しく",
+  faQuestion: "今、何をすれば? オフラインでも使える応急手当の手順。",
+  faCallIfTitle: "次の場合はすぐに救急に通報:",
+  faCallIfSigns: "意識が混乱している、汗が止まった、倒れた、体温が40 °Cを超えている。",
+  faStartCheck: "症状チェックを始める",
+  faStepsByCondition: "症状別の手順",
 };

@@ -739,4 +739,9 @@ export const ar: Dict = {
   tabCrew: "الطاقم",
   tabSiteTools: "أدوات الموقع",
   learnMore: "اعرف المزيد",
+  faQuestion: "ماذا أفعل الآن؟ خطوات إسعاف أولي ثابتة تعمل دون اتصال.",
+  faCallIfTitle: "اتصل بالطوارئ فورًا إذا كان الشخص:",
+  faCallIfSigns: "مرتبك، أو توقف عن التعرّق، أو سقط، أو تزيد حرارته على 40 °C.",
+  faStartCheck: "ابدأ فحص الأعراض",
+  faStepsByCondition: "الخطوات حسب الحالة",
 };
