@@ -165,7 +165,7 @@ function ValidationCard() {
                 <TableHead>Event</TableHead>
                 <TableHead>Detected</TableHead>
                 <TableHead>Lead time</TableHead>
-                <TableHead>Warnings in earlier years</TableHead>
+                <TableHead>Warnings in other years</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -181,7 +181,7 @@ function ValidationCard() {
                     <TableCell>{live.loading ? "…" : live.error ? "–" : wave ? `Yes, ${formatDay(wave.day.date)}` : "No"}</TableCell>
                     <TableCell className="tabular-nums">{lead == null ? "–" : lead > 0 ? `${lead} days before ${c.eventPhrase}` : "Same day or after"}</TableCell>
                     <TableCell>
-                      {hits.length} warning{hits.length === 1 ? "" : "s"} in {fa.length} non-event seasons
+                      {hits.length} warning{hits.length === 1 ? "" : "s"} in {fa.length} other years
                       {hits.length > 0 && <span className="block text-xs text-muted-foreground">{hits.map((x) => x.year).join(", ")}</span>}
                     </TableCell>
                   </TableRow>
@@ -190,12 +190,14 @@ function ValidationCard() {
             </TableBody>
           </Table>
         </div>
+        <p className="text-sm text-muted-foreground">
+          Some of these may be real heatwaves that are not in our reference list (South Asia had a severe one in spring
+          2022). Checking them against health records is the next step.
+        </p>
         <ul className="list-disc space-y-1 ps-5 text-sm text-muted-foreground">
           <li>
             <b className="text-foreground">Honest reading:</b> the rule catches both events early, but it also fires in
-            several earlier summers. Some of those were hot spells in their own right (South Asia had a severe heatwave in
-            2022), so not every one is a false alarm, but the rule is sensitive by design: it favours warning too often over
-            missing a heatwave.
+            several other summers. It is sensitive by design: it favours warning too often over missing a heatwave.
           </li>
           <li>Normals for each earlier year are the mean of the other {NORMAL_YEARS - 1} years, so no year is compared with itself.</li>
           <li><b className="text-foreground">Data latency:</b> forecast updated hourly; archive (ERA5) about 5 days behind.</li>
