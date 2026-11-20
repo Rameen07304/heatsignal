@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UNHEALTHY_AQI, formatAqi } from "@/lib/air";
 import type { CombinedHour } from "@/lib/conditions";
-import { formatDay } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import { INTENSITIES, litresPerHour, workRegimen, type Intensity } from "@/lib/work-rest";
 import { useWorkerContext } from "@/lib/use-worker-context";
 
@@ -25,6 +25,7 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
   const [intensity, setIntensity] = useState<Intensity>("heavy");
   const [workers, setWorkers] = useState(50);
   const [ctx] = useWorkerContext();
+  const { t, n, date } = useT();
 
   const first = hours.findIndex((h) => h.time === `${day}T${hh(start)}`);
   const shift = (first < 0 ? [] : hours.slice(first, first + length)).map((h) => ({ ...h, regimen: workRegimen(h.wbgt, intensity, ctx) }));
@@ -38,45 +39,45 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
   const siteLitres = Math.ceil(workers * Math.max(water, 0.95 * shift.length));
 
   const ppe = [
-    "Light-coloured, loose, breathable clothing; cooling towel or neck shade",
-    maxUv >= 3 ? `Wide-brim hat or hard-hat sun brim, sunglasses and SPF 30+ (UV up to ${maxUv.toFixed(0)})` : "Hat for any time in direct sun",
+    t("ppeClothing"),
+    maxUv >= 3 ? t("ppeSunHigh", { uv: maxUv.toFixed(0) }) : t("ppeHat"),
     maxAqi >= UNHEALTHY_AQI
-      ? `N95 / FFP2 mask: AQI reaches ${formatAqi(maxAqi)} during this shift, regardless of the heat`
+      ? t("ppeMaskAll", { aqi: formatAqi(maxAqi) })
       : maxAqi > 100
-        ? `N95 mask for workers with asthma or heart conditions (AQI up to ${formatAqi(maxAqi)})`
+        ? t("ppeMaskSensitive", { aqi: formatAqi(maxAqi) })
         : null,
-    stops > 0 || shift.some((h) => h.regimen.workMin <= 15) ? "Cooling vest for anyone who must keep working in the red hours" : null,
-    "Shaded, ventilated rest area within a short walk; cool (not ice-cold) water at the site",
+    stops > 0 || shift.some((h) => h.regimen.workMin <= 15) ? t("ppeCoolingVest") : null,
+    t("ppeRestArea"),
   ].filter(Boolean) as string[];
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Shift planner</CardTitle>
-        <CardDescription>Enter a shift to get its break schedule, water target and protective equipment.</CardDescription>
+        <CardTitle>{t("shiftPlanner")}</CardTitle>
+        <CardDescription>{t("shiftPlannerIntro")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="flex flex-wrap items-end gap-4">
           <label className="space-y-1 text-xs text-muted-foreground">
-            <span className="block">Day</span>
+            <span className="block">{t("day")}</span>
             <select className={SELECT} value={day} onChange={(e) => setDay(e.target.value)}>
-              {days.map((d, i) => <option key={d} value={d}>{i === 0 ? "Today" : "Tomorrow"} ({formatDay(d)})</option>)}
+              {days.map((d, i) => <option key={d} value={d}>{i === 0 ? t("today") : t("tomorrow")} ({date(d)})</option>)}
             </select>
           </label>
           <label className="space-y-1 text-xs text-muted-foreground">
-            <span className="block">Shift starts</span>
+            <span className="block">{t("shiftStarts")}</span>
             <select className={SELECT} value={start} onChange={(e) => setStart(Number(e.target.value))}>
               {Array.from({ length: 24 }, (_, h) => <option key={h} value={h}>{hh(h)}</option>)}
             </select>
           </label>
           <label className="space-y-1 text-xs text-muted-foreground">
-            <span className="block">Length</span>
+            <span className="block">{t("length")}</span>
             <select className={SELECT} value={length} onChange={(e) => setLength(Number(e.target.value))}>
-              {[2, 4, 6, 8, 10, 12].map((n) => <option key={n} value={n}>{n} hours</option>)}
+              {[2, 4, 6, 8, 10, 12].map((h) => <option key={h} value={h}>{t("nHours", { n: h })}</option>)}
             </select>
           </label>
           <label className="space-y-1 text-xs text-muted-foreground">
-            <span className="block">Workers on site</span>
+            <span className="block">{t("workersOnSite")}</span>
             <input
               type="number"
               inputMode="numeric"
@@ -88,24 +89,24 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
             />
           </label>
           <div className="space-y-1 text-xs text-muted-foreground">
-            <span className="block">Work type</span>
+            <span className="block">{t("workType")}</span>
             <Tabs value={intensity} onValueChange={(v) => setIntensity(v as Intensity)}>
               <TabsList>
-                {INTENSITIES.map((i) => <TabsTrigger key={i.key} value={i.key}>{i.label}</TabsTrigger>)}
+                {INTENSITIES.map((i) => <TabsTrigger key={i.key} value={i.key}>{t(i.labelKey)}</TabsTrigger>)}
               </TabsList>
             </Tabs>
           </div>
         </div>
 
         {shift.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No forecast for that time.</p>
+          <p className="text-sm text-muted-foreground">{t("noForecastThen")}</p>
         ) : (
           <>
             {/* Gantt bar: each hour split into work (colour) and rest (hatched) minutes. */}
-            <div>
-              <div className="flex gap-0.5" role="img" aria-label="Work and rest blocks across the shift">
+            <div dir="ltr">
+              <div className="flex gap-0.5" role="img" aria-label={t("workRestBlocks")}>
                 {shift.map((h) => (
-                  <div key={h.time} className={`flex h-12 flex-1 overflow-hidden rounded ${h.time.slice(0, 13) < now ? "opacity-40" : ""}`} title={`${h.time.slice(11, 16)} · WBGT ${h.wbgt.toFixed(1)} °C · ${h.regimen.label}`}>
+                  <div key={h.time} className={`flex h-12 flex-1 overflow-hidden rounded ${h.time.slice(0, 13) < now ? "opacity-40" : ""}`} title={`${h.time.slice(11, 16)} · WBGT ${h.wbgt.toFixed(1)} °C · ${t(h.regimen.key)}`}>
                     <div style={{ width: `${(h.regimen.workMin / 60) * 100}%`, backgroundColor: h.regimen.color }} />
                     <div
                       className="flex-1"
@@ -117,46 +118,46 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
               <div className="mt-1 flex text-xs tabular-nums text-muted-foreground">
                 {shift.map((h) => <span key={h.time} className="flex-1">{h.time.slice(11, 16)}</span>)}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Coloured = work, hatched = rest in shade.</p>
+              <p className="mt-1 text-xs text-muted-foreground" dir="auto">{t("ganttLegend")}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <div className="rounded-lg border p-3">
-                <div className="text-xs text-muted-foreground">Productive time</div>
-                <div className="text-2xl font-bold tabular-nums">{(workMinutes / 60).toFixed(1)} h</div>
-                <div className="text-xs text-muted-foreground">of {length} h on site{stops ? ` · ${stops} h with no outdoor work` : ""}</div>
+                <div className="text-xs text-muted-foreground">{t("productiveTime")}</div>
+                <div className="text-2xl font-bold tabular-nums">{t("nH", { n: n(workMinutes / 60, 1) })}</div>
+                <div className="text-xs text-muted-foreground">{t("ofHoursOnSite", { n: length })}{stops ? ` · ${t("hoursNoOutdoor", { n: stops })}` : ""}</div>
               </div>
               <div className="rounded-lg border p-3">
-                <div className="flex items-center gap-1 text-xs text-muted-foreground"><Droplets className="h-3 w-3" /> Water per worker</div>
-                <div className="text-2xl font-bold tabular-nums">{water.toFixed(1)} L</div>
-                <div className="text-xs text-muted-foreground">{hot ? "1 cup (250 ml) every 15–20 min in the hot hours" : "about 2 cups an hour"}</div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground"><Droplets className="h-3 w-3" /> {t("waterPerWorker")}</div>
+                <div className="text-2xl font-bold tabular-nums">{t("nL", { n: n(water, 1) })}</div>
+                <div className="text-xs text-muted-foreground">{hot ? t("cupEvery15") : t("twoCupsHour")}</div>
               </div>
               <div className="rounded-lg border p-3">
-                <div className="flex items-center gap-1 text-xs text-muted-foreground"><Droplets className="h-3 w-3" /> Water for the site</div>
-                <div className="text-2xl font-bold tabular-nums">{siteLitres.toLocaleString("en")} L</div>
-                <div className="text-xs text-muted-foreground">for {workers} workers; at least 1 L per worker per hour on site</div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground"><Droplets className="h-3 w-3" /> {t("waterForSite")}</div>
+                <div className="text-2xl font-bold tabular-nums">{t("nL", { n: n(siteLitres) })}</div>
+                <div className="text-xs text-muted-foreground">{t("siteWaterNote", { n: workers })}</div>
               </div>
               <div className="rounded-lg border p-3">
-                <div className="text-xs text-muted-foreground">Air during shift</div>
+                <div className="text-xs text-muted-foreground">{t("airDuringShift")}</div>
                 <div className="text-2xl font-bold tabular-nums">{maxAqi ? `AQI ${formatAqi(maxAqi)}` : "–"}</div>
-                <div className="text-xs text-muted-foreground">{maxAqi >= UNHEALTHY_AQI ? "Masks required" : maxAqi ? "Peak during the shift" : "No air-quality data"}</div>
+                <div className="text-xs text-muted-foreground">{maxAqi >= UNHEALTHY_AQI ? t("masksRequired") : maxAqi ? t("peakDuringShift") : t("noAirData")}</div>
               </div>
             </div>
 
             <div className="grid gap-5 lg:grid-cols-2">
               <div>
-                <h4 className="mb-2 text-sm font-semibold">Break schedule</h4>
+                <h4 className="mb-2 text-sm font-semibold">{t("breakSchedule")}</h4>
                 <ol className="space-y-1 text-sm">
                   {shift.map((h) => {
                     const hour = Number(h.time.slice(11, 13));
                     const w = h.regimen.workMin;
                     return (
                       <li key={h.time} className="flex gap-3 tabular-nums">
-                        <span className="w-12 shrink-0 text-muted-foreground">{h.time.slice(11, 16)}</span>
+                        <span className="w-12 shrink-0 text-muted-foreground" dir="ltr">{h.time.slice(11, 16)}</span>
                         <span>
-                          {w === 60 && "Work the full hour"}
-                          {w > 0 && w < 60 && <>Work {mm(hour, 0)}–{mm(hour, w)}, rest {mm(hour, w)}–{mm(hour, 60)}</>}
-                          {w === 0 && <span className="font-semibold text-destructive">No outdoor work. Rest or do indoor tasks</span>}
+                          {w === 60 && t("workFullHour")}
+                          {w > 0 && w < 60 && t("workThenRest", { a: mm(hour, 0), b: mm(hour, w), c: mm(hour, 60) })}
+                          {w === 0 && <span className="font-semibold text-destructive">{t("noOutdoorWorkHour")}</span>}
                         </span>
                         <span className="ml-auto text-xs text-muted-foreground">{h.wbgt.toFixed(1)} °C</span>
                       </li>
@@ -165,7 +166,7 @@ export function ShiftPlanner({ hours, now }: { hours: CombinedHour[]; now: strin
                 </ol>
               </div>
               <div>
-                <h4 className="mb-2 flex items-center gap-1.5 text-sm font-semibold"><ShieldCheck className="h-4 w-4" /> Protective equipment</h4>
+                <h4 className="mb-2 flex items-center gap-1.5 text-sm font-semibold"><ShieldCheck className="h-4 w-4" /> {t("protectiveEquipment")}</h4>
                 <ul className="list-disc space-y-1 ps-5 text-sm">
                   {ppe.map((p) => <li key={p}>{p}</li>)}
                 </ul>

@@ -13,6 +13,7 @@ import { esc, openPrintable } from "@/lib/report";
 import { useCities } from "@/lib/use-cities";
 import { hourRanges, litresPerHour, workRegimen } from "@/lib/work-rest";
 import { useWorkerContext } from "@/lib/use-worker-context";
+import { useT, type Key } from "@/lib/i18n";
 
 const read = <T,>(key: string, fallback: T): T => {
   try {
@@ -29,31 +30,39 @@ const write = (key: string, value: unknown) => {
 
 // ---- Employer checklist -------------------------------------------------------------------------
 
+interface Item {
+  id: string;
+  text: string;
+}
+
 /** Today's employer checklist, built from the site's forecast. Ticks are kept in this browser, per site and day. */
 export function EmployerChecklist({ city, today }: { city: City; today: CombinedHour[] }) {
   const [ctx] = useWorkerContext();
+  const { t } = useT();
+  const tr = (k: string) => t(k as Key);
   const peak = today.reduce<CombinedHour | null>((b, h) => (!b || h.wbgt > b.wbgt ? h : b), null);
   const heavyStops = hourRanges(today, (h) => workRegimen(h.wbgt, "heavy", ctx).workMin < 60);
   const water = Math.max(8 * 0.95, today.filter((h) => +h.time.slice(11, 13) >= 7 && +h.time.slice(11, 13) < 15).reduce((s, h) => s + litresPerHour(workRegimen(h.wbgt, "heavy", ctx)), 0));
   const maxAqi = Math.max(0, ...today.map((h) => h.air?.aqi ?? 0));
 
-  const required = [
-    "Post the heat safety notice at every entry point and rest area",
-    "Shaded rest area within a short walk (about 50 m) of every work area",
-    `Cool drinking water on site: at least ${Math.ceil(water)} L per worker for an 8-hour shift`,
-    "Assign buddies so workers watch each other for symptoms",
-    "Brief workers on heat illness signs at the start of the shift",
-    `Post the emergency plan and number: ${emergencyLine(city.country)}`,
-    ...(maxAqi >= UNHEALTHY_AQI ? [`Issue N95 masks to outdoor workers (AQI up to ${formatAqi(maxAqi)} today)`] : []),
+  // Items have fixed ids so ticks survive a language change.
+  const required: Item[] = [
+    { id: "notice", text: t("ckPostNotice") },
+    { id: "shade", text: t("ckShade") },
+    { id: "water", text: t("ckWater", { n: Math.ceil(water) }) },
+    { id: "buddies", text: t("ckBuddies") },
+    { id: "brief", text: t("ckBrief") },
+    { id: "emergency", text: t("ckEmergencyPlan", { line: emergencyLine(city.country, tr) }) },
+    ...(maxAqi >= UNHEALTHY_AQI ? [{ id: "masks", text: t("ckMasks", { aqi: formatAqi(maxAqi) }) }] : []),
   ];
-  const recommended = [
+  const recommended: Item[] = [
     heavyStops.length
-      ? `Move heavy work out of ${heavyStops.map((r) => `${r.from}–${r.to}`).join(", ")} (break schedules apply then)`
-      : "Schedule the heaviest work for the coolest hours",
-    "Provide oral rehydration salts or electrolyte drinks, not just water",
-    "Let workers set their own pace in the heat",
-    "Watch new and returning workers closely: they are not used to the heat yet",
-    "Keep cooling towels or vests for anyone doing heavy work",
+      ? { id: "move", text: t("ckMoveHeavy", { ranges: heavyStops.map((r) => `${r.from}–${r.to}`).join(", ") }) }
+      : { id: "move", text: t("ckScheduleCool") },
+    { id: "ors", text: t("ckOrs") },
+    { id: "pace", text: t("ckPace") },
+    { id: "new", text: t("ckWatchNew") },
+    { id: "cooling", text: t("ckCooling") },
   ];
 
   const key = `heatsignal-checklist-${cityKey(city)}-${today[0]?.time.slice(0, 10) ?? ""}`;
@@ -68,29 +77,29 @@ export function EmployerChecklist({ city, today }: { city: City; today: Combined
 
   const asText = () =>
     [
-      `Heat safety checklist: ${city.name}${peak ? ` (peak WBGT ${peak.wbgt.toFixed(1)}°C today)` : ""}`,
+      `${t("checklistTitleFor", { city: city.name })}${peak ? ` (${t("peakWbgtToday", { wbgt: peak.wbgt.toFixed(1) })})` : ""}`,
       "",
-      "Required:",
-      ...required.map((r) => `☐ ${r}`),
+      `${t("requiredToday")}:`,
+      ...required.map((r) => `☐ ${r.text}`),
       "",
-      "Recommended:",
-      ...recommended.map((r) => `☐ ${r}`),
+      `${t("recommended")}:`,
+      ...recommended.map((r) => `☐ ${r.text}`),
     ].join("\n");
 
   function print() {
-    const list = (title: string, xs: string[]) => `<h2>${esc(title)}</h2><ul style="list-style:none;padding:0">${xs.map((x) => `<li style="margin:6px 0">☐ ${esc(x)}</li>`).join("")}</ul>`;
+    const list = (title: string, xs: Item[]) => `<h2>${esc(title)}</h2><ul style="list-style:none;padding:0">${xs.map((x) => `<li style="margin:6px 0">☐ ${esc(x.text)}</li>`).join("")}</ul>`;
     openPrintable(
-      `Employer heat safety checklist: ${city.name}`,
-      peak ? `Peak WBGT today ${peak.wbgt.toFixed(1)} °C at ${peak.time.slice(11, 16)}` : "",
-      list("Required", required) + list("Recommended", recommended),
+      t("checklistTitleFor", { city: city.name }),
+      peak ? t("peakWbgtAt", { wbgt: peak.wbgt.toFixed(1), time: peak.time.slice(11, 16) }) : "",
+      list(t("requiredToday"), required) + list(t("recommended"), recommended),
     );
   }
 
-  const Item = ({ text }: { text: string }) => (
+  const Row = ({ item }: { item: Item }) => (
     <li>
       <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-md px-2 py-2 hover:bg-muted/50">
-        <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-primary" checked={done.includes(text)} onChange={() => toggle(text)} />
-        <span className={done.includes(text) ? "text-muted-foreground line-through" : ""}>{text}</span>
+        <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-primary" checked={done.includes(item.id)} onChange={() => toggle(item.id)} />
+        <span className={done.includes(item.id) ? "text-muted-foreground line-through" : ""}>{item.text}</span>
       </label>
     </li>
   );
@@ -99,31 +108,29 @@ export function EmployerChecklist({ city, today }: { city: City; today: Combined
     <Card className="no-print">
       <CardHeader className="flex-row flex-wrap items-start justify-between gap-3 space-y-0">
         <div>
-          <CardTitle className="flex items-center gap-2"><ClipboardList className="h-5 w-5" /> Employer checklist</CardTitle>
-          <CardDescription>
-            For today in {city.name}. {done.length} of {total} done; ticks are saved in this browser.
-          </CardDescription>
+          <CardTitle className="flex items-center gap-2"><ClipboardList className="h-5 w-5" /> {t("employerChecklist")}</CardTitle>
+          <CardDescription>{t("checklistProgress", { city: city.name, done: done.filter((d) => [...required, ...recommended].some((i) => i.id === d)).length, total })}</CardDescription>
         </div>
         <div className="flex flex-wrap gap-2">
-          <ShareDialog title={`Heat safety checklist: ${city.name}`} text={asText()} path="/worker-safety" />
-          <Button size="sm" variant="outline" onClick={print}><FileDown /> Print</Button>
+          <ShareDialog title={t("checklistTitleFor", { city: city.name })} text={asText()} path="/worker-safety" />
+          <Button size="sm" variant="outline" onClick={print}><FileDown /> {t("print")}</Button>
         </div>
       </CardHeader>
       <CardContent className="grid gap-6 text-sm lg:grid-cols-2">
         <div>
-          <h3 className="mb-1 font-semibold">Required today</h3>
-          <ul>{required.map((r) => <Item key={r} text={r} />)}</ul>
+          <h3 className="mb-1 font-semibold">{t("requiredToday")}</h3>
+          <ul>{required.map((r) => <Row key={r.id} item={r} />)}</ul>
         </div>
         <div>
-          <h3 className="mb-1 font-semibold">Recommended</h3>
-          <ul>{recommended.map((r) => <Item key={r} text={r} />)}</ul>
+          <h3 className="mb-1 font-semibold">{t("recommended")}</h3>
+          <ul>{recommended.map((r) => <Row key={r.id} item={r} />)}</ul>
           <a
             href="https://www.google.com/maps/search/hospital+near+me"
             target="_blank"
             rel="noreferrer"
             className="mt-3 inline-flex items-center gap-2 text-primary underline-offset-2 hover:underline"
           >
-            <Hospital className="h-4 w-4" /> Find the nearest hospital
+            <Hospital className="h-4 w-4" /> {t("nearestHospital")}
           </a>
         </div>
       </CardContent>
@@ -137,6 +144,27 @@ const KEY = "heatsignal-incidents";
 const TYPES = ["Heat exhaustion", "Heatstroke", "Dehydration", "Fainting", "Breathing problem", "Other"];
 export const INDUSTRY_NAMES = ["Construction", "Agriculture", "Delivery and logistics", "Oil and gas", "Tourism and events", "Sanitation", "Security and traffic", "Other"];
 const TIMES = ["Morning", "Midday", "Afternoon", "Evening", "Night"];
+/** Stored values stay English (so old reports still count); shown through these keys. */
+const OPTION_KEY: Record<string, Key> = {
+  "Heat exhaustion": "incHeatExhaustion",
+  Heatstroke: "incHeatstroke",
+  Dehydration: "incDehydration",
+  Fainting: "incFainting",
+  "Breathing problem": "incBreathing",
+  Other: "incOther",
+  Construction: "indConstruction",
+  Agriculture: "indAgriculture",
+  "Delivery and logistics": "indDelivery",
+  "Oil and gas": "indOilGas",
+  "Tourism and events": "indTourism",
+  Sanitation: "indSanitation",
+  "Security and traffic": "indSecurity",
+  Morning: "todMorning",
+  Midday: "todMidday",
+  Afternoon: "todAfternoon",
+  Evening: "todEvening",
+  Night: "todNight",
+};
 
 interface Incident {
   id: string;
@@ -146,9 +174,6 @@ interface Incident {
   industry: string;
   time: string;
 }
-
-/** Small-cell suppression: counts of 1–4 could identify a worker, so they are never shown exactly. */
-export const suppress = (n: number) => (n > 0 && n < 5 ? "fewer than 5" : String(n));
 
 /** Incidents logged in this browser in the last 7 days. */
 export function incidentsThisWeek(): Incident[] {
@@ -164,6 +189,8 @@ const SELECT = "h-10 w-full rounded-md border bg-card px-3 text-sm focus-visible
  */
 export function IncidentLog({ city }: { city: City }) {
   const { cities } = useCities();
+  const { t } = useT();
+  const shown = (n: number) => (n > 0 && n < 5 ? t("fewerThan5") : String(n));
   const [list, setList] = useState<Incident[]>([]);
   const [form, setForm] = useState({ city: city.name, date: "", type: TYPES[0], industry: INDUSTRY_NAMES[0], time: TIMES[1] });
   const [saved, setSaved] = useState(false);
@@ -199,52 +226,49 @@ export function IncidentLog({ city }: { city: City }) {
       {el}
     </label>
   );
-  const opts = (xs: string[]) => xs.map((x) => <option key={x} value={x}>{x}</option>);
+  const opts = (xs: string[]) => xs.map((x) => <option key={x} value={x}>{OPTION_KEY[x] ? t(OPTION_KEY[x]) : x}</option>);
 
   return (
     <Card className="no-print">
       <CardHeader>
-        <CardTitle>Report a heat incident</CardTitle>
-        <CardDescription>
-          Anonymous. No names are collected. Incidents logged this week: {suppress(week.length)}. This demo keeps
-          reports in this browser only.
-        </CardDescription>
+        <CardTitle>{t("reportIncident")}</CardTitle>
+        <CardDescription>{t("reportIncidentIntro", { n: shown(week.length) })}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {field("City", <select className={SELECT} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}>{opts(names)}</select>)}
-          {field("Date", <input type="date" className={SELECT} value={form.date} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setForm({ ...form, date: e.target.value })} required />)}
-          {field("What happened", <select className={SELECT} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>{opts(TYPES)}</select>)}
-          {field("Industry", <select className={SELECT} value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })}>{opts(INDUSTRY_NAMES)}</select>)}
-          {field("Time of day", <select className={SELECT} value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })}>{opts(TIMES)}</select>)}
+          {field(t("city"), <select className={SELECT} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}>{opts(names)}</select>)}
+          {field(t("date"), <input type="date" className={SELECT} value={form.date} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setForm({ ...form, date: e.target.value })} required />)}
+          {field(t("whatHappened"), <select className={SELECT} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>{opts(TYPES)}</select>)}
+          {field(t("industry"), <select className={SELECT} value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })}>{opts(INDUSTRY_NAMES)}</select>)}
+          {field(t("timeOfDay"), <select className={SELECT} value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })}>{opts(TIMES)}</select>)}
           <div className="flex items-center gap-3 sm:col-span-2 lg:col-span-5">
-            <Button type="submit">Submit report</Button>
-            {saved && <span className="text-sm text-muted-foreground" role="status">Saved. Thank you.</span>}
+            <Button type="submit">{t("submitReport")}</Button>
+            {saved && <span className="text-sm text-muted-foreground" role="status">{t("savedThanks")}</span>}
           </div>
           <p className="text-xs text-muted-foreground sm:col-span-2 lg:col-span-5">
-            Reports are anonymous and aggregated. They must never be used to discipline, rank or dismiss workers.
+            {t("reportsNeverDiscipline")}
           </p>
         </form>
 
         {list.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold">This week, by type</h3>
-              <Button size="sm" variant="ghost" onClick={clear}><Trash2 /> Clear all</Button>
+              <h3 className="text-sm font-semibold">{t("thisWeekByType")}</h3>
+              <Button size="sm" variant="ghost" onClick={clear}><Trash2 /> {t("clearAll")}</Button>
             </div>
             {byType.length ? (
               <ul className="divide-y rounded-md border text-sm">
                 {byType.map(([type, n]) => (
                   <li key={type} className="flex justify-between gap-x-3 px-3 py-2">
-                    <span>{type}</span>
-                    <span className="tabular-nums text-muted-foreground">{suppress(n)}</span>
+                    <span>{t(OPTION_KEY[type])}</span>
+                    <span className="tabular-nums text-muted-foreground">{shown(n)}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">No reports in the last 7 days.</p>
+              <p className="text-sm text-muted-foreground">{t("noReports7d")}</p>
             )}
-            <p className="text-xs text-muted-foreground">Counts below 5 are hidden so no single report can be traced to a worker.</p>
+            <p className="text-xs text-muted-foreground">{t("countsBelow5Hidden")}</p>
           </div>
         )}
       </CardContent>
