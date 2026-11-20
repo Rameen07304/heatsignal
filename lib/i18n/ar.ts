@@ -744,4 +744,8 @@ export const ar: Dict = {
   faCallIfSigns: "مرتبك، أو توقف عن التعرّق، أو سقط، أو تزيد حرارته على 40 °C.",
   faStartCheck: "ابدأ فحص الأعراض",
   faStepsByCondition: "الخطوات حسب الحالة",
+  alertsQuestion: "ما التحذير الحالي؟ أحدث تنبيه لمدينتك بلغتك.",
+  latestAlertFrom: "أحدث تنبيه، أُنشئ في {time}",
+  noAlertForCity: "لا يوجد تنبيه لـ{city} بعد. أنشئ واحدًا من الظروف الحالية.",
+  howAgentsWork: "كيف يعمل الوكلاء",
 };

@@ -750,6 +750,10 @@ export const en = {
   faCallIfSigns: "is confused, has stopped sweating, has collapsed, or is hotter than 40 °C.",
   faStartCheck: "Start symptom check",
   faStepsByCondition: "Steps by condition",
+  alertsQuestion: "What is the current warning? The latest alert for your city, in your language.",
+  latestAlertFrom: "Latest alert, generated {time}",
+  noAlertForCity: "No alert for {city} yet. Generate one from the current conditions.",
+  howAgentsWork: "How the agents work",
 } as const;
 
 export type Key = keyof typeof en;

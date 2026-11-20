@@ -744,4 +744,8 @@ export const hi: Dict = {
   faCallIfSigns: "भ्रम में है, पसीना आना बंद हो गया है, गिर गया है, या शरीर का तापमान 40 °C से ज़्यादा है।",
   faStartCheck: "लक्षण जाँच शुरू करें",
   faStepsByCondition: "हालत के अनुसार कदम",
+  alertsQuestion: "मौजूदा चेतावनी क्या है? आपके शहर का ताज़ा अलर्ट, आपकी भाषा में।",
+  latestAlertFrom: "ताज़ा अलर्ट, {time} पर बनाया गया",
+  noAlertForCity: "{city} के लिए अभी कोई अलर्ट नहीं। मौजूदा हालात से एक बनाएँ।",
+  howAgentsWork: "एजेंट कैसे काम करते हैं",
 };

@@ -744,4 +744,8 @@ export const es: Dict = {
   faCallIfSigns: "está confundida, dejó de sudar, se desplomó o tiene más de 40 °C.",
   faStartCheck: "Iniciar revisión de síntomas",
   faStepsByCondition: "Pasos según el caso",
+  alertsQuestion: "¿Cuál es la alerta actual? La última alerta de su ciudad, en su idioma.",
+  latestAlertFrom: "Última alerta, generada {time}",
+  noAlertForCity: "Aún no hay alerta para {city}. Genere una con las condiciones actuales.",
+  howAgentsWork: "Cómo trabajan los agentes",
 };

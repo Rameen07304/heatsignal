@@ -744,4 +744,8 @@ export const ja: Dict = {
   faCallIfSigns: "意識が混乱している、汗が止まった、倒れた、体温が40 °Cを超えている。",
   faStartCheck: "症状チェックを始める",
   faStepsByCondition: "症状別の手順",
+  alertsQuestion: "今の警報は? あなたの都市の最新警報をあなたの言語で。",
+  latestAlertFrom: "最新の警報({time}作成)",
+  noAlertForCity: "{city}の警報はまだありません。現在の状況から作成してください。",
+  howAgentsWork: "エージェントのしくみ",
 };
