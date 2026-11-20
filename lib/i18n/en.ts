@@ -197,6 +197,11 @@ export const en = {
   showMap: "Show map",
   dustToday: "Dusty air today.",
   dustAction: "Wear an N95/FFP2 mask, protect your eyes, and keep drinking water covered.",
+  measuresTimerNote: "today, from the break timer on this device",
+  checkinsToday: "Check-ins today",
+  noCheckins: "none on this device yet",
+  escalationsWeek: "Emergency escalations",
+  escalationsNote: "SOS opened in the last 7 days, this device",
 } as const;
 
 export type Key = keyof typeof en;

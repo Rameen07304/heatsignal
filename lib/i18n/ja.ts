@@ -191,4 +191,9 @@ export const ja: Dict = {
   showMap: "地図を表示",
   dustToday: "今日は砂ぼこりが多い。",
   dustAction: "N95/FFP2マスクを着け、目を保護し、飲み水にはふたをしてください。",
+  measuresTimerNote: "今日、この端末の休憩タイマーより",
+  checkinsToday: "今日のチェック",
+  noCheckins: "この端末ではまだありません",
+  escalationsWeek: "緊急通報の操作",
+  escalationsNote: "過去7日間にこの端末でSOSを開いた回数",
 };

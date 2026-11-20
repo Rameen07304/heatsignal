@@ -191,4 +191,9 @@ export const ur: Dict = {
   showMap: "نقشہ دکھائیں",
   dustToday: "آج ہوا میں دھول ہے۔",
   dustAction: "N95/FFP2 ماسک پہنیں، آنکھوں کی حفاظت کریں، اور پینے کا پانی ڈھانپ کر رکھیں۔",
+  measuresTimerNote: "آج، اس آلے کے وقفہ ٹائمر سے",
+  checkinsToday: "آج کی جانچیں",
+  noCheckins: "اس آلے پر ابھی کوئی نہیں",
+  escalationsWeek: "ایمرجنسی رابطے",
+  escalationsNote: "پچھلے 7 دنوں میں SOS کھولا گیا، اس آلے پر",
 };

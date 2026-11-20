@@ -191,4 +191,9 @@ export const ar: Dict = {
   showMap: "عرض الخريطة",
   dustToday: "هواء مغبر اليوم.",
   dustAction: "ارتدِ كمامة N95/FFP2، واحمِ عينيك، وأبقِ ماء الشرب مغطى.",
+  measuresTimerNote: "اليوم، من مؤقّت الاستراحة على هذا الجهاز",
+  checkinsToday: "فحوص اليوم",
+  noCheckins: "لا يوجد على هذا الجهاز بعد",
+  escalationsWeek: "حالات تصعيد طارئة",
+  escalationsNote: "مرات فتح SOS خلال آخر 7 أيام على هذا الجهاز",
 };

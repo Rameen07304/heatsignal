@@ -191,4 +191,9 @@ export const hi: Dict = {
   showMap: "नक्शा दिखाएँ",
   dustToday: "आज हवा में धूल है।",
   dustAction: "N95/FFP2 मास्क पहनें, आँखों को बचाएँ, और पीने का पानी ढककर रखें।",
+  measuresTimerNote: "आज, इस डिवाइस के ब्रेक टाइमर से",
+  checkinsToday: "आज की जाँचें",
+  noCheckins: "इस डिवाइस पर अभी कोई नहीं",
+  escalationsWeek: "आपातकालीन संपर्क",
+  escalationsNote: "पिछले 7 दिनों में SOS खोला गया, इस डिवाइस पर",
 };

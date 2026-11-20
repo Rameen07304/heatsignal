@@ -191,4 +191,9 @@ export const es: Dict = {
   showMap: "Mostrar mapa",
   dustToday: "Aire con polvo hoy.",
   dustAction: "Use mascarilla N95/FFP2, proteja sus ojos y mantenga tapada el agua para beber.",
+  measuresTimerNote: "hoy, del temporizador de este dispositivo",
+  checkinsToday: "Chequeos de hoy",
+  noCheckins: "aún ninguno en este dispositivo",
+  escalationsWeek: "Escalamientos de emergencia",
+  escalationsNote: "SOS abierto en los últimos 7 días, este dispositivo",
 };

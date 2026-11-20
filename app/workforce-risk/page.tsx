@@ -10,7 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ErrorState } from "@/components/error-state";
 import { WorkerContextPicker } from "@/components/worker-context-picker";
-import { incidentsThisWeek, suppress } from "@/components/worksite-tools";
+import { incidentsThisWeek } from "@/components/worksite-tools";
+import { KEYS, adherence, isSmallCell, readJson, todaysStatuses, todaysTimer } from "@/lib/device-store";
+import { STATUS_KEY, type StatusLevel } from "@/lib/worker-status";
 import { useWorkerContext } from "@/lib/use-worker-context";
 import { WORLD_CITIES, cityHref, cityKey } from "@/lib/cities";
 import type { Conditions } from "@/lib/conditions";
@@ -76,7 +78,21 @@ export default function WorkforceRiskPage() {
   const site = rows.find((r) => cityKey(r.city) === siteKey) ?? rows[0];
   const loss = site && productivityLoss(site.d, workers, wage);
   const [incidents, setIncidents] = useState<{ city: string }[]>([]);
-  useEffect(() => setIncidents(incidentsThisWeek()), []);
+  // Measures recorded on this device by the worker tools (timer, check-ins, SOS taps). Nothing leaves the device.
+  const [device, setDevice] = useState<{ breaks: number | null; water: number | null; statuses: StatusLevel[]; sos: number }>({ breaks: null, water: null, statuses: [], sos: 0 });
+  useEffect(() => {
+    setIncidents(incidentsThisWeek());
+    const weekAgo = Date.now() - 7 * 864e5;
+    setDevice({
+      ...adherence(todaysTimer()),
+      statuses: Object.values(todaysStatuses()).map((x) => x.level),
+      sos: readJson<string[]>(KEYS.sos, []).filter((d) => Date.parse(d) >= weekAgo).length,
+    });
+  }, []);
+  const shown = (n: number) => (isSmallCell(n) ? t("fewerThan5") : String(n));
+  const byStatus = (["ok", "rest", "stop", "medical"] as StatusLevel[])
+    .map((l) => [l, device.statuses.filter((x) => x === l).length] as const)
+    .filter(([, n]) => n > 0);
   const siteIncidents = site ? incidents.filter((i) => i.city === site.city.name).length : 0;
 
   return (
@@ -284,7 +300,11 @@ export default function WorkforceRiskPage() {
                     ["Protected rest", `${loss.lostPerWorker.toFixed(1)} h`, `per worker, vs ${site.d.standardHours.toFixed(1)} h of work in 07:00–15:00`],
                     ["Work hours lost, 07:00 start", money(loss.lostTotal), "crew total today"],
                     [`Work hours lost, best start`, money(loss.lostTotal - loss.recoveredHours), `starting ${shiftLabel(site.d.bestStart)}`],
-                    ["Incidents reported this week", suppress(siteIncidents), `in ${site.city.name}, anonymous log`],
+                    ["Incidents reported this week", shown(siteIncidents), `in ${site.city.name}, anonymous log`],
+                    [t("breakAdherence"), device.breaks == null ? "–" : `${device.breaks}%`, t("measuresTimerNote")],
+                    [t("waterAdherence"), device.water == null ? "–" : `${device.water}%`, t("measuresTimerNote")],
+                    [t("checkinsToday"), shown(device.statuses.length), byStatus.length ? byStatus.map(([l, n]) => `${t(STATUS_KEY[l])}: ${shown(n)}`).join(" · ") : t("noCheckins")],
+                    [t("escalationsWeek"), String(device.sos), t("escalationsNote")],
                   ].map(([k, v, sub]) => (
                     <div key={k} className="rounded-lg border p-3">
                       <dt className="text-xs text-muted-foreground">{k}</dt>
