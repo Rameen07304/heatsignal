@@ -12,7 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SiteHero } from "@/components/site-hero";
+import { HowItWorks } from "@/components/how-it-works";
 import { CityCard } from "@/components/city-card";
 import { AddCityDialog } from "@/components/city-search";
 import { CountUp } from "@/components/count-up";
@@ -82,6 +84,10 @@ const LEGENDS: Record<MapMode, { label: Key; color: string }[]> = {
 };
 
 const COUNTRY_KEY = "heatsignal-dashboard-country";
+/** "Dangerous heat": a day's peak WBGT in the High band or above. */
+const DANGER_WBGT = 30;
+const TABS = ["cities", "rankings", "workforce"] as const;
+type Tab = (typeof TABS)[number];
 /** Shown first after "All countries": the challenge host. */
 const FIRST_COUNTRY = "United Arab Emirates";
 
@@ -175,100 +181,119 @@ function DashboardPage() {
   const visible = showAll || q ? sorted : sorted.slice(0, PAGE);
   const isDefaultList = allCities.length === WORLD_CITIES.length && allCities.every((c, i) => cityKey(c) === cityKey(WORLD_CITIES[i]));
 
+  const dangerous = loaded.filter(({ c }) => c.days[0].maxWbgt >= DANGER_WBGT);
+  const hottestNow = loaded.reduce<{ city: City; c: Conditions } | null>((b, r) => (!b || r.c.now.wbgt > b.c.now.wbgt ? r : b), null);
+  const tab = TABS.includes(params.get("tab") as Tab) ? (params.get("tab") as Tab) : "cities";
+  const setTab = (next: string) => {
+    const q = new URLSearchParams(params.toString());
+    if (next === "cities") q.delete("tab");
+    else q.set("tab", next);
+    router.replace(q.size ? `/?${q}` : "/", { scroll: false });
+  };
+
+  const kpis = (
+    <section aria-label={t("summary")} className="grid grid-cols-2 [&>*]:min-w-0 gap-3 md:grid-cols-3 xl:grid-cols-5">
+      <Kpi label={t("citiesMonitored")} sub={pending ? t("loading") : t("withLiveData", { n: loaded.length })}>
+        <CountUp value={cities.length} />
+      </Kpi>
+      <Kpi label={t("atCritical")} sub={pending ? t("loading") : millions(critical)}>
+        {pending || airFailed ? "–" : <CountUp value={critical.length} />}
+      </Kpi>
+      <Kpi label={t("highestWbgt")} sub={hottest ? `WBGT · ${placeName(hottest.city, lang)}` : t("loading")}>
+        {hottest ? <><CountUp value={hottest.c.days[0].maxWbgt} decimals={1} /> °C</> : "–"}
+      </Kpi>
+      <Kpi
+        label={t("worstAqi")}
+        sub={worstAir ? `${cityName(worstAir.city.name, lang)} · ${t(aqiBand(worstAir.c.now.air!.aqi).key)}` : airFailed ? t("airFeedUnavailable") : t("loading")}
+      >
+        {worstAir ? formatAqi(worstAir.c.now.air!.aqi) : "–"}
+      </Kpi>
+      <Kpi label={t("risingRisks")} sub={t("highIn48h")}>
+        {pending || airFailed ? "–" : <CountUp value={upcoming.length} />}
+      </Kpi>
+    </section>
+  );
+
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("isItSafe")}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("dashIntro", { n: allCities.length })}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <AddCityDialog
-            onAdd={(c) => router.push(cityHref(c))}
-            monitored={NONE}
-            label={t("checkYourCity")}
-            title={t("findYourCity")}
-            icon={<Search />}
-          />
-          <AddCityDialog onAdd={add} monitored={monitored} variant="outline" />
-          <OfficialsMenu rows={loaded} />
-        </div>
-      </div>
+    <div className="space-y-10">
+      <SiteHero />
+      <HowItWorks />
 
-      {countries.length > 1 && (
-        <div className="space-y-2">
-          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:thin]" role="group" aria-label={t("filterByCountry")}>
-            {[["", allCities.length] as const, ...countries].map(([c, count]) => (
-              <button
-                key={c || "all"}
-                type="button"
-                aria-pressed={activeCountry === c}
-                onClick={() => setCountry(c)}
-                className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                  activeCountry === c ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
-                }`}
-              >
-                {c ? `${countryName(c, lang)} (${count})` : t("allCountries")}
-              </button>
-            ))}
+      <section aria-labelledby="overview-title" className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 id="overview-title" className="text-xl font-semibold tracking-tight">
+              {activeCountry ? countryName(activeCountry, lang) : t("aroundTheWorld")}
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("dashIntro", { n: allCities.length })}</p>
           </div>
-          {activeCountry && !pending && hottest && (
-            <p className="text-sm" role="status">
-              {t("countrySummary", {
-                country: countryName(activeCountry, lang),
-                n: cities.length,
-                city: cityName(hottest.city.name, lang),
-                wbgt: n(hottest.c.days[0].maxWbgt, 1),
-                k: work.stop.length,
-                p: n(people([...work.stop, ...work.breaks])),
-              })}
-            </p>
-          )}
+          <div className="flex flex-wrap gap-2">
+            <AddCityDialog
+              onAdd={(c) => router.push(cityHref(c))}
+              monitored={NONE}
+              label={t("checkYourCity")}
+              title={t("findYourCity")}
+              icon={<Search />}
+              variant="outline"
+            />
+            <AddCityDialog onAdd={add} monitored={monitored} variant="outline" />
+            <OfficialsMenu rows={loaded} />
+          </div>
         </div>
-      )}
 
-      <nav aria-label={t("whatToDoNav")} className="grid grid-cols-2 gap-3 lg:grid-cols-5 [&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1">
-        {TASKS.map(({ href, icon: Icon, title, text }) => (
-          <Link key={href} href={href} className="group rounded-lg border bg-card p-4 transition-colors hover:border-primary/50 hover:bg-muted/40">
-            <Icon className="h-5 w-5 text-primary" />
-            <div className="mt-2 text-sm font-medium group-hover:text-primary">{t(title)}</div>
-            <div className="mt-0.5 text-xs text-muted-foreground">{t(text)}</div>
-          </Link>
-        ))}
-      </nav>
+        {countries.length > 1 && (
+          <div className="space-y-2">
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:thin]" role="group" aria-label={t("filterByCountry")}>
+              {[["", allCities.length] as const, ...countries].map(([c, count]) => (
+                <button
+                  key={c || "all"}
+                  type="button"
+                  aria-pressed={activeCountry === c}
+                  onClick={() => setCountry(c)}
+                  className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                    activeCountry === c ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
+                  }`}
+                >
+                  {c ? `${countryName(c, lang)} (${count})` : t("allCountries")}
+                </button>
+              ))}
+            </div>
+            {activeCountry && !pending && hottest && (
+              <p className="text-sm" role="status">
+                {t("countrySummary", {
+                  country: countryName(activeCountry, lang),
+                  n: cities.length,
+                  city: cityName(hottest.city.name, lang),
+                  wbgt: n(hottest.c.days[0].maxWbgt, 1),
+                  k: work.stop.length,
+                  p: n(people([...work.stop, ...work.breaks])),
+                })}
+              </p>
+            )}
+          </div>
+        )}
 
-      {failed ? (
-        <ErrorState message={t("weatherLoadError")} onRetry={retry} />
-      ) : (
-        <>
-          <section aria-label={t("summary")} className="grid grid-cols-2 [&>*]:min-w-0 gap-3 md:grid-cols-3 xl:grid-cols-5">
-            <Kpi label={t("citiesMonitored")} sub={pending ? t("loading") : t("withLiveData", { n: loaded.length })}>
-              <CountUp value={cities.length} />
-            </Kpi>
-            <Kpi label={t("atCritical")} sub={pending ? t("loading") : millions(critical)}>
-              {pending || airFailed ? "–" : <CountUp value={critical.length} />}
-            </Kpi>
-            <Kpi label={t("highestWbgt")} sub={hottest ? `WBGT · ${placeName(hottest.city, lang)}` : t("loading")}>
-              {hottest ? <><CountUp value={hottest.c.days[0].maxWbgt} decimals={1} /> °C</> : "–"}
-            </Kpi>
-            <Kpi
-              label={t("worstAqi")}
-              sub={worstAir ? `${cityName(worstAir.city.name, lang)} · ${t(aqiBand(worstAir.c.now.air!.aqi).key)}` : airFailed ? t("airFeedUnavailable") : t("loading")}
-            >
-              {worstAir ? formatAqi(worstAir.c.now.air!.aqi) : "–"}
-            </Kpi>
-            <Kpi label={t("risingRisks")} sub={t("highIn48h")}>
-              {pending || airFailed ? "–" : <CountUp value={upcoming.length} />}
-            </Kpi>
-          </section>
-
-          <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-            <Card className="flex min-w-0 flex-col xl:col-span-2">
-              <CardHeader className="flex-row flex-wrap items-center justify-between gap-3 space-y-0 pb-3">
-                <div>
-                  <CardTitle className="text-base">{t("riskMap")}</CardTitle>
-                  <CardDescription>{t(mapMode === "air" ? "mapAirNow" : "mapPeakToday")} {t("clickDot")}</CardDescription>
+        {failed ? (
+          <ErrorState message={t("weatherLoadError")} onRetry={retry} />
+        ) : (
+          <>
+            <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {[
+                [t("kpiMustStop"), pending ? "–" : t("nOfTotal", { n: work.stop.length, total: work.total }), pending ? "" : t("heavyWorkToday")],
+                [t("kpiDangerousHeat"), pending ? "–" : millions(dangerous), pending ? "" : t("kpiDangerousHeatSub", { n: dangerous.length })],
+                [t("kpiHottestNow"), hottestNow ? `${n(hottestNow.c.now.wbgt, 1)} °C` : "–", hottestNow ? `WBGT · ${placeName(hottestNow.city, lang)}` : t("loading")],
+              ].map(([k, v, sub]) => (
+                <div key={k} className="rounded-lg bg-card p-4">
+                  <dt className="text-sm text-muted-foreground">{k}</dt>
+                  <dd className="mt-1 text-2xl font-semibold tabular-nums">{v}</dd>
+                  {sub && <dd className="mt-0.5 truncate text-xs text-muted-foreground">{sub}</dd>}
                 </div>
+              ))}
+            </dl>
+
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">{t(mapMode === "air" ? "mapAirNow" : "mapPeakToday")} {t("clickDot")}</p>
                 <Tabs value={mapMode} onValueChange={(v) => setMapMode(v as MapMode)}>
                   <TabsList aria-label={t("mapLayer")}>
                     <TabsTrigger value="compound">{t("combined")}</TabsTrigger>
@@ -276,22 +301,82 @@ function DashboardPage() {
                     <TabsTrigger value="air">{t("airShort")}</TabsTrigger>
                   </TabsList>
                 </Tabs>
-              </CardHeader>
-              <CardContent className="flex flex-1 flex-col gap-3">
-                <div className="min-h-[320px] flex-1 sm:min-h-[420px]">
-                  <WeatherMap key={activeCountry} cities={cities} data={data} mode={mapMode} />
-                </div>
-                <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-label={t("mapLegend")}>
-                  {LEGENDS[mapMode].map((l) => (
-                    <li key={l.label} className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: l.color }} />
-                      {t(l.label)}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="h-[260px] sm:h-[360px] [&>div]:!min-h-0">
+                <WeatherMap key={activeCountry} cities={cities} data={data} mode={mapMode} />
+              </div>
+              <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-label={t("mapLegend")}>
+                {LEGENDS[mapMode].map((l) => (
+                  <li key={l.label} className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: l.color }} />
+                    {t(l.label)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
+      </section>
 
+      <Tabs value={tab} onValueChange={setTab} className="space-y-4">
+        <TabsList className="h-auto flex-wrap" aria-label={t("detailTabs")}>
+          <TabsTrigger value="cities">{t("tabCities")}</TabsTrigger>
+          <TabsTrigger value="rankings">{t("tabRankings")}</TabsTrigger>
+          <TabsTrigger value="workforce">{t("workforceImpact")}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="cities" className="space-y-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <p className="text-sm text-muted-foreground">{t("monitoredIntro")}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Tabs value={sort} onValueChange={(v) => setSort(v as Sort)}>
+                <TabsList aria-label={t("sortBy")}>
+                  {Object.entries(SORTS).map(([k, so]) => <TabsTrigger key={k} value={k}>{t(so.label)}</TabsTrigger>)}
+                </TabsList>
+              </Tabs>
+              <div className="relative w-full sm:w-56">
+                <Search className="pointer-events-none absolute start-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input type="search" aria-label={t("filterCities")} placeholder={t("filterCitiesPlaceholder")} className="ps-9" value={filter} onChange={(e) => setFilter(e.target.value)} />
+              </div>
+            </div>
+          </div>
+
+          {cities.length === 0 ? (
+            <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+              <p>{t("noCitiesMonitored")}</p>
+              <Button variant="outline" size="sm" className="mt-3" onClick={reset}>
+                {t("restoreDefaults", { n: WORLD_CITIES.length })}
+              </Button>
+            </div>
+          ) : visible.length === 0 ? (
+            <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+              {t("noCityMatches", { filter, add: t("addCity") })}
+            </p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {visible.map((city) => (
+                <CityCard key={cityKey(city)} city={city} state={data[cityKey(city)]} onRetry={retry} onRemove={() => remove(city)} />
+              ))}
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3">
+            {!q && sorted.length > PAGE && (
+              <Button variant="outline" onClick={() => setShowAll(!showAll)}>
+                {showAll ? t("showTop", { n: PAGE }) : t("showAllCities", { n: sorted.length })}
+              </Button>
+            )}
+            {!isDefaultList && (
+              <Button variant="ghost" size="sm" onClick={reset}>
+                {t("resetDefaults", { n: WORLD_CITIES.length })}
+              </Button>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="rankings" className="space-y-6">
+          {!failed && kpis}
+          {!failed && (
             <Card className="min-w-0">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">{t("highestRiskToday")}</CardTitle>
@@ -328,9 +413,19 @@ function DashboardPage() {
                 )}
               </CardContent>
             </Card>
+          )}
+          <UpcomingRisks />
+          <section className="space-y-3">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight">{t("globalRankings")}</h2>
+              <p className="text-sm text-muted-foreground">{t("rankingsIntro")}</p>
+            </div>
+            {pending ? <Skeleton className="h-96 w-full" /> : <Leaderboard rows={loaded} />}
           </section>
+        </TabsContent>
 
-          <section className="rounded-lg border bg-card p-4">
+        <TabsContent value="workforce">
+          <section className="rounded-lg bg-card p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="flex items-center gap-2 text-base font-semibold"><HardHat className="h-5 w-5 text-primary" /> {t("workforceImpact")}</h2>
@@ -343,79 +438,30 @@ function DashboardPage() {
                 [t("mustStopOutdoor"), pending ? "–" : t("nOfTotal", { n: work.stop.length, total: work.total }), pending ? "" : t("liveInTheseCities", { people: millions(work.stop) })],
                 [t("needBreakSchedules"), pending ? "–" : t("nOfTotal", { n: work.breaks.length, total: work.total }), pending ? "" : millions(work.breaks)],
                 [t("normalWorkAllDay"), pending ? "–" : t("nOfTotal", { n: work.total - work.stop.length - work.breaks.length, total: work.total }), t("citiesWord")],
-              ].map(([k, v, s]) => (
+              ].map(([k, v, sub]) => (
                 <div key={k} className="rounded-md bg-muted/40 p-3">
                   <dt className="text-xs text-muted-foreground">{k}</dt>
                   <dd className="text-xl font-semibold tabular-nums">{v}</dd>
-                  <dd className="text-xs text-muted-foreground">{s}</dd>
+                  <dd className="text-xs text-muted-foreground">{sub}</dd>
                 </div>
               ))}
             </dl>
           </section>
+        </TabsContent>
+      </Tabs>
 
-          <UpcomingRisks />
-
-          <section className="space-y-3">
-            <div>
-              <h2 className="text-lg font-semibold tracking-tight">{t("globalRankings")}</h2>
-              <p className="text-sm text-muted-foreground">{t("rankingsIntro")}</p>
-            </div>
-            {pending ? <Skeleton className="h-96 w-full" /> : <Leaderboard rows={loaded} />}
-          </section>
-        </>
-      )}
-
-      <section className="space-y-3">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">{t("monitoredCities")}</h2>
-            <p className="text-sm text-muted-foreground">{t("monitoredIntro")}</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Tabs value={sort} onValueChange={(v) => setSort(v as Sort)}>
-              <TabsList aria-label={t("sortBy")}>
-                {Object.entries(SORTS).map(([k, s]) => <TabsTrigger key={k} value={k}>{t(s.label)}</TabsTrigger>)}
-              </TabsList>
-            </Tabs>
-            <div className="relative w-full sm:w-56">
-              <Search className="pointer-events-none absolute start-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input type="search" aria-label={t("filterCities")} placeholder={t("filterCitiesPlaceholder")} className="ps-9" value={filter} onChange={(e) => setFilter(e.target.value)} />
-            </div>
-          </div>
+      <nav aria-label={t("whatToDoNav")} className="space-y-3">
+        <h2 className="text-lg font-semibold tracking-tight">{t("moreTools")}</h2>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5 [&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1">
+          {TASKS.map(({ href, icon: Icon, title, text }) => (
+            <Link key={href} href={href} className="group rounded-lg bg-card p-4 transition-colors hover:bg-muted/40">
+              <Icon className="h-5 w-5 text-primary" />
+              <div className="mt-2 text-sm font-medium group-hover:text-primary">{t(title)}</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">{t(text)}</div>
+            </Link>
+          ))}
         </div>
-
-        {cities.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            <p>{t("noCitiesMonitored")}</p>
-            <Button variant="outline" size="sm" className="mt-3" onClick={reset}>
-              {t("restoreDefaults", { n: WORLD_CITIES.length })}
-            </Button>
-          </div>
-        ) : visible.length === 0 ? (
-          <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            {t("noCityMatches", { filter, add: t("addCity") })}
-          </p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {visible.map((city) => (
-              <CityCard key={cityKey(city)} city={city} state={data[cityKey(city)]} onRetry={retry} onRemove={() => remove(city)} />
-            ))}
-          </div>
-        )}
-
-        <div className="flex flex-wrap items-center gap-3">
-          {!q && sorted.length > PAGE && (
-            <Button variant="outline" onClick={() => setShowAll(!showAll)}>
-              {showAll ? t("showTop", { n: PAGE }) : t("showAllCities", { n: sorted.length })}
-            </Button>
-          )}
-          {!isDefaultList && (
-            <Button variant="ghost" size="sm" onClick={reset}>
-              {t("resetDefaults", { n: WORLD_CITIES.length })}
-            </Button>
-          )}
-        </div>
-      </section>
+      </nav>
     </div>
   );
 }

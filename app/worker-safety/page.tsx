@@ -15,6 +15,7 @@ import { SiteCard } from "@/components/site-card";
 import { WorkPlanner } from "@/components/work-planner";
 import { WorkerContextPicker } from "@/components/worker-context-picker";
 import { WorkerCheckin } from "@/components/worker-checkin";
+import { SITE_KEY } from "@/components/site-hero";
 import { CrewBoard } from "@/components/crew-board";
 import { BreakTimer } from "@/components/break-timer";
 import { useWorkerContext } from "@/lib/use-worker-context";
@@ -47,7 +48,14 @@ export default function WorkerSafetyPage(props: Props) {
   const searchParams = use(props.searchParams);
   const { cities } = useCities();
   const fromUrl = cityFromUrl(searchParams);
-  const [selected, setSelected] = useState<City>(fromUrl ?? DEFAULT);
+  const [selected, setSelectedState] = useState<City>(fromUrl ?? DEFAULT);
+  // Remembered for the dashboard hero ("Right now at your site").
+  const setSelected = (c: City) => {
+    setSelectedState(c);
+    try {
+      localStorage.setItem(SITE_KEY, JSON.stringify(c));
+    } catch {}
+  };
   const [ctx] = useWorkerContext();
   const { t, n, lang } = useT();
   const options = [...cities].sort((a, b) => a.name.localeCompare(b.name));
@@ -164,7 +172,9 @@ export default function WorkerSafetyPage(props: Props) {
           </Card>
 
           <LeadTime hours={c.hours} now={now} days={c.days} pastDays={recent.data ?? []} ctx={ctx} />
-          <WorkerCheckin wbgt={now.wbgt} ctx={ctx} hotDayStreak={streak?.day} />
+          <div id="checkin" className="scroll-mt-20">
+            <WorkerCheckin wbgt={now.wbgt} ctx={ctx} hotDayStreak={streak?.day} />
+          </div>
           <BreakTimer hours={c.hours} now={now} ctx={ctx} />
           <CrewBoard hours={c.hours} now={now} />
 

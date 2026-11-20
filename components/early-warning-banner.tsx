@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown, TriangleAlert, X } from "lucide-react";
 import { cityHref, cityKey, type City } from "@/lib/cities";
 import { useT } from "@/lib/i18n";
@@ -27,6 +28,7 @@ export function useUpcoming(): { city: City; u: Upcoming }[] {
 export function EarlyWarningBanner() {
   const { t, lang } = useT();
   const upcoming = useUpcoming();
+  const pathname = usePathname();
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [expanded, setExpanded] = useState(false);
 
@@ -49,6 +51,23 @@ export function EarlyWarningBanner() {
   if (!list.length) return null;
   const critical = list.some(({ u }) => u.severity === "critical");
   const shown = expanded ? list : list.slice(0, VISIBLE);
+
+  // The dashboard answers "what now?" in its hero, so the warning there is a single line.
+  if (pathname === "/") {
+    return (
+      <p
+        role="alert"
+        className={cn(
+          "no-print mb-4 flex items-center gap-2 rounded-md px-3 py-2 text-sm",
+          critical ? "bg-red-50 text-red-900 dark:bg-red-950/40 dark:text-red-200" : "bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200",
+        )}
+      >
+        <TriangleAlert className="h-4 w-4 shrink-0" aria-hidden />
+        <span className="min-w-0 flex-1 truncate">{t(list.length === 1 ? "bannerCompactOne" : "bannerCompactMany", { n: list.length })}</span>
+        <Link href="/?tab=rankings" className="shrink-0 font-semibold underline-offset-2 hover:underline">{t("viewWord")}</Link>
+      </p>
+    );
+  }
 
   return (
     <section
