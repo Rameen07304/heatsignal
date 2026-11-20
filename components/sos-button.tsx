@@ -57,7 +57,7 @@ export function SosButton() {
         <button
           type="button"
           aria-label={t("sosTitle")}
-          className="no-print fixed bottom-4 end-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-300 sm:bottom-6 sm:end-6"
+          className="no-print fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] end-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-300 sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom))] sm:end-6"
         >
           <span className="absolute inset-0 animate-ping rounded-full bg-red-600 opacity-30 [animation-duration:2s]" aria-hidden />
           <Phone className="relative h-6 w-6" />

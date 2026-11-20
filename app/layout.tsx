@@ -39,7 +39,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <Header />
               <SosButton />
               <div className="min-w-0 lg:ms-60">
-                <main className="mx-auto max-w-[1400px] px-4 py-6 lg:px-8">
+                <main className="mx-auto max-w-[1400px] px-4 pb-24 pt-6 md:pb-6 lg:px-8">
                   <EarlyWarningBanner />
                   {children}
                 </main>
