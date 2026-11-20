@@ -176,4 +176,10 @@ export const hi: Dict = {
   breakAdherence: "आज लिए गए ब्रेक",
   waterAdherence: "पानी की याद पर अमल",
   ofDue: "{due} में से {done}",
+  leadTimeTitle: "{work} काम के लिए पहले से चेतावनी",
+  flagChangesAt: "झंडा {at} पर {flag} हो जाएगा ({in})। भारी काम उससे पहले कर लें।",
+  tomorrowPeak: "कल: {flag} {hours}। शिफ़्ट {start} पर शुरू करें।",
+  hotStreak: "{total} गर्म दिनों में से दिन {day}: थकान बढ़ती है, ज़्यादा आराम करें।",
+  inMinutes: "{m} मिनट में",
+  noFlagChange: "आज या कल कोई ज़्यादा खतरनाक झंडा अपेक्षित नहीं।",
 };

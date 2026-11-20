@@ -4,6 +4,7 @@ import { wbgt, wetBulb } from "./wbgt.ts";
 import { classifyRisk, compoundBand, compoundRiskScore } from "./risk.ts";
 import { workerStatus } from "./worker-status.ts";
 import { nextBreak, rotation } from "./crew.ts";
+import { hotStreak, nextFlagChange, tomorrowPeak } from "./lead-time.ts";
 import { DEFAULT_CONTEXT, effectiveWbgt, hourRanges, workRegimen, type Intensity } from "./work-rest.ts";
 import { assess, hydrationLitres } from "./personal-risk.ts";
 import { ruleAlert } from "./rule-alert.ts";
@@ -205,4 +206,23 @@ assert.equal(workDay(mk("2026-06-03", () => ({ temp: 20, uv: 3, aqi: 40, pm25: 8
   assert.equal(nextBreak(crew[0], cool, 0), "none");
 }
 
-console.log("wbgt, risk, compound, work/rest, personal-risk, rule-alert, early-warning, trend-year, health-advisor, workforce, worker-status and crew checks passed");
+// Lead time: next flag change today, tomorrow's peak, and the hot-day streak.
+{
+  const day = (date: string, w: (h: number) => number) =>
+    Array.from({ length: 24 }, (_, h) => ({ time: `${date}T${String(h).padStart(2, "0")}:00`, wbgt: w(h) })) as CombinedHour[];
+  const today = day("2026-06-01", (h) => (h >= 11 && h <= 15 ? 31 : 24));
+  const change = nextFlagChange(today.slice(9), "heavy", undefined, 50)!; // now 09:50
+  assert.equal(change.at, "11:00");
+  assert.equal(change.inMinutes, 70);
+  assert.equal(change.flag.key, "flagBlack"); // heavy work at 31 °C must stop
+  assert.equal(nextFlagChange(today.slice(16), "heavy", undefined, 0), null); // only cooler hours left
+  const peak = tomorrowPeak(day("2026-06-02", (h) => (h >= 13 && h <= 14 ? 31 : 24)), "heavy")!;
+  assert.equal(peak.flag.key, "flagBlack");
+  assert.deepEqual(peak.ranges.map((r) => `${r.from}–${r.to}`), ["13:00–15:00"]);
+  assert.ok(peak.bestStart! <= 5); // 05:00–13:00 avoids the stop
+  assert.equal(tomorrowPeak(day("2026-06-02", () => 20), "heavy"), null);
+  assert.deepEqual(hotStreak([{ maxWbgt: 25 }, { maxWbgt: 31 }, { maxWbgt: 32 }], [{ maxWbgt: 30 }, { maxWbgt: 31 }, { maxWbgt: 29 }]), { day: 3, total: 4 });
+  assert.equal(hotStreak([{ maxWbgt: 31 }], [{ maxWbgt: 29 }]), null);
+}
+
+console.log("wbgt, risk, compound, work/rest, personal-risk, rule-alert, early-warning, trend-year, health-advisor, workforce, worker-status, crew and lead-time checks passed");

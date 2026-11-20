@@ -21,6 +21,7 @@ import { compoundBand } from "@/lib/risk";
 import { useAsync } from "@/lib/use-async";
 import { formatDay } from "@/lib/utils";
 import { fetchForecast, fetchSeasonalAverage, type DailySummary } from "@/lib/weather";
+import { LeadTime } from "@/components/lead-time";
 
 interface Props {
   params: Promise<{ lat: string; lon: string }>;
@@ -173,6 +174,7 @@ export default function CityPage(props: Props) {
 
           <VulnerableGroups hour={c.now} peak={peak} />
 
+          <LeadTime hours={c.hours} now={c.now} days={c.days} />
           <WorkPlanner hourly={c.hours} now={c.now.time.slice(0, 13)} />
           <div className="-mt-3 flex justify-end">
             <Button asChild variant="ghost" size="sm">

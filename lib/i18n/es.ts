@@ -176,4 +176,10 @@ export const es: Dict = {
   breakAdherence: "Descansos tomados hoy",
   waterAdherence: "Recordatorios de agua atendidos",
   ofDue: "{done} de {due}",
+  leadTimeTitle: "Alerta temprana para trabajo {work}",
+  flagChangesAt: "La bandera cambia a {flag} a las {at} ({in}). Planee el trabajo pesado antes.",
+  tomorrowPeak: "Mañana: {flag} {hours}. Empiece el turno a las {start}.",
+  hotStreak: "Día {day} de {total} días calurosos: el cansancio se acumula, agregue descanso.",
+  inMinutes: "en {m} min",
+  noFlagChange: "No se espera una bandera peor hoy ni mañana.",
 };

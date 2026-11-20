@@ -188,6 +188,13 @@ export async function fetchForecast(lat: number, lon: number): Promise<Forecast>
   return toForecast(await getJson<OpenMeteoResponse>(forecastUrl(lat, lon)));
 }
 
+/** Daily maxima for the 6 days before today (for hot-day streaks). Same forecast service, so no archive lag. */
+export async function fetchRecentDays(lat: number, lon: number): Promise<DailySummary[]> {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=${FORECAST_HOURLY}&past_days=6&forecast_days=1&timezone=auto`;
+  const days = summarizeDaily(toPoints(await getJson<OpenMeteoResponse>(url)));
+  return days.slice(0, -1); // drop today; the caller has it from the full forecast
+}
+
 export async function fetchForecasts(cities: Pick<City, "lat" | "lon">[]): Promise<Forecast[]> {
   return (await fetchMany<OpenMeteoResponse>(forecastUrl, cities, "heatsignal-world-v3")).map(toForecast);
 }

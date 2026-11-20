@@ -24,7 +24,9 @@ import { buildConditions } from "@/lib/conditions";
 import { useAsync } from "@/lib/use-async";
 import { useT } from "@/lib/i18n";
 import { useCities } from "@/lib/use-cities";
-import { fetchForecast } from "@/lib/weather";
+import { fetchForecast, fetchRecentDays } from "@/lib/weather";
+import { hotStreak } from "@/lib/lead-time";
+import { LeadTime } from "@/components/lead-time";
 import { INTENSITIES, heatFlag, workRegimen } from "@/lib/work-rest";
 
 interface Props {
@@ -60,6 +62,9 @@ export default function WorkerSafetyPage(props: Props) {
   const c = result.data;
   const now = c?.now;
   const today = c ? c.hours.filter((h) => h.time.startsWith(c.days[0].date)) : [];
+  // Past days only feed the hot-day streak; if they fail, the streak just starts today.
+  const recent = useAsync(() => fetchRecentDays(selected.lat, selected.lon).catch(() => []), [selected.lat, selected.lon]);
+  const streak = c ? hotStreak(recent.data ?? [], c.days) : null;
 
   return (
     <div className="space-y-6">
@@ -164,7 +169,8 @@ export default function WorkerSafetyPage(props: Props) {
             </CardContent>
           </Card>
 
-          <WorkerCheckin wbgt={now.wbgt} ctx={ctx} />
+          <LeadTime hours={c.hours} now={now} days={c.days} pastDays={recent.data ?? []} ctx={ctx} />
+          <WorkerCheckin wbgt={now.wbgt} ctx={ctx} hotDayStreak={streak?.day} />
           <BreakTimer hours={c.hours} now={now} ctx={ctx} />
           <CrewBoard hours={c.hours} now={now} />
 

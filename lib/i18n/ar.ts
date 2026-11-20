@@ -176,4 +176,10 @@ export const ar: Dict = {
   breakAdherence: "الاستراحات المأخوذة اليوم",
   waterAdherence: "تذكيرات الماء المستجابة",
   ofDue: "{done} من {due}",
+  leadTimeTitle: "إنذار مبكر: عمل {work}",
+  flagChangesAt: "يتغير العلم إلى {flag} عند {at} ({in}). خطّط للعمل الشاق قبل ذلك.",
+  tomorrowPeak: "غدًا: {flag} {hours}. ابدأ الوردية {start}.",
+  hotStreak: "اليوم {day} من {total} أيام حارة: يتراكم الإرهاق، أضف راحة إضافية.",
+  inMinutes: "خلال {m} دقيقة",
+  noFlagChange: "لا يُتوقع علم أسوأ اليوم أو غدًا.",
 };
