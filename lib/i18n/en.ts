@@ -166,6 +166,22 @@ export const en = {
   shareSummary: "Share summary",
   fewerThan5: "fewer than 5",
   crewPrivacy: "Saved on this device only. Statuses come from check-ins done on this device with the same crew ID. Shared summaries hide counts below 5.",
+  breakTimer: "Break and water timer",
+  breakTimerIntro: "Start it at the beginning of the shift. It counts down to each rest break and reminds you to drink every 20 minutes. The screen stays on while it runs.",
+  startShift: "Start shift",
+  stopShift: "End shift",
+  breakTaken: "Break taken",
+  drankWater: "Drank water",
+  skipped: "Skipped",
+  breakDueTitle: "Rest break now",
+  breakDueBody: "Stop and rest in the shade. Drink a cup of water.",
+  waterDueTitle: "Time to drink",
+  waterDueBody: "Drink a cup of water now, even if you are not thirsty.",
+  inHoursMinutes: "{h} h {m} min",
+  inMinutesSeconds: "{m}:{s}",
+  breakAdherence: "Breaks taken today",
+  waterAdherence: "Water reminders answered",
+  ofDue: "{done} of {due}",
 } as const;
 
 export type Key = keyof typeof en;

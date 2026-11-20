@@ -16,6 +16,7 @@ import { WorkPlanner } from "@/components/work-planner";
 import { WorkerContextPicker } from "@/components/worker-context-picker";
 import { WorkerCheckin } from "@/components/worker-checkin";
 import { CrewBoard } from "@/components/crew-board";
+import { BreakTimer } from "@/components/break-timer";
 import { useWorkerContext } from "@/lib/use-worker-context";
 import { UNHEALTHY_AQI, fetchAir, formatAqi } from "@/lib/air";
 import { WORLD_CITIES, cityKey, type City } from "@/lib/cities";
@@ -164,6 +165,7 @@ export default function WorkerSafetyPage(props: Props) {
           </Card>
 
           <WorkerCheckin wbgt={now.wbgt} ctx={ctx} />
+          <BreakTimer hours={c.hours} now={now} ctx={ctx} />
           <CrewBoard hours={c.hours} now={now} />
 
           <div className="no-print space-y-6">
