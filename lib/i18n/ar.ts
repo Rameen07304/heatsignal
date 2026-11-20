@@ -695,4 +695,7 @@ export const ar: Dict = {
   useMyLocation: "استخدم موقعي",
   footerData: "بيانات الطقس وجودة الهواء من",
   footerDisclaimer: "HeatSignal أداة لدعم القرار وليست نصيحة طبية. فريق HeatSignal، كلية كينيرد للبنات، لاهور.",
+  filterByCountry: "التصفية حسب الدولة",
+  allCountries: "كل الدول",
+  countrySummary: "{country}: {n} مدن · الأشد حرًا {city} WBGT ‏{wbgt} °C · {k} مدن يجب فيها إيقاف العمل الشاق في الخارج · نحو {p} مليون شخص متأثر",
 };

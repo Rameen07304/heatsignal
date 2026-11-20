@@ -695,4 +695,7 @@ export const hi: Dict = {
   useMyLocation: "मेरी जगह इस्तेमाल करें",
   footerData: "मौसम और हवा की गुणवत्ता का डेटा:",
   footerDisclaimer: "HeatSignal निर्णय में मदद का साधन है, चिकित्सा सलाह नहीं। टीम HeatSignal, किनेयर्ड कॉलेज फ़ॉर विमेन, लाहौर।",
+  filterByCountry: "देश के अनुसार छाँटें",
+  allCountries: "सभी देश",
+  countrySummary: "{country}: {n} शहर · सबसे गर्म {city} WBGT {wbgt} °C · {k} शहरों में बाहर का भारी काम बंद करना ज़रूरी · लगभग {p} मिलियन लोग प्रभावित",
 };

@@ -695,4 +695,7 @@ export const es: Dict = {
   useMyLocation: "Usar mi ubicación",
   footerData: "Datos de clima y calidad del aire de",
   footerDisclaimer: "HeatSignal es una herramienta de apoyo a decisiones, no consejo médico. Equipo HeatSignal, Kinnaird College for Women, Lahore.",
+  filterByCountry: "Filtrar por país",
+  allCountries: "Todos los países",
+  countrySummary: "{country}: {n} ciudades · la más calurosa {city} WBGT {wbgt} °C · {k} ciudades deben detener el trabajo pesado afuera · unos {p} millones de personas afectadas",
 };

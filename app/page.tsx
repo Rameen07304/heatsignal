@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ClipboardCheck, GitCompare, HardHat, Pill, Search, UserRound } from "lucide-react";
 import { compareHref } from "@/components/city-actions";
 import { OfficialsMenu } from "@/components/officials-menu";
@@ -80,11 +80,57 @@ const LEGENDS: Record<MapMode, { label: Key; color: string }[]> = {
   work: [], // Workforce Risk only
 };
 
+const COUNTRY_KEY = "heatsignal-dashboard-country";
+/** Shown first after "All countries": the challenge host. */
+const FIRST_COUNTRY = "United Arab Emirates";
+
+// useSearchParams needs a Suspense boundary on a statically rendered page.
 export default function Dashboard() {
+  return (
+    <Suspense>
+      <DashboardPage />
+    </Suspense>
+  );
+}
+
+function DashboardPage() {
   const { t, n } = useT();
   const router = useRouter();
+  const params = useSearchParams();
   const millions = (list: { city: City }[]) => t("millionPeople", { n: n(people(list)) });
-  const { cities, add, remove, reset, data, airFailed, retry } = useCities();
+  const { cities: allCities, add, remove, reset, data, airFailed, retry } = useCities();
+
+  // Country filter: in the URL (?country=Pakistan) and remembered in this browser.
+  const [country, setCountryState] = useState(params.get("country") ?? "");
+  useEffect(() => {
+    if (params.get("country")) return;
+    try {
+      const saved = localStorage.getItem(COUNTRY_KEY);
+      if (saved) setCountryState(saved);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- first load only
+  }, []);
+  const setCountry = (c: string) => {
+    setCountryState(c);
+    try {
+      if (c) localStorage.setItem(COUNTRY_KEY, c);
+      else localStorage.removeItem(COUNTRY_KEY);
+    } catch {}
+    const q = new URLSearchParams(params.toString());
+    if (c) q.set("country", c);
+    else q.delete("country");
+    router.replace(q.size ? `/?${q}` : "/", { scroll: false });
+  };
+  const countries = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const c of allCities) if (c.country) counts.set(c.country, (counts.get(c.country) ?? 0) + 1);
+    return [...counts].sort(
+      ([a, x], [b, y]) => Number(b === FIRST_COUNTRY) - Number(a === FIRST_COUNTRY) || y - x || a.localeCompare(b),
+    );
+  }, [allCities]);
+  // A country that is no longer monitored shows everything.
+  const activeCountry = countries.some(([c]) => c === country) ? country : "";
+  const cities = useMemo(() => (activeCountry ? allCities.filter((c) => c.country === activeCountry) : allCities), [allCities, activeCountry]);
   const [mapMode, setMapMode] = useState<MapMode>("compound");
   const [sort, setSort] = useState<Sort>("compound");
   const [filter, setFilter] = useState("");
@@ -98,7 +144,7 @@ export default function Dashboard() {
   const pending = loaded.length === 0 && !failed && cities.length > 0;
 
   const critical = loaded.filter(({ c }) => (c.days[0].maxScore ?? 0) >= CRITICAL_SCORE);
-  const upcoming = useUpcoming();
+  const upcoming = useUpcoming().filter(({ city }) => !activeCountry || city.country === activeCountry);
   const hottest = loaded.reduce<{ city: City; c: Conditions } | null>((b, r) => (!b || r.c.days[0].maxWbgt > b.c.days[0].maxWbgt ? r : b), null);
   const worstAir = loaded.reduce<{ city: City; c: Conditions } | null>(
     (b, r) => (r.c.now.air && (!b || r.c.now.air.aqi > b.c.now.air!.aqi) ? r : b),
@@ -113,7 +159,7 @@ export default function Dashboard() {
   const heavy = loaded.map((r) => ({ ...r, w: workRegimen(r.c.days[0].maxWbgt, "heavy").workMin }));
   const work = { total: loaded.length, stop: heavy.filter((r) => r.w === 0), breaks: heavy.filter((r) => r.w > 0 && r.w < 60) };
 
-  const monitored = useMemo(() => new Set(cities.map(cityKey)), [cities]);
+  const monitored = useMemo(() => new Set(allCities.map(cityKey)), [allCities]);
   const q = filter.trim().toLowerCase();
   const sorted = useMemo(() => {
     const value = SORTS[sort].value;
@@ -126,14 +172,14 @@ export default function Dashboard() {
       .sort((a, b) => score(b) - score(a));
   }, [cities, data, sort, q]);
   const visible = showAll || q ? sorted : sorted.slice(0, PAGE);
-  const isDefaultList = cities.length === WORLD_CITIES.length && cities.every((c, i) => cityKey(c) === cityKey(WORLD_CITIES[i]));
+  const isDefaultList = allCities.length === WORLD_CITIES.length && allCities.every((c, i) => cityKey(c) === cityKey(WORLD_CITIES[i]));
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("isItSafe")}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("dashIntro", { n: cities.length })}</p>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("dashIntro", { n: allCities.length })}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <AddCityDialog
@@ -147,6 +193,38 @@ export default function Dashboard() {
           <OfficialsMenu rows={loaded} />
         </div>
       </div>
+
+      {countries.length > 1 && (
+        <div className="space-y-2">
+          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:thin]" role="group" aria-label={t("filterByCountry")}>
+            {[["", allCities.length] as const, ...countries].map(([c, count]) => (
+              <button
+                key={c || "all"}
+                type="button"
+                aria-pressed={activeCountry === c}
+                onClick={() => setCountry(c)}
+                className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                  activeCountry === c ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
+                }`}
+              >
+                {c ? `${c} (${count})` : t("allCountries")}
+              </button>
+            ))}
+          </div>
+          {activeCountry && !pending && hottest && (
+            <p className="text-sm" role="status">
+              {t("countrySummary", {
+                country: activeCountry,
+                n: cities.length,
+                city: hottest.city.name,
+                wbgt: n(hottest.c.days[0].maxWbgt, 1),
+                k: work.stop.length,
+                p: n(people([...work.stop, ...work.breaks])),
+              })}
+            </p>
+          )}
+        </div>
+      )}
 
       <nav aria-label={t("whatToDoNav")} className="grid grid-cols-2 gap-3 lg:grid-cols-5 [&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1">
         {TASKS.map(({ href, icon: Icon, title, text }) => (
@@ -200,7 +278,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="flex flex-1 flex-col gap-3">
                 <div className="min-h-[320px] flex-1 sm:min-h-[420px]">
-                  <WeatherMap cities={cities} data={data} mode={mapMode} />
+                  <WeatherMap key={activeCountry} cities={cities} data={data} mode={mapMode} />
                 </div>
                 <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-label={t("mapLegend")}>
                   {LEGENDS[mapMode].map((l) => (

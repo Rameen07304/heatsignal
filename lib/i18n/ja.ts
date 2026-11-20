@@ -695,4 +695,7 @@ export const ja: Dict = {
   useMyLocation: "現在地を使う",
   footerData: "気象・大気質データ:",
   footerDisclaimer: "HeatSignalは意思決定を助けるツールで、医学的助言ではありません。Team HeatSignal、キニアード女子大学(ラホール)。",
+  filterByCountry: "国で絞り込む",
+  allCountries: "すべての国",
+  countrySummary: "{country}: {n}都市・最も暑い{city} WBGT {wbgt} °C・{k}都市で屋外重作業の中止が必要・影響は約{p}百万人",
 };

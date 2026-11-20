@@ -695,4 +695,7 @@ export const ur: Dict = {
   useMyLocation: "میرا مقام استعمال کریں",
   footerData: "موسم اور ہوا کے معیار کا ڈیٹا:",
   footerDisclaimer: "HeatSignal فیصلہ سازی میں مدد کا ذریعہ ہے، طبی مشورہ نہیں۔ ٹیم HeatSignal، کنیئرڈ کالج برائے خواتین، لاہور۔",
+  filterByCountry: "ملک کے لحاظ سے چھانیں",
+  allCountries: "تمام ممالک",
+  countrySummary: "{country}: {n} شہر · سب سے گرم {city} WBGT {wbgt} °C · {k} شہروں میں باہر کا بھاری کام بند کرنا لازمی · تقریباً {p} ملین لوگ متاثر",
 };

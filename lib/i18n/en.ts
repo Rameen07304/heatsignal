@@ -701,6 +701,9 @@ export const en = {
   useMyLocation: "Use my location",
   footerData: "Weather and air-quality data by",
   footerDisclaimer: "HeatSignal is a decision-support tool, not medical advice. Team HeatSignal, Kinnaird College for Women, Lahore.",
+  filterByCountry: "Filter by country",
+  allCountries: "All countries",
+  countrySummary: "{country}: {n} cities · hottest {city} WBGT {wbgt} °C · {k} cities must stop heavy outdoor work · about {p} million people affected",
 } as const;
 
 export type Key = keyof typeof en;
