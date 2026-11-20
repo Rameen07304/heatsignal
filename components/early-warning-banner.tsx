@@ -61,7 +61,7 @@ export function EarlyWarningBanner() {
         <TriangleAlert className={cn("mt-0.5 h-5 w-5 shrink-0", critical ? "text-red-600" : "text-amber-600")} />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">
-            {list.length} {list.length === 1 ? "city is" : "cities are"} forecast to reach a higher risk level within 48 hours
+            {t(list.length === 1 ? "bannerHeadOne" : "bannerHeadMany", { n: list.length })}
           </p>
           <ul className="mt-1.5 space-y-2 sm:space-y-1">
             {shown.map(({ city, u }, i) => (

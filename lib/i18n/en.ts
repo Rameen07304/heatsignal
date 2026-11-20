@@ -694,6 +694,13 @@ export const en = {
   cityOrCountry: "City or country…",
   noCitiesMatch: "No cities match.",
   leaderboardNote: "Values are for the current hour at each city. Trend compares the compound score with 6 hours ago (±5 points); “Worsening” means the next 48 hours will peak at least 5 points above today’s peak.",
+  bannerHeadOne: "1 city is forecast to reach a higher risk level within 48 hours",
+  bannerHeadMany: "{n} cities are forecast to reach a higher risk level within 48 hours",
+  upcomingIntroOne: "1 city is forecast to cross into High or Critical compound risk within 48 hours.",
+  upcomingIntroMany: "{n} cities are forecast to cross into High or Critical compound risk within 48 hours.",
+  useMyLocation: "Use my location",
+  footerData: "Weather and air-quality data by",
+  footerDisclaimer: "HeatSignal is a decision-support tool, not medical advice. Team HeatSignal, Kinnaird College for Women, Lahore.",
 } as const;
 
 export type Key = keyof typeof en;

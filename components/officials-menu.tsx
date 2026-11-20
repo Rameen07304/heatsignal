@@ -27,7 +27,7 @@ export function OfficialsMenu({ rows }: { rows: { city: City; c: Conditions }[] 
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Building2 /> For health officials
+          <Building2 /> {t("forHealthOfficials")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

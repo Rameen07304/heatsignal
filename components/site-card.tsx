@@ -55,7 +55,7 @@ export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; 
             </div>
             {flag.escalate && <div className="mt-1 max-w-xl text-sm font-semibold">{t("heatEscalate")}</div>}
           </div>
-          <div className="text-right text-sm">
+          <div className="text-end text-sm">
             <div className="text-lg font-bold">{city.name}{city.country && `, ${city.country}`}</div>
             <div>{t("noticeUpdated", { day: date(now.time), time: now.time.slice(11, 16) })}</div>
             <div dir="ltr">{t("nowShort")}: WBGT {now.wbgt.toFixed(1)} °C · {now.temp.toFixed(0)} °C{now.air ? ` · AQI ${formatAqi(now.air.aqi)}` : ""}</div>

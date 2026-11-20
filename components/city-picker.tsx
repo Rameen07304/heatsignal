@@ -67,7 +67,7 @@ export function CityPicker({ value, onChange, label }: { value: City; onChange: 
         </label>
         <AddCityDialog onAdd={onChange} monitored={NONE} label={t("search")} title={t("findPlace")} variant="outline" />
         <Button variant="outline" onClick={locate} disabled={locating}>
-          {locating ? <Loader2 className="animate-spin" /> : <LocateFixed />} Use my location
+          {locating ? <Loader2 className="animate-spin" /> : <LocateFixed />} {t("useMyLocation")}
         </Button>
       </div>
       {error && <p className="text-xs text-destructive">{error}</p>}

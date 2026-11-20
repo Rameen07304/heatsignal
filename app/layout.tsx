@@ -7,6 +7,7 @@ import { SosButton } from "@/components/sos-button";
 import { LanguageProvider } from "@/lib/i18n";
 import { CitiesProvider } from "@/lib/use-cities";
 import "./globals.css";
+import { SiteFooter } from "@/components/site-footer";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
@@ -42,14 +43,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                   <EarlyWarningBanner />
                   {children}
                 </main>
-                <footer className="no-print mx-auto max-w-[1400px] border-t px-4 pb-24 pt-6 text-xs text-muted-foreground lg:px-8">
-                  Weather and air-quality data by{" "}
-                  <a className="underline" href="https://open-meteo.com/" target="_blank" rel="noreferrer">
-                    Open-Meteo
-                  </a>{" "}
-                  (CC BY 4.0). HeatSignal is a decision-support tool, not medical advice. Team HeatSignal, Kinnaird College
-                  for Women, Lahore.
-                </footer>
+                <SiteFooter />
               </div>
             </CitiesProvider>
           </LanguageProvider>

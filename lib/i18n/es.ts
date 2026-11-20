@@ -688,4 +688,11 @@ export const es: Dict = {
   cityOrCountry: "Ciudad o país…",
   noCitiesMatch: "Ninguna ciudad coincide.",
   leaderboardNote: "Los valores son de la hora actual en cada ciudad. La tendencia compara el puntaje combinado con hace 6 horas (±5 puntos); “Empeorando” significa que el pico de las próximas 48 horas superará al de hoy en al menos 5 puntos.",
+  bannerHeadOne: "Se prevé que 1 ciudad suba de nivel de riesgo en 48 horas",
+  bannerHeadMany: "Se prevé que {n} ciudades suban de nivel de riesgo en 48 horas",
+  upcomingIntroOne: "Se prevé que 1 ciudad llegue a riesgo combinado alto o crítico en 48 horas.",
+  upcomingIntroMany: "Se prevé que {n} ciudades lleguen a riesgo combinado alto o crítico en 48 horas.",
+  useMyLocation: "Usar mi ubicación",
+  footerData: "Datos de clima y calidad del aire de",
+  footerDisclaimer: "HeatSignal es una herramienta de apoyo a decisiones, no consejo médico. Equipo HeatSignal, Kinnaird College for Women, Lahore.",
 };

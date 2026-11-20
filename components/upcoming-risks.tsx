@@ -25,7 +25,7 @@ export function UpcomingRisks() {
       <div>
         <h2 className="text-lg font-semibold tracking-tight">{t("upcomingRisks")}</h2>
         <p className="text-sm text-muted-foreground">
-          {list.length} {list.length === 1 ? "city is" : "cities are"} forecast to cross into High or Critical compound risk within 48 hours.
+          {t(list.length === 1 ? "upcomingIntroOne" : "upcomingIntroMany", { n: list.length })}
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

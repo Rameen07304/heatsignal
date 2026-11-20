@@ -688,4 +688,11 @@ export const ja: Dict = {
   cityOrCountry: "都市または国…",
   noCitiesMatch: "一致する都市はありません。",
   leaderboardNote: "値は各都市の現在の時間のものです。傾向は総合スコアを6時間前と比べます(±5ポイント)。「悪化中」は今後48時間のピークが今日のピークより5ポイント以上高いことを意味します。",
+  bannerHeadOne: "48時間以内に1都市のリスクが上がる見込みです",
+  bannerHeadMany: "48時間以内に{n}都市のリスクが上がる見込みです",
+  upcomingIntroOne: "48時間以内に1都市が総合リスク「高」または「重大」に達する見込みです。",
+  upcomingIntroMany: "48時間以内に{n}都市が総合リスク「高」または「重大」に達する見込みです。",
+  useMyLocation: "現在地を使う",
+  footerData: "気象・大気質データ:",
+  footerDisclaimer: "HeatSignalは意思決定を助けるツールで、医学的助言ではありません。Team HeatSignal、キニアード女子大学(ラホール)。",
 };
