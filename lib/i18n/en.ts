@@ -391,6 +391,22 @@ export const en = {
   clearAll: "Clear all",
   noReports7d: "No reports in the last 7 days.",
   countsBelow5Hidden: "Counts below 5 are hidden so no single report can be traced to a worker.",
+  workerSafetyIntro: "For site supervisors and employers: when outdoor work is safe, how long breaks must be, how much water to provide, and a notice to print and post on site. Built for construction, farming and delivery work in the Gulf and South Asia.",
+  workSite: "Work site",
+  workerSafetyDisclaimer: "Schedules follow published heat limits for healthy, acclimatised workers. They do not replace a site safety plan or medical advice. New, older or unwell workers need extra care.",
+  forecastLoadError: "Couldn’t load the forecast for this site.",
+  rightNowIn: "Right now in {city}",
+  rightNowLine: "WBGT {wbgt} °C at {time} local time · {temp} °C, {rh}% humidity",
+  shareHeatLine: "Heat stress (WBGT) {wbgt}°C at {time}",
+  shareAirLine: "Air is unhealthy (AQI {aqi}). Wear N95 masks outdoors.",
+  shareWaterLine: "Drink a cup of water every 15–20 minutes and rest in shade, not in the sun.",
+  airUnhealthyNow: "Air quality is unhealthy (AQI {aqi}).",
+  airUnhealthyAction: "Issue N95 masks to everyone working outdoors and cut heavy exertion, whatever the heat level.",
+  heatLimitsNote: "Heat limits: ACGIH work–rest values (OSHA Technical Manual). WBGT up to 26.7 °C allows continuous moderate work; above 31.1 °C moderate work must stop.",
+  siteNotice: "Site notice",
+  siteNoticeIntro: "Print it and post it where workers take their breaks.",
+  workerRightsFooter: "No personal health data leaves this phone, and nothing here may be used to discipline, rank or dismiss workers. Worker protection comes before productivity.",
+  workerRightsLink: "Worker rights and data",
 } as const;
 
 export type Key = keyof typeof en;

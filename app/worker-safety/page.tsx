@@ -48,7 +48,7 @@ export default function WorkerSafetyPage(props: Props) {
   const fromUrl = cityFromUrl(searchParams);
   const [selected, setSelected] = useState<City>(fromUrl ?? DEFAULT);
   const [ctx] = useWorkerContext();
-  const { t } = useT();
+  const { t, n } = useT();
   const options = [...cities].sort((a, b) => a.name.localeCompare(b.name));
   if (!options.some((c) => cityKey(c) === cityKey(selected))) options.unshift(selected);
 
@@ -71,16 +71,12 @@ export default function WorkerSafetyPage(props: Props) {
       <div className="no-print flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight sm:text-3xl">
-            <HardHat className="h-7 w-7 text-primary" /> Worker safety
+            <HardHat className="h-7 w-7 text-primary" /> {t("workerSafety")}
           </h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            For site supervisors and employers: when outdoor work is safe, how long breaks must be, how much water
-            to provide, and a notice to print and post on site. Built for construction, farming and delivery work
-            in the Gulf and South Asia.
-          </p>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("workerSafetyIntro")}</p>
         </div>
         <label className="text-xs text-muted-foreground">
-          <span className="mb-1 block">Work site</span>
+          <span className="mb-1 block">{t("workSite")}</span>
           <select
             className="h-10 w-64 rounded-md border bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             value={cityKey(selected)}
@@ -93,7 +89,7 @@ export default function WorkerSafetyPage(props: Props) {
         </label>
       </div>
 
-      <MedicalDisclaimer>Schedules follow published heat limits for healthy, acclimatised workers. They do not replace a site safety plan or medical advice. New, older or unwell workers need extra care.</MedicalDisclaimer>
+      <MedicalDisclaimer>{t("workerSafetyDisclaimer")}</MedicalDisclaimer>
 
       <WorkerContextPicker />
 
@@ -103,32 +99,29 @@ export default function WorkerSafetyPage(props: Props) {
           <Skeleton className="h-72 w-full rounded-lg" />
         </div>
       )}
-      {result.error && <ErrorState message="Couldn’t load the forecast for this site." onRetry={result.retry} />}
+      {result.error && <ErrorState message={t("forecastLoadError")} onRetry={result.retry} />}
 
       {c && now && (
         <>
           <Card className="no-print">
             <CardHeader className="flex-row flex-wrap items-start justify-between gap-3 space-y-0">
               <div>
-                <CardTitle>Right now in {selected.name}</CardTitle>
-                <CardDescription>
-                  WBGT {now.wbgt.toFixed(1)} °C at {now.time.slice(11, 16)} local time · {now.temp.toFixed(1)} °C,{" "}
-                  {now.rh.toFixed(0)}% humidity
-                </CardDescription>
+                <CardTitle>{t("rightNowIn", { city: selected.name })}</CardTitle>
+                <CardDescription>{t("rightNowLine", { wbgt: n(now.wbgt, 1), time: now.time.slice(11, 16), temp: n(now.temp, 1), rh: n(now.rh) })}</CardDescription>
               </div>
               <div className="flex flex-wrap gap-2">
                 {now.air && <AqiBadge aqi={now.air.aqi} />}
                 {now.score != null && <CompoundBadge score={now.score} />}
                 <ShareDialog
-                  title={`Worker safety: ${selected.name}`}
+                  title={`${t("workerSafety")}: ${selected.name}`}
                   text={[
-                    `⚠️ Worker safety: ${selected.name}`,
+                    `⚠️ ${t("workerSafety")}: ${selected.name}`,
                     "",
-                    `Heat stress (WBGT) ${now.wbgt.toFixed(1)}°C at ${now.time.slice(11, 16)}`,
-                    ...INTENSITIES.map((i) => `${i.label} work: ${workRegimen(now.wbgt, i.key, ctx).label}`),
-                    ...(now.air && now.air.aqi >= UNHEALTHY_AQI ? [`Air is unhealthy (AQI ${formatAqi(now.air.aqi)}). Wear N95 masks outdoors.`] : []),
+                    t("shareHeatLine", { wbgt: n(now.wbgt, 1), time: now.time.slice(11, 16) }),
+                    ...INTENSITIES.map((i) => `${t(i.labelKey)}: ${t(workRegimen(now.wbgt, i.key, ctx).key)}`),
+                    ...(now.air && now.air.aqi >= UNHEALTHY_AQI ? [t("shareAirLine", { aqi: formatAqi(now.air.aqi) })] : []),
                     "",
-                    "Drink a cup of water every 15–20 minutes and rest in shade, not in the sun.",
+                    t("shareWaterLine"),
                   ].join("\n")}
                   path={`/worker-safety?lat=${selected.lat}&lon=${selected.lon}&name=${encodeURIComponent(selected.name)}&country=${encodeURIComponent(selected.country)}`}
                 />
@@ -141,9 +134,9 @@ export default function WorkerSafetyPage(props: Props) {
                   const flag = heatFlag(r);
                   return (
                     <div key={i.key} className="rounded-lg border p-3" style={{ borderColor: `${r.color}80`, backgroundColor: `${r.color}14` }}>
-                      <div className="text-xs font-medium text-muted-foreground">{i.label} work</div>
-                      <div className="mt-1 flex items-center gap-2 font-semibold"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: r.color }} />{r.label}</div>
-                      <div className="text-xs text-muted-foreground">{t(flag.key)} · e.g. {i.examples}</div>
+                      <div className="text-xs font-medium text-muted-foreground">{t(i.labelKey)}</div>
+                      <div className="mt-1 flex items-center gap-2 font-semibold"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: r.color }} />{t(r.key)}</div>
+                      <div className="text-xs text-muted-foreground">{t(flag.key)} · {t(i.examplesKey)}</div>
                     </div>
                   );
                 })}
@@ -162,15 +155,10 @@ export default function WorkerSafetyPage(props: Props) {
               )}
               {now.air && now.air.aqi >= UNHEALTHY_AQI && (
                 <p className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm">
-                  <b>Air quality is unhealthy (AQI {formatAqi(now.air.aqi)}).</b> Issue N95 masks to everyone working
-                  outdoors and cut heavy exertion, whatever the heat level.
+                  <b>{t("airUnhealthyNow", { aqi: formatAqi(now.air.aqi) })}</b> {t("airUnhealthyAction")}
                 </p>
               )}
-              <p className="text-xs text-muted-foreground">
-                Heat limits: ACGIH work–rest values (OSHA Technical Manual). WBGT up to{" "}
-                26.7 °C allows continuous moderate work; above 31.1 °C
-                moderate work must stop.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("heatLimitsNote")}</p>
             </CardContent>
           </Card>
 
@@ -186,8 +174,8 @@ export default function WorkerSafetyPage(props: Props) {
 
           <div className="space-y-2">
             <div className="no-print">
-              <h2 className="text-lg font-semibold tracking-tight">Site notice</h2>
-              <p className="text-sm text-muted-foreground">Print it and post it where workers take their breaks.</p>
+              <h2 className="text-lg font-semibold tracking-tight">{t("siteNotice")}</h2>
+              <p className="text-sm text-muted-foreground">{t("siteNoticeIntro")}</p>
             </div>
             <SiteCard city={selected} now={now} today={today} />
           </div>
@@ -199,9 +187,8 @@ export default function WorkerSafetyPage(props: Props) {
       <IncidentLog city={selected} />
 
       <p className="no-print text-xs text-muted-foreground">
-        No personal health data leaves this phone, and nothing here may be used to discipline, rank or dismiss
-        workers. Worker protection comes before productivity.{" "}
-        <Link href="/about#worker-rights" className="font-medium text-primary underline-offset-2 hover:underline">Worker rights and data</Link>
+        {t("workerRightsFooter")}{" "}
+        <Link href="/about#worker-rights" className="font-medium text-primary underline-offset-2 hover:underline">{t("workerRightsLink")}</Link>
       </p>
     </div>
   );
