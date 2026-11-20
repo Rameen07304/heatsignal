@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Hospital, Phone } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { EMERGENCY_COUNTRIES, emergencyNumbers } from "@/lib/emergency";
+import { KEYS, readJson, writeJson } from "@/lib/device-store";
 
 export const SOS_COUNTRY_KEY = "heatsignal-sos-country";
 
@@ -27,8 +28,17 @@ export function SosButton() {
   const [open, setOpen] = useState(false);
   const [country, setCountry] = useState("");
   useEffect(() => {
-    if (open) setCountry(guessCountry());
+    if (!open) return;
+    setCountry(guessCountry());
+    // Count emergency escalations (dates only, on this device) for the safety measures.
+    writeJson(KEYS.sos, [...readJson<string[]>(KEYS.sos, []), new Date().toISOString()].slice(-500));
   }, [open]);
+  // Other components (the worker check-in) can open this dialog.
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener("heatsignal-sos", show);
+    return () => window.removeEventListener("heatsignal-sos", show);
+  }, []);
 
   const numbers = country ? emergencyNumbers(country) : null;
   const pick = (c: string) => {

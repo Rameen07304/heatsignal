@@ -1,24 +1,28 @@
+import type { Key } from "./i18n/en";
+
 export type Intensity = "light" | "moderate" | "heavy";
 
-export const INTENSITIES: { key: Intensity; label: string; examples: string }[] = [
-  { key: "light", label: "Light", examples: "walking, shopping, supervising, driving" },
-  { key: "moderate", label: "Moderate", examples: "farming, bricklaying, carrying loads, cycling" },
-  { key: "heavy", label: "Heavy", examples: "digging, shovelling, loading by hand, running" },
+export const INTENSITIES: { key: Intensity; label: string; examples: string; labelKey: Key; examplesKey: Key }[] = [
+  { key: "light", label: "Light", examples: "walking, shopping, supervising, driving", labelKey: "workLight", examplesKey: "workLightExamples" },
+  { key: "moderate", label: "Moderate", examples: "farming, bricklaying, carrying loads, cycling", labelKey: "workModerate", examplesKey: "workModerateExamples" },
+  { key: "heavy", label: "Heavy", examples: "digging, shovelling, loading by hand, running", labelKey: "workHeavy", examplesKey: "workHeavyExamples" },
 ];
 
 export interface Regimen {
   /** Minutes of work allowed per hour; the rest of the hour is rest in shade. */
   workMin: 60 | 45 | 30 | 15 | 0;
+  /** English label (also used in AI prompts); show `key` through t() in the UI. */
   label: string;
+  key: Key;
   color: string;
 }
 
 export const REGIMENS: Regimen[] = [
-  { workMin: 60, label: "Safe to work normally", color: "#22c55e" },
-  { workMin: 45, label: "45 min work, 15 min rest each hour", color: "#eab308" },
-  { workMin: 30, label: "30 min work, 30 min rest each hour", color: "#f97316" },
-  { workMin: 15, label: "15 min work, 45 min rest each hour", color: "#ef4444" },
-  { workMin: 0, label: "Stop outdoor work", color: "#991b1b" },
+  { workMin: 60, label: "Safe to work normally", key: "regimen60", color: "#22c55e" },
+  { workMin: 45, label: "45 min work, 15 min rest each hour", key: "regimen45", color: "#eab308" },
+  { workMin: 30, label: "30 min work, 30 min rest each hour", key: "regimen30", color: "#f97316" },
+  { workMin: 15, label: "15 min work, 45 min rest each hour", key: "regimen15", color: "#ef4444" },
+  { workMin: 0, label: "Stop outdoor work", key: "regimen0", color: "#991b1b" },
 ];
 
 /**

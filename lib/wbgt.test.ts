@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { wbgt, wetBulb } from "./wbgt.ts";
 import { classifyRisk, compoundBand, compoundRiskScore } from "./risk.ts";
+import { workerStatus } from "./worker-status.ts";
 import { DEFAULT_CONTEXT, effectiveWbgt, hourRanges, workRegimen, type Intensity } from "./work-rest.ts";
 import { assess, hydrationLitres } from "./personal-risk.ts";
 import { ruleAlert } from "./rule-alert.ts";
@@ -155,4 +156,29 @@ assert.equal(loss.lostTotal, 500);
 assert.equal(loss.dailyCost, 5000);
 assert.equal(workDay(mk("2026-06-03", () => ({ temp: 20, uv: 3, aqi: 40, pm25: 8 })), "heavy")!.action, "Normal schedule");
 
-console.log("wbgt, risk, compound, work/rest, personal-risk, rule-alert, early-warning, trend-year, health-advisor and workforce checks passed");
+// Worker check-in: medical beats stop beats rest; rest makes the regimen one step stricter.
+{
+  const site = workRegimen(28.5, "moderate"); // 30/30
+  const none = { symptoms: [], riskFactors: [] } as Parameters<typeof workerStatus>[0];
+  assert.equal(workerStatus(none, site).level, "ok");
+  assert.equal(workerStatus(none, site).regimen, site);
+  assert.equal(workerStatus({ ...none, symptoms: ["confusion"] }, site).level, "medical");
+  assert.equal(workerStatus({ ...none, symptoms: ["stoppedSweating"] }, site).level, "medical");
+  assert.equal(workerStatus({ ...none, symptoms: ["headache"], hr: 146 }, site).level, "medical"); // > 180 − 35
+  assert.equal(workerStatus({ ...none, symptoms: ["headache"], hr: 145 }, site).level, "rest");
+  assert.equal(workerStatus({ ...none, symptoms: ["headache"], hr: 131, age: 50 }, site).level, "medical");
+  assert.equal(workerStatus({ ...none, hr: 190 }, site).level, "ok"); // high HR alone, no symptoms
+  assert.equal(workerStatus({ ...none, symptoms: ["headache", "nausea"] }, site).level, "stop");
+  assert.equal(workerStatus({ ...none, recoveryHr: 111 }, site).level, "stop");
+  assert.equal(workerStatus({ ...none, recoveryHr: 110 }, site).level, "ok");
+  assert.equal(workerStatus({ ...none, urine: 6 }, site).level, "stop");
+  assert.equal(workerStatus({ ...none, urine: 4 }, site).level, "rest");
+  assert.equal(workerStatus({ ...none, riskFactors: ["heartMeds"] }, site).level, "rest");
+  assert.equal(workerStatus({ ...none, hoursInHeat: 4 }, site).level, "rest");
+  assert.equal(workerStatus({ ...none, hotDayStreak: 3 }, site).level, "rest");
+  assert.equal(workerStatus({ ...none, hotDayStreak: 2 }, site).level, "ok");
+  assert.equal(workerStatus({ ...none, urine: 5 }, site).regimen.workMin, 15);
+  assert.equal(workerStatus({ ...none, urine: 5 }, workRegimen(40, "heavy")).regimen.workMin, 0); // can't go past stop
+}
+
+console.log("wbgt, risk, compound, work/rest, personal-risk, rule-alert, early-warning, trend-year, health-advisor, workforce and worker-status checks passed");
