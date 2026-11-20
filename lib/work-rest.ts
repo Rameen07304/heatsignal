@@ -41,10 +41,10 @@ const LIMITS: Record<Intensity, [number, number, number, number]> = {
 export type Clothing = "normal" | "coveralls" | "double";
 
 /** ACGIH clothing adjustment values (°C added to WBGT). */
-export const CLOTHING: { key: Clothing; label: string; adjust: number; note: string }[] = [
-  { key: "normal", label: "Normal work clothes", adjust: 0, note: "Cotton shirt and trousers" },
-  { key: "coveralls", label: "Coveralls", adjust: 1, note: "Single-layer polyolefin coveralls" },
-  { key: "double", label: "Double layer / heavy PPE", adjust: 3, note: "Double-layer woven clothing, fire-retardant gear" },
+export const CLOTHING: { key: Clothing; label: string; adjust: number; note: string; labelKey: Key; noteKey: Key }[] = [
+  { key: "normal", label: "Normal work clothes", adjust: 0, note: "Cotton shirt and trousers", labelKey: "clothingNormal", noteKey: "clothingNormalNote" },
+  { key: "coveralls", label: "Coveralls", adjust: 1, note: "Single-layer polyolefin coveralls", labelKey: "clothingCoveralls", noteKey: "clothingCoverallsNote" },
+  { key: "double", label: "Double layer / heavy PPE", adjust: 3, note: "Double-layer woven clothing, fire-retardant gear", labelKey: "clothingDouble", noteKey: "clothingDoubleNote" },
 ];
 
 /**

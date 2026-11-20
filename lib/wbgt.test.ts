@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { wbgt, wetBulb } from "./wbgt.ts";
 import { classifyRisk, compoundBand, compoundRiskScore } from "./risk.ts";
 import { workerStatus } from "./worker-status.ts";
+import { nextBreak, rotation } from "./crew.ts";
 import { DEFAULT_CONTEXT, effectiveWbgt, hourRanges, workRegimen, type Intensity } from "./work-rest.ts";
 import { assess, hydrationLitres } from "./personal-risk.ts";
 import { ruleAlert } from "./rule-alert.ts";
@@ -181,4 +182,27 @@ assert.equal(workDay(mk("2026-06-03", () => ({ temp: 20, uv: 3, aqi: 40, pm25: 8
   assert.equal(workerStatus({ ...none, urine: 5 }, workRegimen(40, "heavy")).regimen.workMin, 0); // can't go past stop
 }
 
-console.log("wbgt, risk, compound, work/rest, personal-risk, rule-alert, early-warning, trend-year, health-advisor, workforce and worker-status checks passed");
+// Crew rotation: with breaks needed, nobody does more than 2 heavy hours in a row; stopped workers rest.
+{
+  const hrs = [0, 1, 2, 3, 4, 5].map((i) => ({ time: `2026-06-01T${String(10 + i).padStart(2, "0")}:00`, wbgt: 26.5 })) as CombinedHour[];
+  const crew = ["A", "B", "C"].map((id, i) => ({ id, work: i === 0 ? "heavy" : "light", clothing: "normal", acclimatised: true }) as const);
+  const grid = rotation([...crew], hrs, {}, 6);
+  assert.equal(grid.length, 6);
+  for (const row of grid) assert.equal(row.filter((c) => c === "heavy").length, 1); // one heavy slot each hour
+  for (let j = 0; j < crew.length; j++) {
+    let run = 0;
+    for (const row of grid) {
+      run = row[j] === "heavy" ? run + 1 : 0;
+      assert.ok(run <= 2, "no more than 2 heavy hours in a row");
+    }
+  }
+  const sick = rotation([...crew], hrs, { A: { level: "stop", date: "x" } }, 2);
+  assert.ok(sick.every((row) => row[0] === "rest"));
+  // Next break: 45/15 at 26.5 °C heavy? 26.5 > 25.9 → 30/30, so work until :30.
+  assert.equal(nextBreak(crew[0], hrs, 10), "10:30");
+  assert.equal(nextBreak(crew[0], hrs, 40), "now");
+  const cool = hrs.map((h) => ({ ...h, wbgt: 20 }));
+  assert.equal(nextBreak(crew[0], cool, 0), "none");
+}
+
+console.log("wbgt, risk, compound, work/rest, personal-risk, rule-alert, early-warning, trend-year, health-advisor, workforce, worker-status and crew checks passed");
