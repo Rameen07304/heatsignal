@@ -24,27 +24,27 @@ const TEAM = [
 const OUTCOMES = [
   [
     "Dynamic heat-risk assessment",
-    "Worker Safety and Workforce Risk combine hourly WBGT with workload, shift timing, clothing/PPE and acclimatisation."
+    "Worker Safety and Workforce Risk combine hourly WBGT with workload, shift timing, clothing/PPE and acclimatisation, plus an optional consented worker check-in (symptoms, urine colour, heart rate, recovery heart rate, Bluetooth heart-rate strap) that sets a personal status."
   ],
   [
     "Clear, graded warnings",
-    "Green, yellow, red and black flags with safe actions (water, rest, shift change), clinical escalation on red and black, in six languages; 48-hour early warning and AI or rule-based Alerts."
+    "Green, yellow, red and black flags with safe actions (water, rest, shift change), clinical escalation on red and black, in six languages; lead-time warnings (when the flag turns red, tomorrow’s peak and best shift start, hot-day streaks), 48-hour early warning and AI or rule-based Alerts."
   ],
   [
     "Worker-first governance",
-    "No personal health data, anonymous incident reports with counts below 5 hidden, and a written ban on disciplinary or employment use (Worker rights and data)."
+    "Health answers need consent, stay on the worker’s phone and can be deleted; supervisors see a status word only. Anonymous incident reports, counts below 5 hidden, and a written ban on disciplinary or employment use (Worker rights and data)."
   ],
   [
     "Field-ready operation",
-    "Installable app, last-known data with an offline label, First Aid offline, rule-based alerts when the AI is down, low data use."
+    "Installable app, last-known data with an offline label, First Aid offline, rule-based alerts when the AI is down, low data use, and a field mode (high contrast, large text, no animation, map off, battery hint) with dust-storm advice."
   ],
   [
     "Supervisor decision support",
-    "Crew- and site-level shift planner, break schedule, water totals, printable site notice and employer checklist; no individual clinical detail."
+    "Crew board (task, work–rest, next break, status word) with a heavy-task rotation planner, shift planner, water totals, printable site notice and employer checklist; no individual clinical detail."
   ],
   [
     "Safety and productivity measures",
-    "Alert lead time and false-alarm back-test (Case Studies validation), incidents this week, and protected rest vs lost work hours (Workforce Risk)."
+    "Alert lead time and a back-test over earlier years (Case Studies validation); break and water adherence from the shift timer, check-ins by status, emergency escalations, incidents, and protected rest vs lost work hours (Workforce Risk)."
   ]
 ];
 
@@ -230,14 +230,15 @@ score   = min(100, round(100 × base × penalty))`}
         <CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5" /> Worker rights and data</CardTitle></CardHeader>
         <CardContent>
           <ul className="list-disc space-y-2 ps-5 text-sm leading-relaxed">
-            <li><b>No personal health data is collected.</b> Risk is calculated from weather, workload, clothing and acclimatisation only.</li>
+            <li><b>No personal health data leaves the phone.</b> Site risk comes from weather, workload, clothing and acclimatisation. The optional worker check-in asks for consent first, stores its answers only on that phone, and can be deleted at any time.</li>
             <li><b>Incident reports are anonymous and aggregated.</b> Counts below 5 are hidden so no report can be traced to a person.</li>
             <li><b>Data must not be used for disciplinary, hiring, ranking or pay decisions.</b> Worker protection comes before productivity.</li>
             <li>
-              <b>Wearables are a future option, and only ever opt-in.</b> Signals such as heart rate or skin temperature would
-              need informed consent, minimal retention, and would be visible only to the worker and the site medic.
+              <b>Wearable signals are opt-in.</b> A Bluetooth heart-rate strap can feed the check-in; readings stay on the
+              worker’s phone and are never sent anywhere. Any future shared use would need informed consent, minimal
+              retention, and access for the worker and the site medic only.
             </li>
-            <li><b>Supervisors see crew- and site-level schedules,</b> never individual clinical detail.</li>
+            <li><b>Supervisors see crew- and site-level schedules and a status word</b> (OK, Needs rest, Stop, Medic), never symptoms, heart rate or risk factors.</li>
           </ul>
         </CardContent>
       </Card>

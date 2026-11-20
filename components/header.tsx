@@ -10,6 +10,7 @@ import {
   BellRing,
   BookOpen,
   ClipboardCheck,
+  ChevronDown,
   Factory,
   HardHat,
   HeartPulse,
@@ -31,33 +32,23 @@ import { LANGUAGES, useT, type Key, type Lang } from "@/lib/i18n";
 import { useCities } from "@/lib/use-cities";
 import { cn } from "@/lib/utils";
 
-const GROUPS: { label: Key; items: { href: string; label: Key; icon: typeof Activity }[] }[] = [
-  {
-    label: "monitor",
-    items: [
-      { href: "/", label: "dashboard", icon: LayoutDashboard },
-      { href: "/workforce-risk", label: "workforceRisk", icon: Factory },
-      { href: "/trends", label: "trends", icon: TrendingUp },
-    ],
-  },
-  {
-    label: "protect",
-    items: [
-      { href: "/risk-assessment", label: "riskAssessment", icon: UserRound },
-      { href: "/safety-advisor", label: "safetyAdvisor", icon: ClipboardCheck },
-      { href: "/worker-safety", label: "workerSafety", icon: HardHat },
-      { href: "/health-advisor", label: "healthAdvisor", icon: Pill },
-      { href: "/first-aid", label: "firstAid", icon: HeartPulse },
-    ],
-  },
-  {
-    label: "intelligence",
-    items: [
-      { href: "/case-studies", label: "caseStudies", icon: BookOpen },
-      { href: "/alerts", label: "alerts", icon: BellRing },
-      { href: "/about", label: "about", icon: Info },
-    ],
-  },
+type NavItem = { href: string; label: Key; icon: typeof Activity };
+
+/** Worker-first order for Challenge 7. */
+const MAIN: NavItem[] = [
+  { href: "/", label: "dashboard", icon: LayoutDashboard },
+  { href: "/worker-safety", label: "workerSafety", icon: HardHat },
+  { href: "/workforce-risk", label: "workforceRisk", icon: Factory },
+  { href: "/alerts", label: "alerts", icon: BellRing },
+  { href: "/first-aid", label: "firstAid", icon: HeartPulse },
+  { href: "/case-studies", label: "caseStudies", icon: BookOpen },
+  { href: "/about", label: "about", icon: Info },
+];
+const MORE: NavItem[] = [
+  { href: "/health-advisor", label: "healthAdvisor", icon: Pill },
+  { href: "/trends", label: "trends", icon: TrendingUp },
+  { href: "/safety-advisor", label: "safetyAdvisor", icon: ClipboardCheck },
+  { href: "/risk-assessment", label: "riskAssessment", icon: UserRound },
 ];
 
 /** HeatSignal device: four signal-strength bars in the risk colours, low to high. */
@@ -101,30 +92,35 @@ function NavLinks() {
   const pathname = usePathname();
   const { t } = useT();
   const active = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
-  return (
-    <nav className="space-y-5">
-      {GROUPS.map((g) => (
-        <div key={g.label}>
-          <div className="mb-1 px-2 text-xs font-medium text-muted-foreground">{t(g.label)}</div>
-          <ul className="space-y-0.5">
-            {g.items.map(({ href, label, icon: Icon }) => (
-              <li key={href}>
-                <Link
-                  href={href}
-                  aria-current={active(href) ? "page" : undefined}
-                  className={cn(
-                    "flex items-center gap-2.5 rounded-md px-2 py-2.5 text-sm lg:py-1.5 text-foreground/80 transition-colors hover:bg-muted hover:text-foreground",
-                    active(href) && "bg-primary/10 font-medium text-primary hover:bg-primary/10 hover:text-primary",
-                  )}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {t(label)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+  const list = (items: NavItem[]) => (
+    <ul className="space-y-0.5">
+      {items.map(({ href, label, icon: Icon }) => (
+        <li key={href}>
+          <Link
+            href={href}
+            aria-current={active(href) ? "page" : undefined}
+            className={cn(
+              "flex items-center gap-2.5 rounded-md px-2 py-2.5 text-sm lg:py-1.5 text-foreground/80 transition-colors hover:bg-muted hover:text-foreground",
+              active(href) && "bg-primary/10 font-medium text-primary hover:bg-primary/10 hover:text-primary",
+            )}
+          >
+            <Icon className="h-4 w-4 shrink-0" />
+            {t(label)}
+          </Link>
+        </li>
       ))}
+    </ul>
+  );
+  return (
+    <nav className="space-y-3">
+      {list(MAIN)}
+      <details className="group" open={MORE.some((i) => active(i.href)) || undefined}>
+        <summary className="flex cursor-pointer list-none items-center gap-2.5 rounded-md px-2 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground lg:py-1.5 [&::-webkit-details-marker]:hidden">
+          <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" />
+          {t("more")}
+        </summary>
+        <div className="mt-0.5">{list(MORE)}</div>
+      </details>
     </nav>
   );
 }

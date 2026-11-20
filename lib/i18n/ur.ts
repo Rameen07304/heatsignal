@@ -196,4 +196,5 @@ export const ur: Dict = {
   noCheckins: "اس آلے پر ابھی کوئی نہیں",
   escalationsWeek: "ایمرجنسی رابطے",
   escalationsNote: "پچھلے 7 دنوں میں SOS کھولا گیا، اس آلے پر",
+  more: "مزید",
 };

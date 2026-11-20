@@ -196,4 +196,5 @@ export const es: Dict = {
   noCheckins: "aún ninguno en este dispositivo",
   escalationsWeek: "Escalamientos de emergencia",
   escalationsNote: "SOS abierto en los últimos 7 días, este dispositivo",
+  more: "Más",
 };

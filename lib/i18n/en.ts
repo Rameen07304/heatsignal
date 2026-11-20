@@ -202,6 +202,7 @@ export const en = {
   noCheckins: "none on this device yet",
   escalationsWeek: "Emergency escalations",
   escalationsNote: "SOS opened in the last 7 days, this device",
+  more: "More",
 } as const;
 
 export type Key = keyof typeof en;

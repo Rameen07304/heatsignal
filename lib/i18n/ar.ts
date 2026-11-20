@@ -196,4 +196,5 @@ export const ar: Dict = {
   noCheckins: "لا يوجد على هذا الجهاز بعد",
   escalationsWeek: "حالات تصعيد طارئة",
   escalationsNote: "مرات فتح SOS خلال آخر 7 أيام على هذا الجهاز",
+  more: "المزيد",
 };

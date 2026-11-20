@@ -10,12 +10,12 @@ Built for the **Future Health Digital Innovation Challenge 2026, Challenge 7: Cl
 
 | Desired outcome | Where HeatSignal delivers it |
 |---|---|
-| Dynamic heat-risk assessment | Worker Safety and Workforce Risk combine hourly WBGT with workload, shift timing, clothing/PPE and acclimatisation. |
-| Clear, graded warnings | Green, yellow, red and black flags with safe actions (water, rest, shift change), clinical escalation on red and black, in six languages; 48-hour early warning and AI or rule-based Alerts. |
-| Worker-first governance | No personal health data, anonymous incident reports with counts below 5 hidden, and a written ban on disciplinary or employment use (Worker rights and data). |
-| Field-ready operation | Installable app, last-known data with an offline label, First Aid offline, rule-based alerts when the AI is down, low data use. |
-| Supervisor decision support | Crew- and site-level shift planner, break schedule, water totals, printable site notice and employer checklist; no individual clinical detail. |
-| Safety and productivity measures | Alert lead time and false-alarm back-test (Case Studies validation), incidents this week, and protected rest vs lost work hours (Workforce Risk). |
+| Dynamic heat-risk assessment | Worker Safety and Workforce Risk combine hourly WBGT with workload, shift timing, clothing/PPE and acclimatisation, plus an optional consented worker check-in (symptoms, urine colour, heart rate, recovery heart rate, Bluetooth heart-rate strap) that sets a personal status. |
+| Clear, graded warnings | Green, yellow, red and black flags with safe actions (water, rest, shift change), clinical escalation on red and black, in six languages; lead-time warnings (when the flag turns red, tomorrow’s peak and best shift start, hot-day streaks), 48-hour early warning and AI or rule-based Alerts. |
+| Worker-first governance | Health answers need consent, stay on the worker’s phone and can be deleted; supervisors see a status word only. Anonymous incident reports, counts below 5 hidden, and a written ban on disciplinary or employment use (Worker rights and data). |
+| Field-ready operation | Installable app, last-known data with an offline label, First Aid offline, rule-based alerts when the AI is down, low data use, and a field mode (high contrast, large text, no animation, map off, battery hint) with dust-storm advice. |
+| Supervisor decision support | Crew board (task, work–rest, next break, status word) with a heavy-task rotation planner, shift planner, water totals, printable site notice and employer checklist; no individual clinical detail. |
+| Safety and productivity measures | Alert lead time and a back-test over earlier years (Case Studies validation); break and water adherence from the shift timer, check-ins by status, emergency escalations, incidents, and protected rest vs lost work hours (Workforce Risk). |
 
 ## The problem
 
@@ -76,7 +76,7 @@ The 101 cities are fetched in batches of 50 and cached for 15 minutes, to stay i
 ## Limitations
 
 - WBGT is estimated from forecast and reanalysis data for a ~10–25 km grid cell, not measured on site. A site WBGT meter should overrule it.
-- No wearables yet. Physiological signals would be opt-in only, with consent and minimal retention.
+- Wearables are limited to a Bluetooth heart-rate strap in the check-in (Chrome/Edge on Android and desktop; not iPhone Safari). Check-ins, crew board, timer logs and SOS counts are stored per device in this demo; a shared deployment needs a backend with consent and access rules.
 - The back-test sample is small (2 heat events, 5 earlier seasons each), so it demonstrates the method rather than proving accuracy, and the rule fires in several non-event years.
 - The incident log is stored per browser in this demo; a shared log needs a backend with access rules.
 - Clothing and acclimatisation adjustments use ACGIH clothing values and a fixed margin for unacclimatised workers; fully enclosed vapour-barrier suits are out of scope.

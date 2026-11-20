@@ -196,4 +196,5 @@ export const ja: Dict = {
   noCheckins: "この端末ではまだありません",
   escalationsWeek: "緊急通報の操作",
   escalationsNote: "過去7日間にこの端末でSOSを開いた回数",
+  more: "その他",
 };

@@ -196,4 +196,5 @@ export const hi: Dict = {
   noCheckins: "इस डिवाइस पर अभी कोई नहीं",
   escalationsWeek: "आपातकालीन संपर्क",
   escalationsNote: "पिछले 7 दिनों में SOS खोला गया, इस डिवाइस पर",
+  more: "और",
 };
