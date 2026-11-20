@@ -1,6 +1,6 @@
-import { Brain, CloudSun, Languages, ListChecks, Send, Sparkles } from "lucide-react";
 "use client";
 
+import { Brain, CloudSun, Languages, ListChecks, Send, Sparkles } from "lucide-react";
 import { useT, type Key } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
