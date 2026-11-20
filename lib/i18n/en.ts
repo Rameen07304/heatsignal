@@ -754,6 +754,11 @@ export const en = {
   latestAlertFrom: "Latest alert, generated {time}",
   noAlertForCity: "No alert for {city} yet. Generate one from the current conditions.",
   howAgentsWork: "How the agents work",
+  cityQuestion: "How dangerous is it here today?",
+  workerPlanCity: "Worker plan for this city",
+  compareWord: "Compare",
+  tab7Days: "7 days",
+  tabVsNormal: "Compared with normal",
 } as const;
 
 export type Key = keyof typeof en;

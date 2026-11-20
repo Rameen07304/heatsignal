@@ -748,4 +748,9 @@ export const ar: Dict = {
   latestAlertFrom: "أحدث تنبيه، أُنشئ في {time}",
   noAlertForCity: "لا يوجد تنبيه لـ{city} بعد. أنشئ واحدًا من الظروف الحالية.",
   howAgentsWork: "كيف يعمل الوكلاء",
+  cityQuestion: "ما مدى الخطر هنا اليوم؟",
+  workerPlanCity: "خطة العمال لهذه المدينة",
+  compareWord: "مقارنة",
+  tab7Days: "7 أيام",
+  tabVsNormal: "مقارنة بالمعتاد",
 };

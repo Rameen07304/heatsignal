@@ -748,4 +748,9 @@ export const es: Dict = {
   latestAlertFrom: "Última alerta, generada {time}",
   noAlertForCity: "Aún no hay alerta para {city}. Genere una con las condiciones actuales.",
   howAgentsWork: "Cómo trabajan los agentes",
+  cityQuestion: "¿Qué tan peligroso es aquí hoy?",
+  workerPlanCity: "Plan de trabajo para esta ciudad",
+  compareWord: "Comparar",
+  tab7Days: "7 días",
+  tabVsNormal: "Comparado con lo normal",
 };

@@ -748,4 +748,9 @@ export const ja: Dict = {
   latestAlertFrom: "最新の警報({time}作成)",
   noAlertForCity: "{city}の警報はまだありません。現在の状況から作成してください。",
   howAgentsWork: "エージェントのしくみ",
+  cityQuestion: "今日ここはどれくらい危険?",
+  workerPlanCity: "この都市の作業計画",
+  compareWord: "比較",
+  tab7Days: "7日間",
+  tabVsNormal: "平年との比較",
 };

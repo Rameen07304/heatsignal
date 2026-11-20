@@ -748,4 +748,9 @@ export const hi: Dict = {
   latestAlertFrom: "ताज़ा अलर्ट, {time} पर बनाया गया",
   noAlertForCity: "{city} के लिए अभी कोई अलर्ट नहीं। मौजूदा हालात से एक बनाएँ।",
   howAgentsWork: "एजेंट कैसे काम करते हैं",
+  cityQuestion: "आज यहाँ कितना ख़तरा है?",
+  workerPlanCity: "इस शहर के लिए कामगार योजना",
+  compareWord: "तुलना",
+  tab7Days: "7 दिन",
+  tabVsNormal: "सामान्य से तुलना",
 };

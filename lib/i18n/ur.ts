@@ -748,4 +748,9 @@ export const ur: Dict = {
   latestAlertFrom: "تازہ ترین الرٹ، {time} کو بنایا گیا",
   noAlertForCity: "{city} کے لیے ابھی کوئی الرٹ نہیں۔ موجودہ حالات سے ایک بنائیں۔",
   howAgentsWork: "ایجنٹس کیسے کام کرتے ہیں",
+  cityQuestion: "آج یہاں کتنا خطرہ ہے؟",
+  workerPlanCity: "اس شہر کے لیے مزدوروں کا منصوبہ",
+  compareWord: "موازنہ",
+  tab7Days: "7 دن",
+  tabVsNormal: "معمول سے موازنہ",
 };
