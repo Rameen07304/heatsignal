@@ -22,6 +22,8 @@ import { useAsync } from "@/lib/use-async";
 import { formatDay } from "@/lib/utils";
 import { fetchForecast, fetchSeasonalAverage, type DailySummary } from "@/lib/weather";
 import { LeadTime } from "@/components/lead-time";
+import { cityName, countryName } from "@/lib/places";
+import { useT } from "@/lib/i18n";
 
 interface Props {
   params: Promise<{ lat: string; lon: string }>;
@@ -70,6 +72,7 @@ function HistoricalComparison({ lat, lon, today }: { lat: number; lon: number; t
 }
 
 export default function CityPage(props: Props) {
+  const { lang } = useT();
   const params = use(props.params);
   const searchParams = use(props.searchParams);
   const lat = Number(params.lat);
@@ -111,9 +114,9 @@ export default function CityPage(props: Props) {
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{valid ? city.name : "Unknown location"}</h1>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{valid ? cityName(city.name, lang) : "Unknown location"}</h1>
           <p className="text-sm text-muted-foreground">
-            {[city.country, valid && `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`, c && `Local time ${formatDay(c.now.time)}, ${c.now.time.slice(11, 16)}`]
+            {[countryName(city.country, lang), valid && `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`, c && `Local time ${formatDay(c.now.time)}, ${c.now.time.slice(11, 16)}`]
               .filter(Boolean)
               .join(" · ")}
           </p>

@@ -8,6 +8,7 @@ import { useT } from "@/lib/i18n";
 import { upcomingRisk, type Upcoming } from "@/lib/risk-forecast";
 import { useLoaded } from "@/lib/use-cities";
 import { cn } from "@/lib/utils";
+import { cityName } from "@/lib/places";
 
 const DISMISSED_KEY = "heatsignal-dismissed-warnings";
 const VISIBLE = 3;
@@ -24,7 +25,7 @@ export function useUpcoming(): { city: City; u: Upcoming }[] {
 
 /** One compact 48-hour early-warning alert at the top of every page. */
 export function EarlyWarningBanner() {
-  const { t } = useT();
+  const { t, lang } = useT();
   const upcoming = useUpcoming();
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [expanded, setExpanded] = useState(false);
@@ -70,8 +71,8 @@ export function EarlyWarningBanner() {
                 <span className={cn("h-2 w-2 shrink-0 rounded-full", u.severity === "critical" ? "bg-red-600" : "bg-amber-500")} />
                 <span className="min-w-0 flex-1">
                   {u.severity === "critical"
-                    ? t("bannerCritical", { city: city.name, hours: u.hoursUntil })
-                    : t("bannerHigh", { city: city.name, hours: u.hoursUntil, score: u.peakScore })}
+                    ? t("bannerCritical", { city: cityName(city.name, lang), hours: u.hoursUntil })
+                    : t("bannerHigh", { city: cityName(city.name, lang), hours: u.hoursUntil, score: u.peakScore })}
                 </span>
                 <span className="flex w-full items-center gap-2 ps-4 sm:w-auto sm:ps-0">
                   <Link href={cityHref(city)} className="font-medium text-primary hover:underline">
@@ -79,7 +80,7 @@ export function EarlyWarningBanner() {
                   </Link>
                   <button
                     type="button"
-                    aria-label={`${t("dismiss")} ${city.name}`}
+                    aria-label={`${t("dismiss")} ${cityName(city.name, lang)}`}
                     onClick={() => save(new Set(dismissed).add(id(city, u)))}
                     className="rounded p-1 text-muted-foreground hover:bg-black/5 hover:text-foreground"
                   >

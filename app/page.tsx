@@ -31,6 +31,7 @@ import { useUpcoming } from "@/components/early-warning-banner";
 import { hoursOf, worstHour } from "@/lib/use-city-conditions";
 import { ok, useCities } from "@/lib/use-cities";
 import { workRegimen } from "@/lib/work-rest";
+import { cityName, countryName, placeName, placeMatches } from "@/lib/places";
 
 const WeatherMap = dynamic(() => import("@/components/weather-map"), {
   ssr: false,
@@ -94,7 +95,7 @@ export default function Dashboard() {
 }
 
 function DashboardPage() {
-  const { t, n } = useT();
+  const { t, n, lang } = useT();
   const router = useRouter();
   const params = useSearchParams();
   const millions = (list: { city: City }[]) => t("millionPeople", { n: n(people(list)) });
@@ -168,9 +169,9 @@ function DashboardPage() {
       return ok(s) ? value(s) : -2;
     };
     return cities
-      .filter((c) => !q || `${c.name} ${c.country}`.toLowerCase().includes(q))
+      .filter((c) => placeMatches(c, q, lang))
       .sort((a, b) => score(b) - score(a));
-  }, [cities, data, sort, q]);
+  }, [cities, data, sort, q, lang]);
   const visible = showAll || q ? sorted : sorted.slice(0, PAGE);
   const isDefaultList = allCities.length === WORLD_CITIES.length && allCities.every((c, i) => cityKey(c) === cityKey(WORLD_CITIES[i]));
 
@@ -207,16 +208,16 @@ function DashboardPage() {
                   activeCountry === c ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
                 }`}
               >
-                {c ? `${c} (${count})` : t("allCountries")}
+                {c ? `${countryName(c, lang)} (${count})` : t("allCountries")}
               </button>
             ))}
           </div>
           {activeCountry && !pending && hottest && (
             <p className="text-sm" role="status">
               {t("countrySummary", {
-                country: activeCountry,
+                country: countryName(activeCountry, lang),
                 n: cities.length,
-                city: hottest.city.name,
+                city: cityName(hottest.city.name, lang),
                 wbgt: n(hottest.c.days[0].maxWbgt, 1),
                 k: work.stop.length,
                 p: n(people([...work.stop, ...work.breaks])),
@@ -247,12 +248,12 @@ function DashboardPage() {
             <Kpi label={t("atCritical")} sub={pending ? t("loading") : millions(critical)}>
               {pending || airFailed ? "–" : <CountUp value={critical.length} />}
             </Kpi>
-            <Kpi label={t("highestWbgt")} sub={hottest ? `WBGT · ${hottest.city.name}, ${hottest.city.country}` : t("loading")}>
+            <Kpi label={t("highestWbgt")} sub={hottest ? `WBGT · ${placeName(hottest.city, lang)}` : t("loading")}>
               {hottest ? <><CountUp value={hottest.c.days[0].maxWbgt} decimals={1} /> °C</> : "–"}
             </Kpi>
             <Kpi
               label={t("worstAqi")}
-              sub={worstAir ? `${worstAir.city.name} · ${t(aqiBand(worstAir.c.now.air!.aqi).key)}` : airFailed ? t("airFeedUnavailable") : t("loading")}
+              sub={worstAir ? `${cityName(worstAir.city.name, lang)} · ${t(aqiBand(worstAir.c.now.air!.aqi).key)}` : airFailed ? t("airFeedUnavailable") : t("loading")}
             >
               {worstAir ? formatAqi(worstAir.c.now.air!.aqi) : "–"}
             </Kpi>
@@ -311,8 +312,8 @@ function DashboardPage() {
                       {top.map(({ city, c, peak }) => (
                         <TableRow key={cityKey(city)}>
                           <TableCell className="ps-4">
-                            <Link href={cityHref(city)} className="font-medium hover:underline">{city.name}</Link>
-                            <div className="text-xs text-muted-foreground">{city.country} · {t("peakAt", { time: peak.time.slice(11, 16) })}</div>
+                            <Link href={cityHref(city)} className="font-medium hover:underline">{cityName(city.name, lang)}</Link>
+                            <div className="text-xs text-muted-foreground">{countryName(city.country, lang)} · {t("peakAt", { time: peak.time.slice(11, 16) })}</div>
                             <div className="flex flex-wrap gap-x-2 text-xs text-muted-foreground">
                               <span className="whitespace-nowrap" title="WBGT">{t("heatShort")} {peak.wbgt.toFixed(1)}°</span>
                               {peak.air && <span className="whitespace-nowrap">AQI {formatAqi(peak.air.aqi)}</span>}

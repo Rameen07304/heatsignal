@@ -21,6 +21,7 @@ import { ok, useCities } from "@/lib/use-cities";
 import { REGIMENS, contextLabel, type Regimen } from "@/lib/work-rest";
 import { INDUSTRIES, productivityLoss, shiftLabel, workDay, type WorkDay } from "@/lib/workforce";
 import { cn } from "@/lib/utils";
+import { cityName, countryName, placeName } from "@/lib/places";
 
 const WeatherMap = dynamic(() => import("@/components/weather-map"), {
   ssr: false,
@@ -47,7 +48,7 @@ function RegimenPill({ r }: { r: Regimen }) {
 const money = (n: number) => Math.round(n).toLocaleString("en");
 
 export default function WorkforceRiskPage() {
-  const { t } = useT();
+  const { t, lang } = useT();
   const { cities, data, retry } = useCities();
   const [industryId, setIndustryId] = useState(INDUSTRIES[0].id);
   const industry = INDUSTRIES.find((i) => i.id === industryId)!;
@@ -195,8 +196,8 @@ export default function WorkforceRiskPage() {
                     {(showAll ? rows : rows.slice(0, PAGE)).map(({ city, d }) => (
                       <TableRow key={cityKey(city)}>
                         <TableCell className="ps-4">
-                          <Link href={cityHref(city)} className="font-medium hover:underline">{city.name}</Link>
-                          <div className="text-xs text-muted-foreground">{city.country} · WBGT {d.peakWbgt.toFixed(1)} °C</div>
+                          <Link href={cityHref(city)} className="font-medium hover:underline">{cityName(city.name, lang)}</Link>
+                          <div className="text-xs text-muted-foreground">{countryName(city.country, lang)} · WBGT {d.peakWbgt.toFixed(1)} °C</div>
                         </TableCell>
                         <TableCell><RegimenPill r={d.worst} /></TableCell>
                         <TableCell className="whitespace-nowrap text-sm tabular-nums">
@@ -232,8 +233,8 @@ export default function WorkforceRiskPage() {
                 <label className="space-y-1 text-xs text-muted-foreground">
                   <span className="block">City</span>
                   <select className={INPUT} value={site ? cityKey(site.city) : ""} onChange={(e) => setSiteKey(e.target.value)}>
-                    {[...rows].sort((a, b) => a.city.name.localeCompare(b.city.name)).map(({ city }) => (
-                      <option key={cityKey(city)} value={cityKey(city)}>{city.name}, {city.country}</option>
+                    {[...rows].sort((a, b) => cityName(a.city.name, lang).localeCompare(cityName(b.city.name, lang), lang)).map(({ city }) => (
+                      <option key={cityKey(city)} value={cityKey(city)}>{placeName(city, lang)}</option>
                     ))}
                   </select>
                 </label>
@@ -267,12 +268,12 @@ export default function WorkforceRiskPage() {
                     {loss.recoveredHours > 0 ? (
                       <>
                         Starting the shift at <b>{shiftLabel(site.d.bestStart)}</b> instead of 07:00–15:00 wins back{" "}
-                        <b>{money(loss.recoveredHours)} hours</b> today ({loss.recoveredPercent}% of the lost time) in {site.city.name}.
+                        <b>{money(loss.recoveredHours)} hours</b> today ({loss.recoveredPercent}% of the lost time) in {cityName(site.city.name, lang)}.
                       </>
                     ) : loss.lostTotal > 0 ? (
                       <>No other 8-hour shift between 05:00 and 20:00 is cooler today. Split the shift around the hottest hours instead.</>
                     ) : (
-                      <>No working time is lost to heat in {site.city.name} today.</>
+                      <>No working time is lost to heat in {cityName(site.city.name, lang)} today.</>
                     )}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -291,7 +292,7 @@ export default function WorkforceRiskPage() {
               <CardHeader>
                 <CardTitle className="text-base">Safety and productivity measures</CardTitle>
                 <CardDescription>
-                  {site.city.name} today · {industry.label.toLowerCase()} ({industry.work} work) · {contextLabel(ctx)} · {workers} workers
+                  {cityName(site.city.name, lang)} today · {industry.label.toLowerCase()} ({industry.work} work) · {contextLabel(ctx)} · {workers} workers
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
@@ -300,7 +301,7 @@ export default function WorkforceRiskPage() {
                     ["Protected rest", `${loss.lostPerWorker.toFixed(1)} h`, `per worker, vs ${site.d.standardHours.toFixed(1)} h of work in 07:00–15:00`],
                     ["Work hours lost, 07:00 start", money(loss.lostTotal), "crew total today"],
                     [`Work hours lost, best start`, money(loss.lostTotal - loss.recoveredHours), `starting ${shiftLabel(site.d.bestStart)}`],
-                    ["Incidents reported this week", shown(siteIncidents), `in ${site.city.name}, anonymous log`],
+                    ["Incidents reported this week", shown(siteIncidents), `in ${cityName(site.city.name, lang)}, anonymous log`],
                     [t("breakAdherence"), device.breaks == null ? "–" : `${device.breaks}%`, t("measuresTimerNote")],
                     [t("waterAdherence"), device.water == null ? "–" : `${device.water}%`, t("measuresTimerNote")],
                     [t("checkinsToday"), shown(device.statuses.length), byStatus.length ? byStatus.map(([l, n]) => `${t(STATUS_KEY[l])}: ${shown(n)}`).join(" · ") : t("noCheckins")],

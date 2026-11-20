@@ -16,6 +16,7 @@ import { analyzeSunlight, LEVEL_LABEL, VITD_COLORS } from "@/lib/health-advisor"
 import { compoundBand, RISK_COLORS } from "@/lib/risk";
 import { ok, type CityState } from "@/lib/use-cities";
 import { workRegimen, type Intensity, type WorkerContext } from "@/lib/work-rest";
+import { cityName, countryName } from "@/lib/places";
 
 export type MapMode = "compound" | "heat" | "air" | "vitd" | "work";
 
@@ -34,7 +35,7 @@ const NO_DATA = "#64748b";
 // Load with next/dynamic({ ssr: false }) — Leaflet needs `window`.
 export default function WeatherMap({ cities, data, mode, work = "heavy", ctx }: Props) {
   const { resolvedTheme } = useTheme();
-  const { t } = useT();
+  const { t, lang } = useT();
   const [field] = useFieldMode();
   const [show, setShow] = useState(false);
   // Esri grey canvas: free with attribution, no API key (CARTO now requires one).
@@ -104,7 +105,7 @@ export default function WeatherMap({ cities, data, mode, work = "heavy", ctx }: 
               pathOptions={{ color: "#0a0a0f", weight: 1.5, fillColor: color, fillOpacity: 0.9 }}
             >
               <Popup>
-                <strong>{city.name}</strong>, {city.country}
+                <strong>{cityName(city.name, lang)}</strong>, {countryName(city.country, lang)}
                 <br />
                 {regimen && today ? (
                   <>

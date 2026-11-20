@@ -14,6 +14,7 @@ import { nextHours, type Conditions } from "@/lib/conditions";
 import { compoundBand, RISK_COLORS, uvBand } from "@/lib/risk";
 import type { CityState } from "@/lib/use-cities";
 import { levelKey, useT, type Key } from "@/lib/i18n";
+import { cityName, countryName } from "@/lib/places";
 
 const UV_KEY: Record<string, Key> = { Low: "low", Moderate: "moderate", High: "high", "Very high": "uvVeryHigh", Extreme: "extreme" };
 
@@ -63,7 +64,7 @@ interface Props {
 }
 
 export function CityCard({ city, state, onRemove, onRetry }: Props) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const c = state && !(state instanceof Error) ? state : null;
   const now = c?.now;
   const air = now?.air;
@@ -72,13 +73,13 @@ export function CityCard({ city, state, onRemove, onRetry }: Props) {
     <Card className="flex flex-col">
       <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
         <div className="min-w-0">
-          <CardTitle className="truncate">{city.name}</CardTitle>
-          <CardDescription className="truncate">{city.country}</CardDescription>
+          <CardTitle className="truncate">{cityName(city.name, lang)}</CardTitle>
+          <CardDescription className="truncate">{countryName(city.country, lang)}</CardDescription>
         </div>
         <button
           type="button"
           onClick={onRemove}
-          aria-label={t("stopMonitoring", { city: city.name })}
+          aria-label={t("stopMonitoring", { city: cityName(city.name, lang) })}
           className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <X className="h-3.5 w-3.5" />

@@ -28,6 +28,7 @@ import { fetchForecast, fetchRecentDays } from "@/lib/weather";
 import { hotStreak } from "@/lib/lead-time";
 import { LeadTime } from "@/components/lead-time";
 import { INTENSITIES, heatFlag, workRegimen } from "@/lib/work-rest";
+import { cityName, placeName } from "@/lib/places";
 
 interface Props {
   searchParams: Promise<{ lat?: string; lon?: string; name?: string; country?: string }>;
@@ -48,7 +49,7 @@ export default function WorkerSafetyPage(props: Props) {
   const fromUrl = cityFromUrl(searchParams);
   const [selected, setSelected] = useState<City>(fromUrl ?? DEFAULT);
   const [ctx] = useWorkerContext();
-  const { t, n } = useT();
+  const { t, n, lang } = useT();
   const options = [...cities].sort((a, b) => a.name.localeCompare(b.name));
   if (!options.some((c) => cityKey(c) === cityKey(selected))) options.unshift(selected);
 
@@ -83,7 +84,7 @@ export default function WorkerSafetyPage(props: Props) {
             onChange={(e) => setSelected(options.find((o) => cityKey(o) === e.target.value) ?? DEFAULT)}
           >
             {options.map((o) => (
-              <option key={cityKey(o)} value={cityKey(o)}>{o.name}{o.country ? `, ${o.country}` : ""}</option>
+              <option key={cityKey(o)} value={cityKey(o)}>{placeName(o, lang)}</option>
             ))}
           </select>
         </label>
@@ -106,16 +107,16 @@ export default function WorkerSafetyPage(props: Props) {
           <Card className="no-print">
             <CardHeader className="flex-row flex-wrap items-start justify-between gap-3 space-y-0">
               <div>
-                <CardTitle>{t("rightNowIn", { city: selected.name })}</CardTitle>
+                <CardTitle>{t("rightNowIn", { city: cityName(selected.name, lang) })}</CardTitle>
                 <CardDescription>{t("rightNowLine", { wbgt: n(now.wbgt, 1), time: now.time.slice(11, 16), temp: n(now.temp, 1), rh: n(now.rh) })}</CardDescription>
               </div>
               <div className="flex flex-wrap gap-2">
                 {now.air && <AqiBadge aqi={now.air.aqi} />}
                 {now.score != null && <CompoundBadge score={now.score} />}
                 <ShareDialog
-                  title={`${t("workerSafety")}: ${selected.name}`}
+                  title={`${t("workerSafety")}: ${cityName(selected.name, lang)}`}
                   text={[
-                    `⚠️ ${t("workerSafety")}: ${selected.name}`,
+                    `⚠️ ${t("workerSafety")}: ${cityName(selected.name, lang)}`,
                     "",
                     t("shareHeatLine", { wbgt: n(now.wbgt, 1), time: now.time.slice(11, 16) }),
                     ...INTENSITIES.map((i) => `${t(i.labelKey)}: ${t(workRegimen(now.wbgt, i.key, ctx).key)}`),

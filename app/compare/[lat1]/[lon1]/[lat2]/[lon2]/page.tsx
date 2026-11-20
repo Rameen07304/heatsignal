@@ -16,6 +16,8 @@ import { buildConditions, nextHours, type Conditions } from "@/lib/conditions";
 import { COMPOUND_BANDS, RISK_COLORS, compoundBand, uvBand } from "@/lib/risk";
 import { useAsync } from "@/lib/use-async";
 import { fetchForecast } from "@/lib/weather";
+import { cityName } from "@/lib/places";
+import { useT } from "@/lib/i18n";
 
 interface Props {
   params: Promise<{ lat1: string; lon1: string; lat2: string; lon2: string }>;
@@ -61,6 +63,7 @@ function verdict(a: City, ca: Conditions, b: City, cb: Conditions): string {
 }
 
 export default function ComparePage(props: Props) {
+  const { lang } = useT();
   const params = use(props.params);
   const searchParams = use(props.searchParams);
   const a = parse(params.lat1, params.lon1, searchParams.n1, searchParams.c1);
@@ -124,7 +127,7 @@ export default function ComparePage(props: Props) {
                 <Card key={i} style={{ borderColor: `${COLORS[i]}80` }}>
                   <CardHeader className="flex-row items-start justify-between space-y-0">
                     <div>
-                      <CardTitle><Link href={cityHref(city)} className="hover:underline" style={{ color: COLORS[i] }}>{city.name}</Link></CardTitle>
+                      <CardTitle><Link href={cityHref(city)} className="hover:underline" style={{ color: COLORS[i] }}>{cityName(city.name, lang)}</Link></CardTitle>
                       <CardDescription>{city.country}</CardDescription>
                     </div>
                     {c.now.score != null && <CompoundBadge score={c.now.score} />}
@@ -182,8 +185,8 @@ export default function ComparePage(props: Props) {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Measure</TableHead>
-                      <TableHead style={{ color: COLORS[0] }}>{a.name}</TableHead>
-                      <TableHead style={{ color: COLORS[1] }}>{b.name}</TableHead>
+                      <TableHead style={{ color: COLORS[0] }}>{cityName(a.name, lang)}</TableHead>
+                      <TableHead style={{ color: COLORS[1] }}>{cityName(b.name, lang)}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

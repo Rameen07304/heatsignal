@@ -16,6 +16,7 @@ import { CRITICAL_SCORE, isRising, sixHourTrend, type Trend } from "@/lib/risk-f
 import { cn } from "@/lib/utils";
 import { isCompoundEvent, uvBand } from "@/lib/risk";
 import { useT } from "@/lib/i18n";
+import { cityName, countryName, placeMatches } from "@/lib/places";
 
 type Row = { city: City; c: Conditions };
 
@@ -48,7 +49,7 @@ const TREND_COLOR = { up: "text-red-600", flat: "text-muted-foreground", down: "
 const TrendIcon = ({ trend }: { trend: Trend }) => { const I = TREND_ICON[trend]; return <I className={cn("h-4 w-4", TREND_COLOR[trend])} />; };
 
 export function Leaderboard({ rows }: { rows: Row[] }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({ key: "score", desc: true });
   const [filter, setFilter] = useState<"all" | "critical" | "rising">("all");
   const [q, setQ] = useState("");
@@ -57,7 +58,7 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
   const query = q.trim().toLowerCase();
   const shown = rows
     .filter((r) => (filter === "critical" ? (r.c.now.score ?? 0) >= CRITICAL_SCORE : filter === "rising" ? isRising(r.c) : true))
-    .filter((r) => !query || `${r.city.name} ${r.city.country}`.toLowerCase().includes(query))
+    .filter((r) => placeMatches(r.city, query, lang))
     .sort((a, b) => {
       const x = col.value(a);
       const y = col.value(b);
@@ -124,8 +125,8 @@ export function Leaderboard({ rows }: { rows: Row[] }) {
                   return (
                     <TableRow key={cityKey(r.city)}>
                       <TableCell className="hidden text-muted-foreground sm:table-cell">{i + 1}</TableCell>
-                      <TableCell><Link href={cityHref(r.city)} className="font-medium hover:underline">{r.city.name}</Link></TableCell>
-                      <TableCell className="hidden text-muted-foreground sm:table-cell">{r.city.country}</TableCell>
+                      <TableCell><Link href={cityHref(r.city)} className="font-medium hover:underline">{cityName(r.city.name, lang)}</Link></TableCell>
+                      <TableCell className="hidden text-muted-foreground sm:table-cell">{countryName(r.city.country, lang)}</TableCell>
                       <TableCell className="hidden text-end sm:table-cell">{n.temp.toFixed(1)}°</TableCell>
                       <TableCell className="text-end font-medium">{n.wbgt.toFixed(1)}°</TableCell>
                       <TableCell className="hidden sm:table-cell"><RiskBadge level={n.risk} /></TableCell>

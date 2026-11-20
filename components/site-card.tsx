@@ -12,12 +12,13 @@ import { useWorkerContext } from "@/lib/use-worker-context";
 import { listRanges } from "@/components/work-planner";
 import { emergencyLine } from "@/lib/emergency";
 import { useT } from "@/lib/i18n";
+import { placeName } from "@/lib/places";
 
 /** A one-page notice to print and post at a work site. */
 export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; today: CombinedHour[] }) {
   const [intensity, setIntensity] = useState<Intensity>("heavy");
   const [ctx] = useWorkerContext();
-  const { t, date } = useT();
+  const { t, date, lang } = useT();
   const tr = (k: string) => t(k as Parameters<typeof t>[0]);
   const assumption = `${t(CLOTHING.find((c) => c.key === ctx.clothing)!.labelKey)}, ${t(ctx.acclimatised ? "crewAcclimatised" : "crewNewToHeat")}`;
   const daytime = today.filter((h) => {
@@ -56,7 +57,7 @@ export function SiteCard({ city, now, today }: { city: City; now: CombinedHour; 
             {flag.escalate && <div className="mt-1 max-w-xl text-sm font-semibold">{t("heatEscalate")}</div>}
           </div>
           <div className="text-end text-sm">
-            <div className="text-lg font-bold">{city.name}{city.country && `, ${city.country}`}</div>
+            <div className="text-lg font-bold">{placeName(city, lang)}</div>
             <div>{t("noticeUpdated", { day: date(now.time), time: now.time.slice(11, 16) })}</div>
             <div dir="ltr">{t("nowShort")}: WBGT {now.wbgt.toFixed(1)} °C · {now.temp.toFixed(0)} °C{now.air ? ` · AQI ${formatAqi(now.air.aqi)}` : ""}</div>
           </div>

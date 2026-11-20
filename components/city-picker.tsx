@@ -7,6 +7,7 @@ import { AddCityDialog } from "@/components/city-search";
 import { WORLD_CITIES, cityKey, type City } from "@/lib/cities";
 import { useCities } from "@/lib/use-cities";
 import { useT } from "@/lib/i18n";
+import { placeName } from "@/lib/places";
 
 const NONE = new Set<string>();
 
@@ -19,7 +20,7 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
 
 /** Choose a location: monitored cities, a worldwide search, or the browser's own position. */
 export function CityPicker({ value, onChange, label }: { value: City; onChange: (c: City) => void; label?: string }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   label ??= t("location");
   const { cities } = useCities();
   const [locating, setLocating] = useState(false);
@@ -62,7 +63,7 @@ export function CityPicker({ value, onChange, label }: { value: City; onChange: 
             value={cityKey(value)}
             onChange={(e) => onChange(options.find((o) => cityKey(o) === e.target.value) ?? value)}
           >
-            {options.map((o) => <option key={cityKey(o)} value={cityKey(o)}>{o.name}{o.country ? `, ${o.country}` : ""}</option>)}
+            {options.map((o) => <option key={cityKey(o)} value={cityKey(o)}>{placeName(o, lang)}</option>)}
           </select>
         </label>
         <AddCityDialog onAdd={onChange} monitored={NONE} label={t("search")} title={t("findPlace")} variant="outline" />

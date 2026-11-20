@@ -19,6 +19,7 @@ import { workRegimen } from "@/lib/work-rest";
 import { hourToInput } from "@/lib/alert-client";
 import { useT, type Key } from "@/lib/i18n";
 import { ruleAlert } from "@/lib/rule-alert";
+import { cityName, placeName } from "@/lib/places";
 
 interface StepState {
   status: StageStatus;
@@ -188,7 +189,7 @@ export function LiveGenerator() {
               onChange={(e) => setKey(e.target.value)}
               disabled={running}
             >
-              {options.map((o) => <option key={cityKey(o)} value={cityKey(o)}>{o.name}, {o.country}</option>)}
+              {options.map((o) => <option key={cityKey(o)} value={cityKey(o)}>{placeName(o, lang)}</option>)}
             </select>
             <Button onClick={run} disabled={running || !selected}>
               {running ? <Loader2 className="animate-spin" /> : <Play />} {t("generateMultiAgent")}
@@ -224,14 +225,14 @@ export function LiveGenerator() {
       {result && (
         <Card >
           <CardHeader>
-            <CardTitle>{t("finalAlertFor", { city: result.city.name })}</CardTitle>
+            <CardTitle>{t("finalAlertFor", { city: cityName(result.city.name, lang) })}</CardTitle>
             <CardDescription>{t("finalAlertIntro")}</CardDescription>
           </CardHeader>
           <CardContent>
             <AlertView
               alert={result.alert}
               note={result.alert.source === "rules" ? t("rulesNote") : result.alert.ur && result.alert.ar ? undefined : t("translationMissingNote")}
-              title={t("healthAlertFor", { city: result.city.name })}
+              title={t("healthAlertFor", { city: cityName(result.city.name, lang) })}
               path={cityHref(result.city)}
               subtitle={`WBGT ${result.hour.wbgt.toFixed(1)} °C${result.hour.air ? ` · AQI ${formatAqi(result.hour.air.aqi)}` : ""}${result.hour.score != null ? ` · ${t("compoundShort")} ${result.hour.score}/100` : ""}`}
             />

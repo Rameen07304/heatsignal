@@ -9,12 +9,13 @@ import { useUpcoming } from "@/components/early-warning-banner";
 import { cityHref, cityKey } from "@/lib/cities";
 import { useT } from "@/lib/i18n";
 import { compoundBand } from "@/lib/risk";
+import { cityName, countryName } from "@/lib/places";
 
 const PAGE = 6;
 
 /** Cities whose compound risk is forecast to cross into High or Critical within 48 hours, soonest first. */
 export function UpcomingRisks() {
-  const { t, date } = useT();
+  const { t, date, lang } = useT();
   const [all, setAll] = useState(false);
   const list = [...useUpcoming()].sort((a, b) => a.u.hoursUntil - b.u.hoursUntil);
   if (!list.length) return null;
@@ -38,8 +39,8 @@ export function UpcomingRisks() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <Link href={cityHref(city)} className="font-semibold hover:underline">{city.name}</Link>
-                    <div className="text-xs text-muted-foreground">{city.country}</div>
+                    <Link href={cityHref(city)} className="font-semibold hover:underline">{cityName(city.name, lang)}</Link>
+                    <div className="text-xs text-muted-foreground">{countryName(city.country, lang)}</div>
                   </div>
                   <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums">
                     <TrendingUp className="h-3.5 w-3.5" style={{ color: peak.color }} aria-hidden="true" />+{jump}
