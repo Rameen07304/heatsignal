@@ -36,13 +36,14 @@ export function InstallApp() {
     <Button
       variant="outline"
       size="sm"
+      aria-label={t("installApp")}
       onClick={async () => {
         await prompt.prompt();
         await prompt.userChoice;
         setPrompt(null);
       }}
     >
-      <Download /> {t("installApp")}
+      <Download /> <span className="hidden sm:inline">{t("installApp")}</span>
     </Button>
   );
 }
