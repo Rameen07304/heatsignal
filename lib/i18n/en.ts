@@ -738,6 +738,13 @@ export const en = {
   bannerCompactOne: "1 city enters higher risk in the next 48 h",
   bannerCompactMany: "{n} cities enter higher risk in the next 48 h",
   viewWord: "View",
+  wsQuestion: "Can my crew work now, and how? Flag, breaks, water and site tools.",
+  actStartTimer: "Start shift timer",
+  tabToday: "Today",
+  tabCheckin: "My check-in",
+  tabCrew: "Crew",
+  tabSiteTools: "Site tools",
+  learnMore: "Learn more",
 } as const;
 
 export type Key = keyof typeof en;

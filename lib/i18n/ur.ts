@@ -732,4 +732,11 @@ export const ur: Dict = {
   bannerCompactOne: "اگلے 48 گھنٹوں میں 1 شہر زیادہ خطرے میں",
   bannerCompactMany: "اگلے 48 گھنٹوں میں {n} شہر زیادہ خطرے میں",
   viewWord: "دیکھیں",
+  wsQuestion: "کیا میرا عملہ ابھی کام کر سکتا ہے، اور کیسے؟ جھنڈا، وقفے، پانی اور سائٹ ٹولز۔",
+  actStartTimer: "شفٹ ٹائمر شروع کریں",
+  tabToday: "آج",
+  tabCheckin: "میری جانچ",
+  tabCrew: "عملہ",
+  tabSiteTools: "سائٹ ٹولز",
+  learnMore: "مزید جانیں",
 };

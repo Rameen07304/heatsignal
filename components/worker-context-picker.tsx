@@ -8,11 +8,32 @@ import { useWorkerContext } from "@/lib/use-worker-context";
 import { useT } from "@/lib/i18n";
 
 /** Clothing/PPE and acclimatisation for the crew. Every work tool on the page reads it. */
-export function WorkerContextPicker() {
+export function WorkerContextPicker({ compact }: { compact?: boolean } = {}) {
   const [ctx, setCtx] = useWorkerContext();
   const { t, n } = useT();
   const adjust = effectiveWbgt(0, ctx);
   const clothing = CLOTHING.find((c) => c.key === ctx.clothing)!;
+
+  // One-line version, for pages where the crew conditions sit above the tabs.
+  if (compact) {
+    return (
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg bg-card px-4 py-2 text-sm">
+        <span className="flex items-center gap-1.5 font-medium"><Shirt className="h-4 w-4 text-primary" aria-hidden /> {t("crewConditions")}</span>
+        <Tabs value={ctx.clothing} onValueChange={(v) => setCtx({ ...ctx, clothing: v as Clothing })}>
+          <TabsList aria-label={t("clothing")} className="h-auto flex-wrap">
+            {CLOTHING.map((c) => <TabsTrigger key={c.key} value={c.key} title={t(c.noteKey)}>{t(c.labelKey)}</TabsTrigger>)}
+          </TabsList>
+        </Tabs>
+        <label className="flex min-h-10 cursor-pointer items-center gap-2">
+          <input type="checkbox" className="h-4 w-4 accent-[hsl(var(--primary))]" checked={!ctx.acclimatised} onChange={(e) => setCtx({ ...ctx, acclimatised: !e.target.checked })} />
+          {t("newToHeatShort")}
+        </label>
+        {adjust > 0 && (
+          <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-800 dark:text-amber-300">{t("adjustedShort", { n: n(adjust, 1) })}</span>
+        )}
+      </div>
+    );
+  }
 
   return (
     <Card className="no-print">

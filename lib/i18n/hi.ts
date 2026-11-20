@@ -732,4 +732,11 @@ export const hi: Dict = {
   bannerCompactOne: "अगले 48 घंटों में 1 शहर ज़्यादा जोखिम में",
   bannerCompactMany: "अगले 48 घंटों में {n} शहर ज़्यादा जोखिम में",
   viewWord: "देखें",
+  wsQuestion: "क्या मेरी टीम अभी काम कर सकती है, और कैसे? झंडा, ब्रेक, पानी और साइट टूल।",
+  actStartTimer: "शिफ़्ट टाइमर शुरू करें",
+  tabToday: "आज",
+  tabCheckin: "मेरी जाँच",
+  tabCrew: "टीम",
+  tabSiteTools: "साइट टूल",
+  learnMore: "और जानें",
 };

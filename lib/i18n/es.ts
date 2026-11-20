@@ -732,4 +732,11 @@ export const es: Dict = {
   bannerCompactOne: "1 ciudad entra en mayor riesgo en las próximas 48 h",
   bannerCompactMany: "{n} ciudades entran en mayor riesgo en las próximas 48 h",
   viewWord: "Ver",
+  wsQuestion: "¿Puede trabajar mi cuadrilla ahora y cómo? Bandera, descansos, agua y herramientas.",
+  actStartTimer: "Iniciar temporizador",
+  tabToday: "Hoy",
+  tabCheckin: "Mi chequeo",
+  tabCrew: "Cuadrilla",
+  tabSiteTools: "Herramientas del sitio",
+  learnMore: "Más información",
 };

@@ -732,4 +732,11 @@ export const ar: Dict = {
   bannerCompactOne: "مدينة واحدة تدخل خطرًا أعلى خلال 48 ساعة",
   bannerCompactMany: "{n} مدن تدخل خطرًا أعلى خلال 48 ساعة",
   viewWord: "عرض",
+  wsQuestion: "هل يمكن لطاقمي العمل الآن، وكيف؟ العلم والاستراحات والماء وأدوات الموقع.",
+  actStartTimer: "ابدأ مؤقّت الوردية",
+  tabToday: "اليوم",
+  tabCheckin: "فحصي",
+  tabCrew: "الطاقم",
+  tabSiteTools: "أدوات الموقع",
+  learnMore: "اعرف المزيد",
 };

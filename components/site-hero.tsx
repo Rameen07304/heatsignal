@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatAqi } from "@/lib/air";
 import { WORLD_CITIES, cityKey, type City } from "@/lib/cities";
+import type { Conditions } from "@/lib/conditions";
 import { useT, type Key } from "@/lib/i18n";
 import { nextFlagChange, tomorrowPeak } from "@/lib/lead-time";
 import { placeName } from "@/lib/places";
@@ -30,19 +31,16 @@ export const siteHref = (c: City, hash = "") =>
 
 /** "Right now at your site": one flag, one sentence per workload, the next change, and three actions. */
 export function SiteHero() {
-  const { t, n, lang } = useT();
+  const { t, lang } = useT();
   const { cities, data } = useCities();
-  const [ctx] = useWorkerContext();
   const [site, setSite] = useState<City>(DEFAULT_SITE);
   const [locating, setLocating] = useState(false);
-  const [minute, setMinute] = useState(0);
 
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(SITE_KEY) ?? "null");
       if (saved && typeof saved.lat === "number" && typeof saved.lon === "number") setSite(saved);
     } catch {}
-    setMinute(new Date().getMinutes());
   }, []);
 
   const choose = (c: City) => {
@@ -71,16 +69,6 @@ export function SiteHero() {
   const current = options.find((c) => cityKey(c) === cityKey(site)) ?? options.find((c) => cityKey(c) === cityKey(DEFAULT_SITE)) ?? options[0];
   const state = current ? data[cityKey(current)] : undefined;
   const c = ok(state) ? state : null;
-  const now = c?.now;
-
-  const regimens = now ? INTENSITIES.map((i) => ({ i, r: workRegimen(now.wbgt, i.key, ctx) })) : [];
-  const flag = now ? heatFlag(workRegimen(now.wbgt, "heavy", ctx)) : null;
-  const adjust = effectiveWbgt(0, ctx);
-  const from = c ? Math.max(0, c.hours.findIndex((h) => h.time === c.now.time)) : 0;
-  const change = c ? nextFlagChange(c.hours.slice(from), "heavy", ctx, minute) : null;
-  const tomorrow = c?.days[1]?.date;
-  const peak = c && tomorrow ? tomorrowPeak(c.hours.filter((h) => h.time.startsWith(tomorrow)), "heavy", ctx) : null;
-  const inTime = (m: number) => (m >= 60 ? t("inHoursMinutes", { h: Math.floor(m / 60), m: m % 60 }) : t("inMinutes", { m: Math.max(0, m) }));
   const big = "h-12 w-full justify-center text-base sm:w-auto";
 
   return (
@@ -107,34 +95,7 @@ export function SiteHero() {
         </div>
       </div>
 
-      {!now || !flag ? (
-        <Skeleton className="h-56 w-full rounded-lg" />
-      ) : (
-        <div className="overflow-hidden rounded-lg border bg-card">
-          <div className="px-5 py-5 text-white sm:px-6" style={{ backgroundColor: flag.color }} role="status">
-            <p className="text-2xl font-black leading-tight sm:text-4xl">
-              {t(flag.key).toLocaleUpperCase(lang)} — {t(FLAG_ACTION[flag.key])}
-            </p>
-            <p className="mt-1 text-sm opacity-95" dir="auto">
-              WBGT {n(now.wbgt, 1)} °C · {n(now.temp, 0)} °C{now.air ? ` · AQI ${formatAqi(now.air.aqi)}` : ""} · {now.time.slice(11, 16)}
-            </p>
-          </div>
-          <div className="space-y-2 px-5 py-4 sm:px-6">
-            <p className="text-base font-medium">
-              {regimens.map(({ i, r }) => `${t(i.labelKey)}: ${t(SHORT[r.workMin])}`).join(" · ")}
-              {adjust > 0 && (
-                <span className="ms-2 inline-block rounded-full bg-amber-500/15 px-2 py-0.5 align-middle text-xs font-semibold text-amber-800 dark:text-amber-300">
-                  {t("adjustedShort", { n: n(adjust, 1) })}
-                </span>
-              )}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {change ? t("heroTurns", { flag: t(change.flag.key), at: change.at, in: inTime(change.inMinutes) }) : t("heroNoChange")}
-              {peak?.bestStart != null && ` ${t("heroSafestTomorrow", { shift: shiftLabel(peak.bestStart) })}`}
-            </p>
-          </div>
-        </div>
-      )}
+      <FlagAnswer c={c} />
 
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <Button asChild className={big}>
@@ -148,5 +109,54 @@ export function SiteHero() {
         </Button>
       </div>
     </section>
+  );
+}
+
+/**
+ * The flag answer for one place: a large block in the flag colour with the flag word and what it means for
+ * heavy work, one line per workload (respecting crew conditions), and the next change. Used by the dashboard
+ * hero, Worker Safety and the city page.
+ */
+export function FlagAnswer({ c }: { c: Conditions | null }) {
+  const { t, n, lang } = useT();
+  const [ctx] = useWorkerContext();
+  const [minute, setMinute] = useState(0);
+  useEffect(() => setMinute(new Date().getMinutes()), []);
+  const now = c?.now;
+  const regimens = now ? INTENSITIES.map((i) => ({ i, r: workRegimen(now.wbgt, i.key, ctx) })) : [];
+  const flag = now ? heatFlag(workRegimen(now.wbgt, "heavy", ctx)) : null;
+  const adjust = effectiveWbgt(0, ctx);
+  const from = c ? Math.max(0, c.hours.findIndex((h) => h.time === c.now.time)) : 0;
+  const change = c ? nextFlagChange(c.hours.slice(from), "heavy", ctx, minute) : null;
+  const tomorrow = c?.days[1]?.date;
+  const peak = c && tomorrow ? tomorrowPeak(c.hours.filter((h) => h.time.startsWith(tomorrow)), "heavy", ctx) : null;
+  const inTime = (m: number) => (m >= 60 ? t("inHoursMinutes", { h: Math.floor(m / 60), m: m % 60 }) : t("inMinutes", { m: Math.max(0, m) }));
+
+  if (!now || !flag) return <Skeleton className="h-56 w-full rounded-lg" />;
+  return (
+      <div className="overflow-hidden rounded-lg border bg-card">
+        <div className="px-5 py-5 text-white sm:px-6" style={{ backgroundColor: flag.color }} role="status">
+          <p className="text-2xl font-black leading-tight sm:text-4xl">
+            {t(flag.key).toLocaleUpperCase(lang)} — {t(FLAG_ACTION[flag.key])}
+          </p>
+          <p className="mt-1 text-sm opacity-95" dir="auto">
+            WBGT {n(now.wbgt, 1)} °C · {n(now.temp, 0)} °C{now.air ? ` · AQI ${formatAqi(now.air.aqi)}` : ""} · {now.time.slice(11, 16)}
+          </p>
+        </div>
+        <div className="space-y-2 px-5 py-4 sm:px-6">
+          <p className="text-base font-medium">
+            {regimens.map(({ i, r }) => `${t(i.labelKey)}: ${t(SHORT[r.workMin])}`).join(" · ")}
+            {adjust > 0 && (
+              <span className="ms-2 inline-block rounded-full bg-amber-500/15 px-2 py-0.5 align-middle text-xs font-semibold text-amber-800 dark:text-amber-300">
+                {t("adjustedShort", { n: n(adjust, 1) })}
+              </span>
+            )}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {change ? t("heroTurns", { flag: t(change.flag.key), at: change.at, in: inTime(change.inMinutes) }) : t("heroNoChange")}
+            {peak?.bestStart != null && ` ${t("heroSafestTomorrow", { shift: shiftLabel(peak.bestStart) })}`}
+          </p>
+        </div>
+      </div>
   );
 }

@@ -732,4 +732,11 @@ export const ja: Dict = {
   bannerCompactOne: "48時間以内に1都市が高リスクに",
   bannerCompactMany: "48時間以内に{n}都市が高リスクに",
   viewWord: "見る",
+  wsQuestion: "今、班は作業できる? どう働く? 旗・休憩・水・現場ツール。",
+  actStartTimer: "勤務タイマーを開始",
+  tabToday: "今日",
+  tabCheckin: "私のチェック",
+  tabCrew: "班",
+  tabSiteTools: "現場ツール",
+  learnMore: "詳しく",
 };
