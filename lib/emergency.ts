@@ -51,8 +51,27 @@ export function emergencyNumbers(country: string) {
   return NUMBERS[country] ?? null;
 }
 
-/** Short form for one line, e.g. "1122 (Rescue)". */
-export function emergencyLine(country: string) {
+/** Translation keys for the service labels above (brand names in brackets stay as they are). */
+export const SERVICE_KEY: Record<string, string> = {
+  Emergency: "svcEmergency",
+  Ambulance: "svcAmbulance",
+  "Fire / ambulance": "svcFireAmbulance",
+  "Ambulance (SAMU)": "svcAmbulance",
+  Rescue: "svcRescue",
+  Police: "svcPolice",
+  "From a mobile": "svcFromMobile",
+  "Edhi ambulance": "svcAmbulance",
+};
+const BRAND: Record<string, string> = { "Ambulance (SAMU)": " (SAMU)", "Edhi ambulance": " (Edhi)" };
+
+/** A service label in the current language; `tr` maps a translation key to text. */
+export const serviceLabel = (label: string, tr?: (key: string) => string) =>
+  tr && SERVICE_KEY[label] ? tr(SERVICE_KEY[label]) + (BRAND[label] ?? "") : label;
+
+/** Short form for one line, e.g. "1122 (Rescue)". `tr` translates labels and the fallback. */
+export function emergencyLine(country: string, tr?: (key: string) => string) {
   const n = emergencyNumbers(country);
-  return n ? n.map((x) => `${x.number} (${x.label})`).join(" · ") : "your local emergency number";
+  return n
+    ? n.map((x) => `${x.number} (${serviceLabel(x.label, tr)})`).join(" · ")
+    : tr ? tr("localEmergencyNumber") : "your local emergency number";
 }

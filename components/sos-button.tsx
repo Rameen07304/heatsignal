@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Hospital, Phone } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { EMERGENCY_COUNTRIES, emergencyNumbers } from "@/lib/emergency";
+import { EMERGENCY_COUNTRIES, emergencyNumbers, serviceLabel } from "@/lib/emergency";
+import { useT, type Key } from "@/lib/i18n";
 import { KEYS, readJson, writeJson } from "@/lib/device-store";
 
 export const SOS_COUNTRY_KEY = "heatsignal-sos-country";
@@ -25,6 +26,8 @@ function guessCountry(): string {
 
 /** Red SOS button fixed to the bottom corner of every page. */
 export function SosButton() {
+  const { t } = useT();
+  const tr = (k: string) => t(k as Key);
   const [open, setOpen] = useState(false);
   const [country, setCountry] = useState("");
   useEffect(() => {
@@ -53,7 +56,7 @@ export function SosButton() {
       <DialogTrigger asChild>
         <button
           type="button"
-          aria-label="Emergency help"
+          aria-label={t("sosTitle")}
           className="no-print fixed bottom-4 end-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-300 sm:bottom-6 sm:end-6"
         >
           <span className="absolute inset-0 animate-ping rounded-full bg-red-600 opacity-30 [animation-duration:2s]" aria-hidden />
@@ -62,18 +65,18 @@ export function SosButton() {
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-red-600 dark:text-red-400">Emergency help</DialogTitle>
-          <DialogDescription>For heatstroke or trouble breathing, call now. Don’t wait.</DialogDescription>
+          <DialogTitle className="text-red-600 dark:text-red-400">{t("sosTitle")}</DialogTitle>
+          <DialogDescription>{t("sosIntro")}</DialogDescription>
         </DialogHeader>
 
         <label className="block text-sm">
-          <span className="mb-1 block text-muted-foreground">Country</span>
+          <span className="mb-1 block text-muted-foreground">{t("country")}</span>
           <select
             value={country}
             onChange={(e) => pick(e.target.value)}
             className="h-10 w-full rounded-md border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <option value="">Choose your country…</option>
+            <option value="">{t("chooseCountry")}</option>
             {EMERGENCY_COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </label>
@@ -81,11 +84,11 @@ export function SosButton() {
         {numbers ? (
           <div className="space-y-3">
             <div className="rounded-lg border p-4 text-center">
-              <div className="text-sm text-muted-foreground">{numbers[0].label}</div>
+              <div className="text-sm text-muted-foreground">{serviceLabel(numbers[0].label, tr)}</div>
               <div className="text-5xl font-bold tabular-nums tracking-tight">{numbers[0].number}</div>
               {numbers.slice(1).map((n) => (
                 <div key={n.number} className="mt-1 text-sm text-muted-foreground">
-                  {n.label}: <b className="text-foreground">{n.number}</b>
+                  {serviceLabel(n.label, tr)}: <b className="text-foreground">{n.number}</b>
                 </div>
               ))}
             </div>
@@ -93,13 +96,12 @@ export function SosButton() {
               href={`tel:${numbers[0].number}`}
               className="flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-green-600 text-lg font-semibold text-white hover:bg-green-700"
             >
-              <Phone className="h-5 w-5" /> Call {numbers[0].number} now
+              <Phone className="h-5 w-5" /> {t("callNumberNow", { number: numbers[0].number })}
             </a>
           </div>
         ) : (
           <p className="rounded-lg border p-4 text-sm">
-            {country ? "We don’t have a number for this country yet. " : ""}Call your local emergency number. From most mobile
-            phones, <b>112</b> also connects to emergency services.
+            {country ? `${t("noNumberYet")} ` : ""}{t("callLocalOr112")}
           </p>
         )}
 
@@ -109,18 +111,18 @@ export function SosButton() {
           rel="noreferrer"
           className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border text-sm font-medium hover:bg-muted"
         >
-          <Hospital className="h-4 w-4" /> Find the nearest hospital
+          <Hospital className="h-4 w-4" /> {t("nearestHospital")}
         </a>
 
         <div className="text-sm">
-          <p className="font-semibold">While you wait for help</p>
+          <p className="font-semibold">{t("whileYouWait")}</p>
           <ul className="mt-1 list-disc space-y-1 ps-5 text-muted-foreground">
-            <li>Move the person into shade or a cool room right away.</li>
-            <li>Pour cool water on their skin and fan them. Put ice or cold packs on the neck, armpits and groin.</li>
-            <li>Keep calling for help. Heatstroke can kill within minutes.</li>
+            <li>{t("waitStep1")}</li>
+            <li>{t("waitStep2")}</li>
+            <li>{t("waitStep3")}</li>
           </ul>
           <Link href="/first-aid" onClick={() => setOpen(false)} className="mt-2 inline-block text-primary underline-offset-2 hover:underline">
-            Step-by-step first aid guide
+            {t("firstAidGuideLink")}
           </Link>
         </div>
       </DialogContent>

@@ -125,16 +125,16 @@ function NavLinks() {
   );
 }
 
-function ago(d: Date, now: number) {
+function ago(d: Date, now: number, t: ReturnType<typeof useT>["t"]) {
   const min = Math.max(0, Math.round((now - d.getTime()) / 60_000));
-  return min < 1 ? "just now" : min < 60 ? `${min} min ago` : `${Math.round(min / 60)} h ago`;
+  return min < 1 ? t("justNow") : min < 60 ? t("minutesAgo", { n: min }) : t("hoursAgo", { n: Math.round(min / 60) });
 }
 
 /** Desktop sidebar + top bar, and a drawer on small screens. */
 export function Header() {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
-  const { t } = useT();
+  const { t, time } = useT();
   const { updatedAt, data, staleSince } = useCities();
   const [offline, setOffline] = useState(false);
   useEffect(() => {
@@ -147,7 +147,8 @@ export function Header() {
       window.removeEventListener("offline", sync);
     };
   }, []);
-  const dataTime = (staleSince ?? updatedAt)?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const stamp = staleSince ?? updatedAt;
+  const dataTime = stamp ? time(stamp) : "";
   const failed = !updatedAt && Object.values(data).some((d) => d instanceof Error);
   const [open, setOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
@@ -174,17 +175,17 @@ export function Header() {
           <div className="lg:hidden"><Brand /></div>
           {(offline || staleSince) && (
             <span role="status" className="ms-auto rounded-full border border-amber-500/50 bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-300">
-              {offline ? "Offline" : "No connection"}{dataTime && <> · <span className="hidden sm:inline">showing data from </span>{dataTime}</>}
+              {offline ? t("offline") : t("noConnection")}{dataTime && <> · <span className="hidden sm:inline">{t("showingDataFrom")} </span>{dataTime}</>}
             </span>
           )}
           <p className={`${offline || staleSince ? "ms-3" : "ms-auto"} hidden text-xs text-muted-foreground sm:block`}>
-            {updatedAt ? <span title={updatedAt.toLocaleString()}>Updated {ago(updatedAt, now)} · Open-Meteo</span> : failed ? "Live data unavailable. Refresh to retry." : "Loading live data…"}
+            {updatedAt ? <span title={updatedAt.toLocaleString()}>{t("updatedAgo", { ago: ago(updatedAt, now, t) })} · Open-Meteo</span> : failed ? t("liveDataUnavailable") : t("loadingLiveData")}
           </p>
           <div className="ms-auto flex items-center gap-1 sm:ms-3">
             <FieldModeToggle />
             <InstallApp />
             <NotifyButton />
-            <Button variant="ghost" size="icon" aria-label="Toggle light/dark theme" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
+            <Button variant="ghost" size="icon" aria-label={t("toggleTheme")} onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
               <Moon className="dark:hidden" />
               <Sun className="hidden dark:block" />
             </Button>
@@ -204,7 +205,7 @@ export function Header() {
             <div className="flex h-14 items-center justify-between px-4">
               <Brand />
               <DialogPrimitive.Close asChild>
-                <Button variant="ghost" size="icon" aria-label="Close menu"><X /></Button>
+                <Button variant="ghost" size="icon" aria-label={t("closeMenu")}><X /></Button>
               </DialogPrimitive.Close>
             </div>
             <div className="flex-1 overflow-y-auto px-3 py-2"><NavLinks /></div>
